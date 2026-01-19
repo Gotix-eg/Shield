@@ -16,6 +16,9 @@ export default function ClientsPage() {
   const [tempName, setTempName] = useState('');
   const [tempEmail, setTempEmail] = useState('');
   const [tempPhone, setTempPhone] = useState('');
+  const [tempAddress, setTempAddress] = useState('');
+  const [tempCity, setTempCity] = useState('');
+  const [tempVatCode, setTempVatCode] = useState('');
   const router = useRouter();
   const token = getAuth();
 
@@ -65,6 +68,9 @@ export default function ClientsPage() {
     const payload: Record<string, string> = { name: tempName.trim() };
     if (tempEmail.trim()) payload.contactEmail = tempEmail.trim();
     if (tempPhone.trim()) payload.phone = tempPhone.trim();
+    if (tempAddress.trim()) payload.address = tempAddress.trim();
+    if (tempCity.trim()) payload.city = tempCity.trim();
+    if (tempVatCode.trim()) payload.vatCode = tempVatCode.trim();
     try {
       const res = await fetch(`/api/clients/${id}`, {
         method: 'PUT',
@@ -79,7 +85,15 @@ export default function ClientsPage() {
         throw new Error(errData.error || `Failed to update (HTTP ${res.status})`);
       }
       toast.success('Client updated');
-      setClients(prev => prev.map(c => c.id === id ? { ...c, name: tempName.trim(), contactEmail: tempEmail.trim(), phone: tempPhone.trim() } : c));
+      setClients(prev => prev.map(c => c.id === id ? {
+        ...c,
+        name: tempName.trim(),
+        contactEmail: tempEmail.trim(),
+        phone: tempPhone.trim(),
+        address: tempAddress.trim(),
+        city: tempCity.trim(),
+        vatCode: tempVatCode.trim()
+      } : c));
     } catch (err) {
       console.error(err);
       toast.error('Update failed');
@@ -98,6 +112,9 @@ export default function ClientsPage() {
     setTempName(c.name);
     setTempEmail(c.contactEmail || "");
     setTempPhone(c.phone || "");
+    setTempAddress(c.address || "");
+    setTempCity(c.city || "");
+    setTempVatCode(c.vatCode || "");
   };
 
   const cancelEdit = () => {
@@ -105,6 +122,9 @@ export default function ClientsPage() {
     setTempName('');
     setTempEmail('');
     setTempPhone('');
+    setTempAddress('');
+    setTempCity('');
+    setTempVatCode('');
   };
 
   return (
@@ -148,7 +168,19 @@ export default function ClientsPage() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Address
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  City
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  VAT Code
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Phone
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -188,6 +220,45 @@ export default function ClientsPage() {
                     )}
                   </td>
 
+                  {/* Address */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {editingId === client.id ? (
+                      <input
+                        value={tempAddress}
+                        onChange={(e) => setTempAddress(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm w-full"
+                      />
+                    ) : (
+                      client.address || 'N/A'
+                    )}
+                  </td>
+
+                  {/* City */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {editingId === client.id ? (
+                      <input
+                        value={tempCity}
+                        onChange={(e) => setTempCity(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm w-full"
+                      />
+                    ) : (
+                      client.city || 'N/A'
+                    )}
+                  </td>
+
+                  {/* VAT Code */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {editingId === client.id ? (
+                      <input
+                        value={tempVatCode}
+                        onChange={(e) => setTempVatCode(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm w-full"
+                      />
+                    ) : (
+                      client.vatCode || 'N/A'
+                    )}
+                  </td>
+
                   {/* Phone */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {editingId === client.id ? (
@@ -199,6 +270,11 @@ export default function ClientsPage() {
                     ) : (
                       client.phone || 'N/A'
                     )}
+                  </td>
+
+                  {/* Created */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : '-'}
                   </td>
 
                   {/* Actions */}
