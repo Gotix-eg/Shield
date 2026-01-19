@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'react-hot-toast';
@@ -19,6 +19,8 @@ export default function ClientsPage() {
   const [tempAddress, setTempAddress] = useState('');
   const [tempCity, setTempCity] = useState('');
   const [tempVatCode, setTempVatCode] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const token = getAuth();
 
@@ -127,17 +129,90 @@ export default function ClientsPage() {
     setTempVatCode('');
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a CSV file');
+      return;
+    }
+
+    setIsImporting(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/clients/import', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Import failed');
+      }
+
+      toast.success(`Imported ${data.count} clients successfully.`);
+      if (data.errors > 0) {
+        toast.error(`${data.errors} rows failed to import. Check console.`);
+      }
+      fetchClients();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Failed to import');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <Toaster />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Clients</h1>
-        <button
-          onClick={() => router.push('/dashboard/clients/new')}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Add New Client
-        </button>
+        <div className="flex gap-2">
+          <a
+            href="/templates/clients_import_template.csv"
+            download
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
+          >
+            <svg className="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" /></svg>
+            Template
+          </a>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".csv"
+          />
+
+          <button
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+          >
+            {isImporting ? 'Importing...' : 'Import CSV'}
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/clients/new')}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Add New Client
+          </button>
+        </div>
       </div>
 
       {loading && (
