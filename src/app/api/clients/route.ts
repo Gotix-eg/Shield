@@ -8,7 +8,7 @@ import { withCompany } from '@/lib/with-company';
 export const GET = withCompany(async (request: NextRequest, companyId?: number) => {
   try {
     const searchParams = request.nextUrl.searchParams;
-    if(!companyId){
+    if (!companyId) {
       // no company context – return empty list to avoid breaking UI
       return NextResponse.json([]);
     }
@@ -25,14 +25,16 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
       const clients = await prisma.client.findMany({
         where: { companyId },
         select: {
-          id:true,
-          name:true,
-          contactEmail:true,
-          phone:true,
-          address:true,
-          notes:true,
-          createdAt:true,
-          code:true,
+          id: true,
+          name: true,
+          contactEmail: true,
+          phone: true,
+          address: true,
+          notes: true,
+          createdAt: true,
+          code: true,
+          city: true,
+          vatCode: true,
         }
       });
       return NextResponse.json(clients);
@@ -74,7 +76,7 @@ function getUserId(req: NextRequest): number | undefined {
 export async function POST(request: NextRequest) {
   try {
     const userId = getUserId(request);
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { companyId: true }});
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { companyId: true } });
     if (!user?.companyId) {
       return NextResponse.json({ error: "User company not found" }, { status: 400 });
     }
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
     const nextSeq = Math.max(seqFromClient, seqFromAccount) + 1;
     const code = `C${nextSeq.toString().padStart(4, '0')}`;
 
-        // find or create AR account for the client to avoid duplicates
+    // find or create AR account for the client to avoid duplicates
     let arAccount = await prisma.account.findFirst({ where: { code: `AR-${code}`, companyId } });
     if (!arAccount) {
       arAccount = await prisma.account.create({
@@ -120,6 +122,8 @@ export async function POST(request: NextRequest) {
         contactEmail: data.contactEmail,
         phone: data.phone,
         address: data.address || "",
+        city: data.city || "",
+        vatCode: data.vatCode || "",
         notes: data.notes || "",
         owner: { connect: { id: userId } },
         code,

@@ -13,6 +13,9 @@ export default function ClientInfo({ client }: Props) {
         <InfoRow label="Email" value={client.email} />
         <InfoRow label="Phone" value={client.phone} />
         <InfoRow label="Address" value={client.address} />
+        <InfoRow label="City" value={client.city} />
+        <InfoRow label="VAT Code" value={client.vatCode} />
+        <InfoRow label="Created Date" value={client.createdAt ? new Date(client.createdAt).toLocaleDateString() : 'N/A'} />
       </div>
     </div>
   );

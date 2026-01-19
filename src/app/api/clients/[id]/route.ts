@@ -35,14 +35,14 @@ function getUserId(request: NextRequest): number | null {
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   console.log('GET client request:', params.id);
-  
+
   // تجاهل التحقق من التوكن مؤقتاً
   // const userId = getUserId(request);
   // if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const id = Number(idStr);
+  const id = Number(idStr);
   console.log('Client ID:', id);
-  
+
   try {
     const client = await prisma.client.findUnique({
       where: { id },
@@ -53,17 +53,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         phone: true,
         address: true,
         notes: true,
+        city: true,
+        vatCode: true,
         createdAt: true
       }
     });
 
     console.log('Client found:', client);
-    
+
     if (!client) {
       console.log('Client not found');
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    
+
     return NextResponse.json(client);
   } catch (error) {
     console.error('Error fetching client:', error);
@@ -76,7 +78,7 @@ export async function PUT(request: NextRequest, ctx: { params: Promise<{ id: str
   const userId = getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const id = Number(idStr);
+  const id = Number(idStr);
   const data = await request.json();
   // TODO: restrict by ownerId once multi-tenant ready
   const existing = await prisma.client.findUnique({ where: { id } });
@@ -90,8 +92,8 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
   const { id: idStr } = await ctx.params;
   const userId = getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const id = Number(idStr);
-    const exists = await prisma.client.findUnique({ where: { id } });
+  const id = Number(idStr);
+  const exists = await prisma.client.findUnique({ where: { id } });
   if (!exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // check related records

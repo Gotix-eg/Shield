@@ -99,6 +99,8 @@ model Client {
   contactEmail       String?
   phone              String?
   address            String?
+  city               String?
+  vatCode            String?
   notes              String?
   createdAt          DateTime            @default(now())
   /// Default AR account for this client
