@@ -19,6 +19,7 @@ export default function ClientsPage() {
   const [tempAddress, setTempAddress] = useState('');
   const [tempCity, setTempCity] = useState('');
   const [tempVatCode, setTempVatCode] = useState('');
+  const [tempCountry, setTempCountry] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -73,6 +74,7 @@ export default function ClientsPage() {
     if (tempAddress.trim()) payload.address = tempAddress.trim();
     if (tempCity.trim()) payload.city = tempCity.trim();
     if (tempVatCode.trim()) payload.vatCode = tempVatCode.trim();
+    if (tempCountry.trim()) payload.country = tempCountry.trim();
     try {
       const res = await fetch(`/api/clients/${id}`, {
         method: 'PUT',
@@ -94,7 +96,8 @@ export default function ClientsPage() {
         phone: tempPhone.trim(),
         address: tempAddress.trim(),
         city: tempCity.trim(),
-        vatCode: tempVatCode.trim()
+        vatCode: tempVatCode.trim(),
+        country: tempCountry.trim()
       } : c));
     } catch (err) {
       console.error(err);
@@ -117,6 +120,7 @@ export default function ClientsPage() {
     setTempAddress(c.address || "");
     setTempCity(c.city || "");
     setTempVatCode(c.vatCode || "");
+    setTempCountry(c.country || "");
   };
 
   const cancelEdit = () => {
@@ -127,6 +131,7 @@ export default function ClientsPage() {
     setTempAddress('');
     setTempCity('');
     setTempVatCode('');
+    setTempCountry('');
   };
 
   const handleImportClick = () => {
@@ -182,7 +187,7 @@ export default function ClientsPage() {
         <h1 className="text-2xl font-bold">Clients</h1>
         <div className="flex gap-2">
           <a
-            href="/templates/clients_import_template.csv"
+            href={`/templates/clients_import_template.csv?v=${Date.now()}`}
             download
             className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
           >
@@ -250,6 +255,9 @@ export default function ClientsPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   VAT Code
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Country
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Phone
@@ -331,6 +339,19 @@ export default function ClientsPage() {
                       />
                     ) : (
                       client.vatCode || 'N/A'
+                    )}
+                  </td>
+
+                  {/* Country */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {editingId === client.id ? (
+                      <input
+                        value={tempCountry}
+                        onChange={(e) => setTempCountry(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm w-full"
+                      />
+                    ) : (
+                      client.country || 'N/A'
                     )}
                   </td>
 

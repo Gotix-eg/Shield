@@ -6,6 +6,7 @@ export interface Client {
   address: string;
   city?: string;
   vatCode?: string;
+  country?: string;
   code?: string;
   contactEmail?: string;
   notes?: string;

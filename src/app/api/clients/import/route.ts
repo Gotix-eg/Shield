@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
                         address: row.address,
                         city: row.city,
                         vatCode: row.vatCode,
+                        country: row.country,
                     },
                     create: {
                         name: row.name,
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
                         address: row.address,
                         city: row.city,
                         vatCode: row.vatCode,
+                        country: row.country,
                         companyId,
                         ownerId: userId,
                         account: { connect: { id: arAccount.id } }

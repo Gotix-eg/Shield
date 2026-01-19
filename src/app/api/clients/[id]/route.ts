@@ -55,6 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         notes: true,
         city: true,
         vatCode: true,
+        country: true,
         createdAt: true
       }
     });

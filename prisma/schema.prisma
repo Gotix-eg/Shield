@@ -101,6 +101,7 @@ model Client {
   address            String?
   city               String?
   vatCode            String?
+  country            String?
   notes              String?
   createdAt          DateTime            @default(now())
   /// Default AR account for this client

@@ -13,6 +13,7 @@ export default function NewClientPage() {
     address: '',
     city: '',
     vatCode: '',
+    country: '',
     notes: ''
   });
 
@@ -144,6 +145,20 @@ export default function NewClientPage() {
               id="vatCode"
               name="vatCode"
               value={formData.vatCode}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+              Country
+            </label>
+            <input
+              type="text"
+              id="country"
+              name="country"
+              value={formData.country}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />

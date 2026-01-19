@@ -35,6 +35,7 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
           code: true,
           city: true,
           vatCode: true,
+          country: true,
         }
       });
       return NextResponse.json(clients);
@@ -124,6 +125,7 @@ export async function POST(request: NextRequest) {
         address: data.address || "",
         city: data.city || "",
         vatCode: data.vatCode || "",
+        country: data.country || "",
         notes: data.notes || "",
         owner: { connect: { id: userId } },
         code,
