@@ -8,8 +8,8 @@ import { withCompany } from '@/lib/with-company';
   - amount: value in source currency
   - if currencies differ, provide rate (1 sourceCurrency = rate targetCurrency)
 */
-export const POST = withCompany(async (req:NextRequest, companyId?:number)=>{
-  if(!companyId) return NextResponse.json({error:'No company'}, {status:400});
+export const POST = withCompany(async (req:NextRequest, { companyId })=>{
+  if(!companyId) return NextResponse.json({error:'Unauthorized'}, {status:401});
   try{
     const { fromBankId, toBankId, amount, rate, notes } = await req.json();
     if(!fromBankId || !toBankId || !amount) {

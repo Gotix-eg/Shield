@@ -4,10 +4,9 @@ import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/salaries?from=YYYY-MM-DD&to=YYYY-MM-DD
 // تقرير مرتبات الشركة الحالية فقط (حسب companyId من التوكن)
-export const GET = withCompany(async (req: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (req: NextRequest, { companyId }) => {
   if (!companyId) {
-    // لو مش عارفين الشركة نرجّع تقرير فاضي، عشان ما نخلطش بين مكاتب
-    return NextResponse.json([]);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const from = req.nextUrl.searchParams.get('from');

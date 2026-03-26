@@ -3,14 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/office-expenses?from=YYYY-MM-DD&to=YYYY-MM-DD
-// نسمح للتقرير بالعمل حتى لو لم يتم تحديد companyId، بالاعتماد فقط على التاريخ
-export const GET = withCompany(async (req: NextRequest, _companyId?: number) => {
+export const GET = withCompany(async (req: NextRequest, { companyId }) => {
+  if (!companyId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const from = req.nextUrl.searchParams.get('from');
   const to = req.nextUrl.searchParams.get('to');
 
-  // فلترة بالتاريخ فقط لضمان ظهور كل الحركات حتى لو كان ال companyId قديم أو غير مضبوط
-  const expenseWhere: any = {};
+  const expenseWhere: any = { companyId };
   if (from) expenseWhere.createdAt = { gte: new Date(from) };
   if (to) {
     expenseWhere.createdAt = expenseWhere.createdAt || {};
@@ -23,8 +24,7 @@ export const GET = withCompany(async (req: NextRequest, _companyId?: number) => 
     include: { bank: true, project: { select: { name: true } } },
   });
 
-  // جلب المرتبات من ال PayrollBatch/PayrollItem لنفس فترة التاريخ (لو الموديل موجود)
-  const payrollWhere: any = {};
+  const payrollWhere: any = { companyId };
   if (from) payrollWhere.createdAt = { gte: new Date(from) };
   if (to) {
     payrollWhere.createdAt = payrollWhere.createdAt || {};

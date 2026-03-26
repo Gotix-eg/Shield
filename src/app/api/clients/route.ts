@@ -5,12 +5,11 @@ import jwt from "jsonwebtoken";
 import { withCompany } from '@/lib/with-company';
 
 // GET all clients with company isolation
-export const GET = withCompany(async (request: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (request: NextRequest, { companyId }) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     if (!companyId) {
-      // no company context – return empty list to avoid breaking UI
-      return NextResponse.json([]);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const clientId = searchParams.get("id");
 
@@ -50,41 +49,13 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
   }
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
-function getUserId(req: NextRequest): number | undefined {
-  let token = req.headers.get("authorization")?.replace("Bearer ", "") || "";
-  if (!token) {
-    const cookie = req.cookies.get("token");
-    token = cookie?.value || "";
-  }
-  if (!token) return null;
-  const tryDecode = (raw: string): any => {
-    try {
-      return jwt.verify(raw, JWT_SECRET);
-    } catch {
-      return jwt.decode(raw);
-    }
-  };
-  const decoded = tryDecode(token) as jwt.JwtPayload | null | string;
-  if (!decoded || typeof decoded === 'string') return null;
-  const claim = decoded.sub ?? (decoded as any).id ?? (decoded as any).userId;
-  if (!claim) return null;
-  const userId = parseInt(String(claim), 10);
-  return Number.isNaN(userId) ? undefined : userId;
-}
-
 // POST create client
-export async function POST(request: NextRequest) {
+export const POST = withCompany(async (request: NextRequest, { companyId, userId }) => {
   try {
-    const userId = getUserId(request);
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { companyId: true } });
-    if (!user?.companyId) {
-      return NextResponse.json({ error: "User company not found" }, { status: 400 });
-    }
-    const companyId = user.companyId;
-    if (!userId)
+    if (!companyId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+    }
+    
     const data = await request.json();
 
     if (!data.name || !data.contactEmail || !data.phone) {

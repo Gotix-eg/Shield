@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast, Toaster } from "react-hot-toast";
@@ -34,6 +34,8 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filterCode, setFilterCode] = useState("");
   const [filterName, setFilterName] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
 
@@ -85,12 +87,12 @@ export default function ProjectsPage() {
         prev.map((p) =>
           p.id === id
             ? {
-                ...p,
-                name: tempName.trim(),
-                status: tempStatus,
-                advanceAmount: tempAmount ? parseFloat(tempAmount) : null,
-                advanceCurrency: tempCurrency,
-              }
+              ...p,
+              name: tempName.trim(),
+              status: tempStatus,
+              advanceAmount: tempAmount ? parseFloat(tempAmount) : null,
+              advanceCurrency: tempCurrency,
+            }
             : p
         )
       );
@@ -110,6 +112,53 @@ export default function ProjectsPage() {
       fetchProjects();
     } catch {
       toast.error("Deletion failed");
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a CSV file');
+      return;
+    }
+
+    setIsImporting(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/projects/import', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${getAuth()}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Import failed');
+      }
+
+      toast.success(`Imported ${data.count} projects successfully.`);
+      if (data.errorCount > 0) {
+        toast.error(`${data.errorCount} rows failed to import. Check console.`);
+        console.error("Import errors:", data.errors);
+      }
+      fetchProjects();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Failed to import');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
   /* -------------------------------- */
@@ -137,12 +186,39 @@ export default function ProjectsPage() {
           <h1 className="text-2xl font-bold">Projects</h1>
           <p className="text-sm text-gray-600">Manage your projects</p>
         </div>
-        <button
-          onClick={() => router.push("/projects/new")}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          New Project
-        </button>
+        <div className="flex gap-2">
+          <a
+            href={`/templates/projects_import_template.csv?v=${Date.now()}`}
+            download
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
+          >
+            <svg className="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" /></svg>
+            Template
+          </a>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".csv"
+          />
+
+          <button
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+          >
+            {isImporting ? 'Importing...' : 'Import CSV'}
+          </button>
+
+          <button
+            onClick={() => router.push("/projects/new")}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            New Project
+          </button>
+        </div>
       </div>
 
       {/* filters + states */}
@@ -231,13 +307,12 @@ export default function ProjectsPage() {
                         </select>
                       ) : (
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            p.status === "OPEN"
-                              ? "bg-green-100 text-green-800"
-                              : p.status === "CLOSED"
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${p.status === "OPEN"
+                            ? "bg-green-100 text-green-800"
+                            : p.status === "CLOSED"
                               ? "bg-red-100 text-red-800"
                               : "bg-gray-100 text-gray-800"
-                          }`}
+                            }`}
                         >
                           {p.status}
                         </span>

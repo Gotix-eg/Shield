@@ -12,6 +12,10 @@ export default function NewClientPage() {
     name: "",
     contactEmail: "",
     phone: "",
+    address: "",
+    city: "",
+    vatCode: "",
+    country: "",
   });
 
   // التحقق من تسجيل الدخول
@@ -39,10 +43,10 @@ export default function NewClientPage() {
   return (
     <main className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Add New Client</h1>
+        <h1 className="text-2xl font-bold text-white">Add New Client</h1>
         <button
           onClick={() => router.push("/clients")}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-300 hover:text-white"
         >
           Back
         </button>
@@ -51,7 +55,7 @@ export default function NewClientPage() {
       <form onSubmit={handleSubmit} className="max-w-md mx-auto">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-white">
               Name
             </label>
             <input
@@ -64,7 +68,7 @@ export default function NewClientPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-white">
               Email
             </label>
             <input
@@ -77,7 +81,7 @@ export default function NewClientPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-white">
               Phone
             </label>
             <input
@@ -86,6 +90,54 @@ export default function NewClientPage() {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white">
+              Address
+            </label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white">
+              City
+            </label>
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white">
+              VAT Number
+            </label>
+            <input
+              type="text"
+              value={formData.vatCode}
+              onChange={(e) => setFormData({ ...formData, vatCode: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white">
+              Country
+            </label>
+            <input
+              type="text"
+              value={formData.country}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
 

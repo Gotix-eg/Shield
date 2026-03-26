@@ -2,50 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
-
-function getUserId(request: NextRequest): number | null {
-  const auth = request.headers.get("authorization") || "";
-  console.log('Auth header:', auth);
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  if (!token) {
-    console.log('No token found');
-    return null;
-  }
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload | string;
-    console.log('Decoded token:', decoded);
-    let sub: string | undefined;
-    if (typeof decoded === 'string') {
-      // JWT with no payload object
-      return null;
-    } else {
-      sub = decoded.sub as string | undefined;
-    }
-    const claim = sub ?? (decoded as any).id;
-    if (!claim) return null;
-    const userId = parseInt(claim, 10);
-    if (Number.isNaN(userId)) return null;
-    return userId;
-  } catch (err) {
-    console.error('Token verification failed:', err);
-    return null;
-  }
-}
-
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  console.log('GET client request:', params.id);
-
-  // تجاهل التحقق من التوكن مؤقتاً
-  // const userId = getUserId(request);
-  // if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const GET = withCompany(async (request: NextRequest, { companyId }) => {
+  const idStr = request.nextUrl.pathname.split('/').pop() || '';
   const id = Number(idStr);
-  console.log('Client ID:', id);
+  
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   try {
-    const client = await prisma.client.findUnique({
-      where: { id },
+    const client = await prisma.client.findFirst({
+      where: { id, companyId },
       select: {
         id: true,
         name: true,
@@ -60,10 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }
     });
 
-    console.log('Client found:', client);
-
     if (!client) {
-      console.log('Client not found');
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -72,31 +35,41 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.error('Error fetching client:', error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { id: idStr } = await ctx.params;
-  const userId = getUserId(request);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const PUT = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  const idStr = request.nextUrl.pathname.split('/').pop() || '';
   const id = Number(idStr);
+
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
   const data = await request.json();
-  // TODO: restrict by ownerId once multi-tenant ready
-  const existing = await prisma.client.findUnique({ where: { id } });
+  const existing = await prisma.client.findFirst({ where: { id, companyId } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const updated = await prisma.client.update({ where: { id }, data });
   return NextResponse.json(updated);
-}
+});
 
-export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { id: idStr } = await ctx.params;
-  const userId = getUserId(request);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const DELETE = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  const idStr = request.nextUrl.pathname.split('/').pop() || '';
   const id = Number(idStr);
-  const exists = await prisma.client.findUnique({ where: { id } });
+
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+  const exists = await prisma.client.findFirst({ where: { id, companyId } });
   if (!exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  try {
+    await prisma.client.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting client:', error);
+    return NextResponse.json({ error: error.message || "Failed to delete" }, { status: 500 });
+  }
+});
   // check related records
   const [invoiceCount, projectCount] = await Promise.all([
     prisma.invoice.count({ where: { clientId: id } }),

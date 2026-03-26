@@ -4,25 +4,15 @@ import { withCompany } from '@/lib/with-company';
 import { ensureStandardChart } from '@/lib/coa';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function isAdmin(token: string | null) {
-  if (!token) return false;
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    return ['ADMIN', 'OWNER', 'ACCOUNTANT_MASTER'].includes(payload?.role);
-  } catch {
-    return false;
-  }
+function isAdmin(role: string | undefined) {
+  return role && ['ADMIN', 'OWNER', 'ACCOUNTANT_MASTER'].includes(role);
 }
 
 // POST /api/admin/reset-ledger  -> wipes accounts, transactions & advance payments for company then reseeds standard COA
-export const POST = withCompany(async (req: NextRequest, companyId?: number) => {
-  if (!companyId) return NextResponse.json({ error: 'No company context' }, { status: 400 });
+export const POST = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!isAdmin(token)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAdmin(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   try {
     // 1. Delete transaction lines & transactions for company accounts

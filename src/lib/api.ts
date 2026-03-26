@@ -6,6 +6,11 @@ interface Client {
   contactEmail: string;
   phone: string;
   createdAt: string;
+  address?: string;
+  city?: string;
+  vatCode?: string;
+  country?: string;
+  notes?: string;
 }
 
 export async function fetchClients(): Promise<Client[]> {

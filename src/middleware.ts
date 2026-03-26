@@ -8,13 +8,14 @@ const PUBLIC_PATHS = [
   "/register",
   "/api/login",
   "/api/register",
-  "/",
-  "/dashboard/clients",
-  "/dashboard/clients/new",
-  "/dashboard/clients/[id]"
+  "/"
 ];
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET must be defined in production.');
+}
+const SAFE_JWT_SECRET = JWT_SECRET || "dev-only-unsafe-secret";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -28,7 +29,7 @@ export function middleware(request: NextRequest) {
   const token = getAuthServer(request);
   if (token) {
     try {
-      const payload = jwt.verify(token, JWT_SECRET) as { role?: string; companyId?: number };
+      const payload = jwt.verify(token, SAFE_JWT_SECRET) as { role?: string; companyId?: number };
       setCompanyContext(payload.companyId);
     } catch {
       /* ignore invalid token here; handled later */
@@ -43,7 +44,7 @@ export function middleware(request: NextRequest) {
 
   // Decode role
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { role?: string };
+    const payload = jwt.verify(token, SAFE_JWT_SECRET) as { role?: string };
     const role = payload.role ?? "STAFF";
     const adminPaths = ["/admin", "/invoices"];
     if (role !== "ADMIN" && adminPaths.some(p=> pathname.startsWith(p))) {

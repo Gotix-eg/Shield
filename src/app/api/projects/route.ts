@@ -3,48 +3,19 @@ import { withCompany } from "@/lib/with-company";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
-
-function getUserId(request: NextRequest): number | null {
-  const auth = request.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload | string;
-    let sub: string | undefined;
-    if (typeof decoded === 'string') {
-      // token was signed with raw numeric id
-      sub = decoded;
-    } else {
-      sub = decoded.sub as string | undefined;
-    }
-    const claim = sub ?? (decoded as any).id;
-    if (!claim) return null;
-    const userId = parseInt(claim, 10);
-    if (Number.isNaN(userId)) return null;
-    return userId;
-  } catch {
-    return null;
-  }
-}
-
-export const GET = withCompany(async (request: NextRequest, companyId?: number) => {
-  const userId = getUserId(request);
-  let whereClause: any = {};
-  if (companyId) whereClause.companyId = companyId;
-  if (userId) {
-    // fetch user role
-    const user = await prisma.user.findUnique({ where: { id: userId }, select:{ role:true, companyId:true }});
-    const companyId = user?.companyId;
-    if (user?.role === 'LAWYER_MANAGER') {
-      // projects where any assignment belongs to managed lawyers
-      const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
-      const ids = managed.map(m => m.lawyerId);
-      if (ids.length === 0) return NextResponse.json([]);
-      whereClause = { assignments: { some: { userId: { in: ids } } } } as any;
-    } else if (user?.role === 'STAFF') {
-      whereClause.ownerId = userId;
-    }
+export const GET = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  
+  let whereClause: any = { companyId };
+  
+  if (role === 'LAWYER_MANAGER') {
+    // projects where any assignment belongs to managed lawyers
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    if (ids.length === 0) return NextResponse.json([]);
+    whereClause.assignments = { some: { userId: { in: ids } } };
+  } else if (role === 'STAFF') {
+    whereClause.ownerId = userId;
   }
 
   const projects = await prisma.project.findMany({
@@ -65,10 +36,9 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
   return NextResponse.json(result);
 });
 
-export const POST = withCompany(async (request: NextRequest) => {
+export const POST = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
   try {
-  const userId = getUserId(request);
-  if (!userId)
+  if (!companyId || !userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null } = await request.json();
@@ -91,13 +61,7 @@ export const POST = withCompany(async (request: NextRequest) => {
       return NextResponse.json({ error: 'billingCurrency required for fixed fee' }, { status: 400 });
   }
 
-  // Verify client belongs to user unless user is OWNER (admin)
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, companyId: true } });
-   if(!user?.companyId){
-     return NextResponse.json({ error: "Company not found" }, { status: 400 });
-   }
-   const companyId = user.companyId;
-   const isStaff = (user.role as string) === "STAFF";
+  const isStaff = (role as string) === "STAFF";
    let client;
   if (isStaff) {
     client = await prisma.client.findFirst({ where: { id: clientId, ownerId: userId, companyId } });

@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const limiter = rateLimit(ip, 3, 3600000); // 3 attempts per hour
+    if (!limiter.success) {
+      return NextResponse.json({ error: "Too many registration attempts. Please try again later." }, { status: 429 });
+    }
+
     const body = await request.json();
     const { name, email, password, companyName } = body as {
       name?: string;
@@ -18,6 +26,20 @@ export async function POST(request: NextRequest) {
         { error: "Missing fields" },
         { status: 400 }
       );
+    }
+
+    // Password complexity check
+    if (password.length < 8) {
+      return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
+    }
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+      return NextResponse.json({ 
+        error: "Password must contain uppercase, lowercase, number, and special character" 
+      }, { status: 400 });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });

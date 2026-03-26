@@ -2,25 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withCompany } from '@/lib/with-company';
 import { ensureStandardChart } from '@/lib/coa';
-import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function isAdmin(token: string | null): boolean {
-  if (!token) return false;
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    return ['ADMIN','ACCOUNTANT_MASTER','OWNER'].includes(payload?.role as string);
-  } catch {
-    return false;
-  }
+function isAdmin(role: string | undefined): boolean {
+  return !!role && ['ADMIN', 'ACCOUNTANT_MASTER', 'OWNER'].includes(role);
 }
 
-export const GET = withCompany(async (request: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (request: NextRequest, { companyId }) => {
   // if the request lacks a company context, return an empty list instead of leaking
   // accounts that belong to other tenants.
   if (!companyId) {
-    return NextResponse.json([]);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Seed standard chart of accounts (law-firm specific)
@@ -54,10 +45,10 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
   return NextResponse.json(result);
 });
 
-export const POST = withCompany(async (req: NextRequest, companyId?: number) => {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!isAdmin(token)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// POST create manual account
+export const POST = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!isAdmin(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { code, name, type } = await req.json();
   if (!code || !name || !type) {

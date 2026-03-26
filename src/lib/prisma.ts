@@ -10,27 +10,29 @@ if (!(Prisma as any).Decimal.prototype.toJSON) {
   /* eslint-enable */
 }
 
-// Prevent creating multiple instances in development hot-reload
-const globalForPrisma = global as unknown as { prisma?: PrismaClient };
-
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
+const createPrismaClient = () => {
+  const client = new PrismaClient({
     log: ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-// Multi-tenant isolation middleware: scope every query by companyId stored in AsyncLocalStorage
-if (!globalForPrisma.prisma) {
-  prisma.$use(async (params, next) => {
+  // Multi-tenant isolation middleware: scope every query by companyId stored in AsyncLocalStorage
+  client.$use(async (params, next) => {
     const companyId = getCompanyId();
     if (!companyId) {
       return next(params);
     }
 
-    const readActions = ["findMany", "findUnique", "findFirst", "aggregate", "count"];
+    const readActions = ["findMany", "findFirst", "aggregate", "count"];
     if (readActions.includes(params.action)) {
+      params.args = params.args || {};
+      params.args.where = { ...(params.args.where ?? {}), companyId };
+    }
+    
+    // findUnique is tricky - it only accepts unique fields. 
+    // If we want to enforce companyId on findUnique, we'd need compound unique keys in schema.
+    // For now, let's convert findUnique to findFirst if companyId is present
+    if (params.action === "findUnique") {
+      params.action = "findFirst";
       params.args = params.args || {};
       params.args.where = { ...(params.args.where ?? {}), companyId };
     }
@@ -48,10 +50,26 @@ if (!globalForPrisma.prisma) {
       params.args = params.args || {};
       params.args.where = { ...(params.args.where ?? {}), companyId };
     }
+    
+    if (params.action === "upsert") {
+      params.args = params.args || {};
+      params.args.where = { ...(params.args.where ?? {}), companyId };
+      params.args.create = { ...(params.args.create ?? {}), companyId };
+      params.args.update = { ...(params.args.update ?? {}), companyId };
+    }
 
     return next(params);
   });
-}
+
+  return client;
+};
+
+// Prevent creating multiple instances in development hot-reload
+const globalForPrisma = global as unknown as { prisma?: PrismaClient };
+
+export const prisma = globalForPrisma.prisma || createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 
 export default prisma;

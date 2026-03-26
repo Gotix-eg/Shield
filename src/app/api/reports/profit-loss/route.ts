@@ -5,7 +5,9 @@ import { withCompany } from '@/lib/with-company';
 
 import { Decimal } from '@prisma/client/runtime/library';
 
-export const GET = withCompany(async (request: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (request: NextRequest, { companyId }) => {
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get('clientId');
   const projectId = searchParams.get('projectId');

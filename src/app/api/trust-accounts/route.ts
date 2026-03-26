@@ -3,39 +3,12 @@ import { withCompany } from '@/lib/with-company';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-type Role = 'OWNER' | 'ADMIN' | 'STAFF' | string;
-
-function getRole(token?: string): Role | null {
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf8'));
-    return payload.role as Role;
-  } catch {
-    return null;
-  }
-}
-
-function auth(request: NextRequest) {
-  const auth = request.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return { userId: null, role: null };
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return { userId: Number(decoded.sub), role: getRole(token || undefined) };
-  } catch {
-    return { userId: null, role: null };
-  }
-}
-
 // GET /api/trust-accounts?clientId=123
 // Returns list of trust accounts with computed balances.
 // Safely skips projects that do not define advanceCurrency to avoid null currency errors.
-export const GET = withCompany(async (req: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
   try {
-    const { role } = auth(req);
-    if (!role) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!companyId || !role) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const clientId = req.nextUrl.searchParams.get('clientId');
     const typeParam = req.nextUrl.searchParams.get('type');

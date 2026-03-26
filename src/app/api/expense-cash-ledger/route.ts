@@ -4,7 +4,8 @@ import { withCompany } from '@/lib/with-company';
 
 // GET /api/expense-cash-ledger?clientId=123&projectId=456
 // Returns { balance, entries: [...] }
-export const GET = withCompany(async (req: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (req: NextRequest, { companyId }) => {
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const clientIdParam = req.nextUrl.searchParams.get('clientId');
     const projectIdParam = req.nextUrl.searchParams.get('projectId');

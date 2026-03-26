@@ -3,22 +3,12 @@ import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { withCompany } from '@/lib/with-company';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-type LineInput = { accountId: number; debit?: number; credit?: number; currency?: string };
-
-function isAccountant(token: string | null): boolean {
-  if (!token) return false;
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    return ['ADMIN','ACCOUNTANT_MASTER','ACCOUNTANT_ASSISTANT','OWNER'].includes(payload?.role as string);
-  } catch {
-    return false;
-  }
+function isAccountant(role: string | undefined): boolean {
+  return role && ['ADMIN','ACCOUNTANT_MASTER','ACCOUNTANT_ASSISTANT','OWNER'].includes(role);
 }
 
-export const GET = withCompany(async (_req: NextRequest, companyId?: number) => {
-  if (!companyId) return NextResponse.json([]);
+export const GET = withCompany(async (_req: NextRequest, { companyId }) => {
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tx = await prisma.transaction.findMany({
     orderBy: { date: 'desc' },
@@ -41,13 +31,11 @@ export const GET = withCompany(async (_req: NextRequest, companyId?: number) => 
   return NextResponse.json(tx);
 });
 
-export const POST = withCompany(async (req: NextRequest, companyId?: number) => {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!isAccountant(token)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (!companyId) return NextResponse.json({ error: 'No company' }, { status: 400 });
+export const POST = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAccountant(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const { date, memo, lines } = await req.json() as { date?: string; memo?: string; lines: LineInput[] };
+  const { date, memo, lines } = await req.json() as { date?: string; memo?: string; lines: { accountId: number; debit?: number; credit?: number; currency?: string }[] };
   if (!lines || !Array.isArray(lines) || lines.length < 2) {
     return NextResponse.json({ error: 'At least 2 lines required' }, { status: 400 });
   }
@@ -69,12 +57,11 @@ export const POST = withCompany(async (req: NextRequest, companyId?: number) => 
   }
 
   try {
-    const payload: any = token ? jwt.verify(token, JWT_SECRET) : null;
     const tx = await prisma.transaction.create({
       data: {
         date: date ? new Date(date) : new Date(),
         memo,
-        createdBy: payload?.sub ? Number(payload.sub) : undefined,
+        createdBy: userId,
         lines: {
           create: lines.map((l) => ({
             accountId: l.accountId,

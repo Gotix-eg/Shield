@@ -14,9 +14,9 @@ interface LineItem {
   balance: number; // running balance after this line (same currency)
 }
 
-export const GET = withCompany(async (_req: NextRequest, companyId?: number) => {
+export const GET = withCompany(async (_req: NextRequest, { companyId }) => {
   try {
-  if (!companyId) return NextResponse.json([], { status: 200 });
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // ensure cash account exists
   let cash = await prisma.account.findFirst({ where:{ companyId, code:'CASH-MAIN' }});

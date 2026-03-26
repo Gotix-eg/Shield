@@ -3,33 +3,18 @@ import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { withCompany } from '@/lib/with-company';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function isAccountant(token: string | null): boolean {
-  if (!token) return false;
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    return ['ADMIN', 'ACCOUNTANT_MASTER', 'ACCOUNTANT_ASSISTANT', 'OWNER'].includes(
-      payload?.role as string,
-    );
-  } catch {
-    return false;
-  }
+function isAccountant(role: string | undefined): boolean {
+  return role && ['ADMIN', 'ACCOUNTANT_MASTER', 'ACCOUNTANT_ASSISTANT', 'OWNER'].includes(role);
 }
 
 // DELETE /api/transactions/[id]
 // Removes the transaction and all its lines (ON DELETE CASCADE in Prisma).
-export const DELETE = withCompany(async (req: NextRequest, companyId?: number) => {
-  // extract id from the request URL (last segment)
-  const idStr = req.nextUrl.pathname.split('/').pop() || '';
-  const txId = Number(idStr);
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!isAccountant(token)) {
+export const DELETE = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!companyId) {
-    return NextResponse.json({ error: 'No company' }, { status: 400 });
+  if (!isAccountant(role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   if (isNaN(txId)) {

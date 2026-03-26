@@ -3,43 +3,17 @@ import { prisma } from '@/lib/prisma';
 import { withCompany } from '@/lib/with-company';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function getRole(req: NextRequest): string | null {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return null;
-  try {
-    const d: any = jwt.verify(token, JWT_SECRET);
-    return d?.role || null;
-  } catch {
-    return null;
-  }
-}
-
-function isHR(role: string | null) {
+function isHR(role: string | undefined) {
   if (!role) return false;
   const r = role.toUpperCase();
   return r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER' || r === 'HR';
 }
 
-export const GET = withCompany(async (req: NextRequest, companyId?: number) => {
-  // derive companyId if still undefined
-  if(!companyId){
-    const auth = req.headers.get('authorization')||'';
-    const token = auth.startsWith('Bearer ')? auth.slice(7):null;
-    if(token){
-      try{
-        const payload:any = JSON.parse(Buffer.from(token.split('.')[1],'base64').toString());
-        const uid = Number(payload.sub ?? payload.id);
-        if(uid){
-          const u = await prisma.user.findUnique({ where:{ id: uid }, select:{ companyId:true }});
-          companyId = u?.companyId ?? undefined;
-        }
-      }catch{}
-    }
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const role = getRole(req);
+  
   if (!isHR(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   // Fetch all employees with salaries and user linkage

@@ -1,61 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
+import { withCompany } from '@/lib/with-company';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-interface Auth {
-  id: number;
-  role: string;
-}
-
-function decode(req: NextRequest): Auth | null {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return null;
-  try {
-    return jwt.verify(token, JWT_SECRET) as any;
-  } catch {
-    return null;
-  }
-}
-
-function canCreateBatch(role: string) {
+function canCreateBatch(role: string | undefined) {
+  if (!role) return false;
   return role === 'ADMIN' || role === 'OWNER' || role.startsWith('HR');
 }
 
 // GET list batches
-export async function GET(req: NextRequest) {
-  const auth = decode(req);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const user = await prisma.user.findUnique({ where: { id: auth.id }, select: { companyId: true } });
+export const GET = withCompany(async (req: NextRequest, { companyId, userId }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
   const batches = await prisma.payrollBatch.findMany({
-    where: { companyId: user?.companyId || undefined },
+    where: { companyId },
     include: { items: { select: { id: true, netSalary: true, employee: { select: { name: true } } } } },
     orderBy: { createdAt: 'desc' },
   });
   return NextResponse.json(batches);
-}
+});
 
 // POST create batch body { year, month }
-export async function POST(req: NextRequest) {
-  const auth = decode(req);
-  if (!auth || !canCreateBatch(auth.role))
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+export const POST = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!canCreateBatch(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { year, month } = await req.json();
   if (!year || !month) return NextResponse.json({ error: 'year, month required' }, { status: 400 });
 
-  // fetch companyId
-  const userRec = await prisma.user.findUnique({ where: { id: auth.id }, select: { companyId: true } });
-  if (!userRec?.companyId) return NextResponse.json({ error: 'User not in company' }, { status: 400 });
-
-  const existing = await prisma.payrollBatch.findFirst({ where: { companyId: userRec.companyId, year, month } });
+  const existing = await prisma.payrollBatch.findFirst({ where: { companyId, year, month } });
   if (existing) return NextResponse.json({ error: 'Batch exists' }, { status: 400 });
 
   // active employees in company
   const employees = await prisma.employee.findMany({
-    where: { status: 'ACTIVE', user: { companyId: userRec.companyId } },
+    where: { status: 'ACTIVE', user: { companyId } },
     include: {
       salaries: {
         orderBy: { effectiveFrom: 'desc' },
@@ -86,45 +63,29 @@ export async function POST(req: NextRequest) {
 
   const batch = await prisma.payrollBatch.create({
     data: {
-      companyId: userRec.companyId,
+      companyId,
       month,
       year,
-      createdById: auth.id,
+      createdById: userId,
       items: { createMany: { data: itemsData } },
     },
     include: { items: true },
   });
 
   return NextResponse.json(batch, { status: 201 });
-}
+});
 
-// DELETE /api/payroll/batches?id= - delete batch if still in DRAFT
-export async function DELETE(req: NextRequest) {
-  const auth = decode(req);
-  if (!auth) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+// DELETE /api/payroll/batches?id=123
+export const DELETE = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!canCreateBatch(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const { searchParams } = new URL(req.url);
-  const idParam = searchParams.get('id');
-  const id = idParam ? Number(idParam) : NaN;
-  if (!id || isNaN(id)) {
-    return NextResponse.json({ error: 'id required' }, { status: 400 });
-  }
+  const id = req.nextUrl.searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-  try {
-    // لازم نمسح العناصر المرتبطة الأول لتجنب Foreign key constraint
-    await prisma.$transaction([
-      prisma.payrollItem.deleteMany({ where: { batchId: id } }),
-      prisma.payrollBatch.deleteMany({ where: { id } }),
-    ]);
-    return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    console.error('Failed to delete payroll batch', err);
-    // نرجّع رسالة نصية مفهومة للـ Frontend
-    const message = err?.code === 'P2003'
-      ? 'Cannot delete batch because of related payroll items (P2003).'
-      : 'Failed to delete payroll batch.';
-    return new NextResponse(message, { status: 500 });
-  }
-}
+  const batch = await prisma.payrollBatch.findFirst({ where: { id: Number(id), companyId } });
+  if (!batch) return NextResponse.json({ error: 'Batch not found' }, { status: 404 });
+
+  await prisma.payrollBatch.delete({ where: { id: batch.id } });
+  return NextResponse.json({ ok: true });
+});

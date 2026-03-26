@@ -1,8 +1,10 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 import { Readable } from 'stream';
 import csv from 'csv-parser';
+import { ProjectStatus } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 
@@ -16,7 +18,7 @@ function getUserId(req: NextRequest): number | undefined {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as any;
-        if (typeof decoded === 'string') return undefined;
+        if (typeof decoded === 'string') return undefined; // Should be object
         const claim = decoded.sub ?? decoded.id ?? decoded.userId;
         const userId = parseInt(String(claim), 10);
         return Number.isNaN(userId) ? undefined : userId;
@@ -60,65 +62,91 @@ export async function POST(request: NextRequest) {
 
         let successCount = 0;
         let errorCount = 0;
+        const errors: string[] = [];
 
         for (const row of results) {
             try {
-                if (!row.name) continue;
-
-                // Generate a code if missing
-                const code = row.code || (row.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase() + Math.floor(Math.random() * 1000));
-
-                // Find or create AR account (similar to creating new client logic)
-                let arAccount = await prisma.account.findFirst({ where: { code: `AR-${code}`, companyId } });
-                if (!arAccount) {
-                    arAccount = await prisma.account.create({
-                        data: {
-                            code: `AR-${code}`,
-                            name: `${code} Receivable`,
-                            type: 'ASSET',
-                            companyId,
-                        },
-                    });
+                if (!row.name || !row.clientCode) {
+                    errorCount++;
+                    errors.push(`Row missing name or clientCode: ${JSON.stringify(row)}`);
+                    continue;
                 }
 
-                await prisma.client.upsert({
-                    where: { code }, // Assumes code is unique across system or handling collision
+                // Find client by code
+                const client = await prisma.client.findFirst({
+                    where: { code: row.clientCode, companyId }
+                });
+
+                if (!client) {
+                    errorCount++;
+                    errors.push(`Client not found for code: ${row.clientCode}`);
+                    continue;
+                }
+
+                const code = row.code || `P${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+
+                let status: ProjectStatus = 'OPEN';
+                if (row.status) {
+                    const normalized = row.status.toUpperCase();
+                    if (Object.values(ProjectStatus).includes(normalized as ProjectStatus)) {
+                        status = normalized as ProjectStatus;
+                    }
+                }
+
+                const budget = row.budget ? parseFloat(row.budget) : 0;
+
+                // Parse dates if present, otherwise null
+                const startDate = row.startDate ? new Date(row.startDate) : undefined;
+                const endDate = row.endDate ? new Date(row.endDate) : undefined;
+
+                await prisma.project.upsert({
+                    where: {
+                        companyId_code: {
+                            companyId,
+                            code
+                        }
+                    },
                     update: {
                         name: row.name,
-                        contactEmail: row.email,
-                        phone: row.phone,
-                        address: row.address,
-                        city: row.city,
-                        vatCode: row.vatCode,
-                        country: row.country,
+                        status,
+                        budget,
+                        startDate,
+                        endDate,
+                        description: row.description,
+                        clientId: client.id, // Update relation if needed
                     },
                     create: {
                         name: row.name,
                         code,
-                        contactEmail: row.email,
-                        phone: row.phone,
-                        address: row.address,
-                        city: row.city,
-                        vatCode: row.vatCode,
-                        country: row.country,
+                        status,
+                        budget,
+                        startDate,
+                        endDate,
+                        description: row.description,
+                        clientId: client.id,
                         companyId,
-                        ownerId: userId,
-                        accountId: arAccount.id
+                        ownerId: userId, // Default owner to importer
                     },
                 });
                 successCount++;
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`Import error for row ${row.name}:`, error);
                 errorCount++;
+                errors.push(`Error importing ${row.name}: ${error.message}`);
             }
         }
 
-        return NextResponse.json({ success: true, count: successCount, errors: errorCount });
+        return NextResponse.json({
+            success: true,
+            count: successCount,
+            errorCount,
+            errors
+        });
 
     } catch (error: any) {
         console.error("Import failed:", error);
         return NextResponse.json(
-            { error: error.message || "Failed to import clients" },
+            { error: error.message || "Failed to import projects" },
             { status: 500 }
         );
     }

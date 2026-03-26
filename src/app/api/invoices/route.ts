@@ -1,10 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withCompany } from "@/lib/with-company";
 
-export async function POST(request: NextRequest) {
+export const GET = withCompany(async (request: NextRequest, { companyId, userId }) => {
   try {
+    if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    // fetch allowed scope for invoices page
+    const up = await prisma.userPermission.findFirst({
+      where: { userId, permission: { code: 'invoices' }, allowed: true },
+      select: { clientIds: true, projectIds: true, lawyerIds: true }
+    });
+    
+    const where: any = { companyId };
+    
+    if (up) {
+      if (up.projectIds && Array.isArray(up.projectIds) && up.projectIds.length) {
+        where.projectId = { in: up.projectIds.map(Number) };
+      }
+      if (up.clientIds && Array.isArray(up.clientIds) && up.clientIds.length) {
+        where.clientId = { in: up.clientIds.map(Number) };
+      }
+    }
+    
+    const invoices = await prisma.invoice.findMany({
+      where,
+      include: {
+        client: true,
+        project: { select: { name: true } },
+        bank: { select: { name: true } }
+      },
+      orderBy: { issueDate: 'desc' }
+    });
+    
+    return NextResponse.json(invoices);
+  } catch (error: any) {
+    console.error("Failed to fetch invoices:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to fetch invoices" },
+      { status: 500 }
+    );
+  }
+});
+
+export const POST = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  try {
+    if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const data = await request.json();
-    const { companyId } = getAuthInfo(request);
 
     if (!data.clientId)
       return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
@@ -89,49 +131,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function getAuthInfo(req: NextRequest){
-  const auth=req.headers.get('authorization')||'';
-  const tok=auth.startsWith('Bearer ')?auth.slice(7):null;
-  if(!tok) return { userId:null, companyId:null };
-  try{ const p= JSON.parse(Buffer.from(tok.split('.')[1],'base64').toString()); return { userId:Number(p.sub||p.id)||null, companyId: p.companyId? Number(p.companyId):null }; }catch{return { userId:null, companyId:null };}
-}
-
-function getUserId(req:NextRequest):number|null{
-  return getAuthInfo(req).userId;
-}
-
-export async function GET(req: NextRequest) {
-  try {
-    // auth & permissions
-    const { userId, companyId } = getAuthInfo(req);
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    // fetch allowed scope for invoices page
-    const up = await prisma.userPermission.findFirst({
-      where:{ userId, permission:{ code:'invoices'}, allowed:true },
-      select:{ clientIds:true, projectIds:true, lawyerIds:true }
-    });
-    const where:any = {};
-    if (companyId) where.companyId = companyId;
-    if (up){
-      if (up.projectIds?.length) where.projectId = { in: up.projectIds };
-      if (up.clientIds?.length){
-        where.clientId = { in: up.clientIds };
-      }
-      // if lawyerIds present and you have a lawyerId column, adjust; assuming createdBy
-      if (up.lawyerIds?.length){
-        where.createdById = { in: up.lawyerIds } as any;
-      }
-    }
-    const invoices = await prisma.invoice.findMany({ where, include: { client: true, project: { select: { name: true } }, bank: { select: { name: true } } } });
-    return NextResponse.json(invoices);
-  } catch (error: any) {
-    console.error("Failed to fetch invoices:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch invoices" },
-      { status: 500 }
-    );
-  }
-}
+});

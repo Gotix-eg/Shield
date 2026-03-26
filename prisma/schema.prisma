@@ -138,6 +138,9 @@ model Project {
   /// Unique shorthand code (e.g. P0001-01)
   code               String?
   companyId          Int
+  budget             Decimal?
+  startDate          DateTime?
+  endDate            DateTime?
   billingType        BillingType         @default(HOURS)
   fixedFee           Decimal?
   rateSource         RateSource?

@@ -1,72 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withCompany } from "@/lib/with-company";
 
 // GET /api/invoices/[id]
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
-    const numericId = parseInt(id);
+export const GET = withCompany(async (request: NextRequest, { companyId }) => {
+  const idStr = request.nextUrl.pathname.split('/').pop() || '';
+  const numericId = parseInt(idStr);
+  
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const invoice = isNaN(numericId)
-      ? await prisma.invoice.findUnique({
-          where: { invoiceNumber: id },
-          include: { client: true, items: true },
+      ? await prisma.invoice.findFirst({
+          where: { invoiceNumber: idStr, companyId },
+          include: { client: true, items: true, project: true },
         })
-      : await prisma.invoice.findUnique({
-          where: { id: numericId },
-          include: { client: true, items: true },
+      : await prisma.invoice.findFirst({
+          where: { id: numericId, companyId },
+          include: { client: true, items: true, project: true },
         });
+        
     if (!invoice)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(invoice);
   } catch (err: any) {
     console.error("Get invoice failed", err);
-    return NextResponse.json(
-      { error: err.message || "Server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+});
 
-// PUT /api/invoices/[id] — update basic fields (issueDate, dueDate, status)
-// DELETE /api/invoices/[id] — delete invoice and items
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
-  const whereClause = isNaN(parseInt(id)) ? { invoiceNumber: id } : { id: parseInt(id) };
+// DELETE /api/invoices/[id]
+export const DELETE = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  const idStr = request.nextUrl.pathname.split('/').pop() || '';
+  const numericId = parseInt(idStr);
+
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
-    let invId: number | null = null;
-    if ('id' in whereClause) {
-      invId = whereClause.id;
-    } else {
-      const inv = await prisma.invoice.findUnique({ where: whereClause });
-      if (inv) invId = inv.id;
-    }
-    if (invId) {
-       const existing = await prisma.invoice.findUnique({ where: { id: invId } });
-       if (!existing) {
-         return NextResponse.json({ error: 'Not found' }, { status: 404 });
-       }
-       await prisma.$transaction([
-         prisma.payment.deleteMany({ where: { invoiceId: invId } }),
-         prisma.trustTransaction.deleteMany({ where: { invoiceId: invId } }),
-         prisma.invoiceItem.deleteMany({ where: { invoiceId: invId } }),
-         prisma.invoice.delete({ where: { id: invId } }),
-       ]);
-     } else {
-      // if invoice number not found
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
+    const invoice = isNaN(numericId)
+      ? await prisma.invoice.findFirst({ where: { invoiceNumber: idStr, companyId } })
+      : await prisma.invoice.findFirst({ where: { id: numericId, companyId } });
+
+    if (!invoice) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    await prisma.$transaction([
+      prisma.payment.deleteMany({ where: { invoiceId: invoice.id } }),
+      prisma.trustTransaction.deleteMany({ where: { invoiceId: invoice.id } }),
+      prisma.invoiceItem.deleteMany({ where: { invoiceId: invoice.id } }),
+      prisma.invoice.delete({ where: { id: invoice.id } }),
+    ]);
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("Delete invoice failed", err);
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+});
 
-export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
-  const whereClause = isNaN(parseInt(id)) ? { invoiceNumber: id } : { id: parseInt(id) };
+// PUT /api/invoices/[id]
+export const PUT = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  const idStr = request.nextUrl.pathname.split('/').pop() || '';
+  const numericId = parseInt(idStr);
+
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
-        const data = await req.json();
+    const invoice = isNaN(numericId)
+      ? await prisma.invoice.findFirst({ where: { invoiceNumber: idStr, companyId }, include: { items: true } })
+      : await prisma.invoice.findFirst({ where: { id: numericId, companyId }, include: { items: true } });
+
+    if (!invoice) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const data = await request.json();
     const updateData: any = {};
     if (data.issueDate) updateData.issueDate = new Date(data.issueDate);
     if (data.dueDate) updateData.dueDate = new Date(data.dueDate);
@@ -76,29 +81,32 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
     if (data.tax != null) updateData.tax = data.tax;
     if (data.bankId) updateData.bank = { connect: { id: Number(data.bankId) } };
     if (data.language) updateData.language = String(data.language).toUpperCase();
-    let currencyChanged = false;
-    if (data.currency) {
-      const newCur = String(data.currency).toUpperCase();
+    
+    if (data.currency && data.currency.toUpperCase() !== invoice.currency) {
+      const newCur = data.currency.toUpperCase();
       updateData.currency = newCur;
-      // fetch existing invoice to compare later
-      const existingInv = await prisma.invoice.findUnique({ where: whereClause, include: { items: true } });
-      if (existingInv && existingInv.currency !== newCur) {
-        currencyChanged = true;
-        // convert all items prices
-        const { convert } = await import('@/lib/forex');
-        for (const it of existingInv.items) {
-          // keep quantity unchanged, only convert unit price
-          const newUnit = await convert(Number(it.unitPrice), existingInv.currency, newCur);
-          console.log('CONVERT ITEM', { id: it.id, from: existingInv.currency, to: newCur, oldUnit: it.unitPrice, newUnit });
-          await prisma.invoiceItem.update({ where: { id: it.id }, data: { unitPrice: newUnit, lineTotal: newUnit * Number(it.quantity) } });
-        }
-        // recalc subtotal and total using updated items
-        const agg = await prisma.invoiceItem.aggregate({ where: { invoiceId: existingInv.id }, _sum: { lineTotal: true } });
-        const subtotalAgg = agg._sum.lineTotal ? Number(agg._sum.lineTotal) : 0;
-        const disc = data.discount != null ? Number(data.discount) : (existingInv.discount ? Number(existingInv.discount) : 0);
-        const tx = data.tax != null ? Number(data.tax) : (existingInv.tax ? Number(existingInv.tax) : 0);
-        const totAgg = (subtotalAgg - disc) * (1 + tx/100);
-        updateData.subtotal = subtotalAgg.toString();
+      const { convert } = await import('@/lib/forex');
+      for (const it of invoice.items) {
+        const newUnit = await convert(Number(it.unitPrice), invoice.currency, newCur);
+        await prisma.invoiceItem.update({
+          where: { id: it.id },
+          data: { unitPrice: newUnit, lineTotal: newUnit * Number(it.quantity) }
+        });
+      }
+      // recalculate totals after conversion
+      const agg = await prisma.invoiceItem.aggregate({ where: { invoiceId: invoice.id }, _sum: { lineTotal: true } });
+      const subtotal = Number(agg._sum.lineTotal || 0);
+      updateData.subtotal = subtotal;
+      updateData.total = subtotal - Number(updateData.discount || invoice.discount || 0) + Number(updateData.tax || invoice.tax || 0);
+    }
+
+    const updated = await prisma.invoice.update({ where: { id: invoice.id }, data: updateData });
+    return NextResponse.json(updated);
+  } catch (err: any) {
+    console.error("Update invoice failed", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+});        updateData.subtotal = subtotalAgg.toString();
         updateData.total = totAgg.toString();
       }
     }

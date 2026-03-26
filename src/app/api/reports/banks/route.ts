@@ -4,13 +4,13 @@ import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/banks?from=YYYY-MM-DD&to=YYYY-MM-DD
 // Returns [{ bank:{id,name,currency}, balance, transactions:[...] }]
-export const GET = withCompany(async (req: NextRequest, companyId?: number | null) => {
+export const GET = withCompany(async (req: NextRequest, { companyId }) => {
   const from = req.nextUrl.searchParams.get('from');
   const to = req.nextUrl.searchParams.get('to');
 
   // لو الشركة مش معروفة (null/undefined) رجّع تقرير فاضي لحماية البيانات
-  if (companyId == null) {
-    return NextResponse.json([]);
+  if (!companyId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // اعرض فقط البنوك الخاصة بهذه الشركة

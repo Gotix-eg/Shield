@@ -4,25 +4,15 @@ import { postTransaction } from '@/lib/gl';
 import { withCompany } from '@/lib/with-company';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function requireAdmin(token: string | null) {
-  if (!token) return false;
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    return ['ADMIN', 'OWNER', 'ACCOUNTANT_MASTER'].includes(payload?.role);
-  } catch {
-    return false;
-  }
+function requireAdmin(role: string | undefined) {
+  return role && ['ADMIN', 'OWNER', 'ACCOUNTANT_MASTER'].includes(role);
 }
 
 // POST /api/admin/fix-trust-cash  { currency:'EGP' }
-export const POST = withCompany(async (req: NextRequest, companyId?: number) => {
-  if (!companyId) return NextResponse.json({ error: 'No company' }, { status: 400 });
+export const POST = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!requireAdmin(token)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!requireAdmin(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { currency = 'EGP' } = await req.json();
 

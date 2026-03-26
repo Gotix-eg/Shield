@@ -1,43 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions, getAuthServer } from '@/lib/auth';
-import jwt from 'jsonwebtoken';
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+import { withCompany } from '@/lib/with-company';
 
 // GET /api/tasks -> list tasks for current user (or all if admin)
-export async function GET(req: NextRequest) {
-  let session = await getServerSession(authOptions);
-  if (!session?.user) {
-    // try bearer / custom token
-    const raw = getAuthServer(req);
-    if (raw) {
-      try {
-        const decoded = jwt.verify(raw, JWT_SECRET) as any;
-        session = { user: decoded } as any;
-      } catch {}
-    }
-  }
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
-  }
+export const GET = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const role = session.user.role as string;
-  const isManager = ['LAWYER_PARTNER','MANAGING_PARTNER','LAWYER_MANAGER','OWNER','ADMIN'].includes(role);
+  const isManager = role && ['LAWYER_PARTNER','MANAGING_PARTNER','LAWYER_MANAGER','OWNER','ADMIN'].includes(role);
 
   // base filter by company
-  const companyId = (session.user as any).companyId;
-  const companyFilter = companyId
-    ? {
-        OR: [
-          { project: { companyId } },
-          { client: { companyId } },
-        ],
-      }
-    : {};
+  const companyFilter = {
+    OR: [
+      { project: { companyId } },
+      { client: { companyId } },
+    ],
+  };
 
-  // user-level filter (non-managers see فقط التاسكات المخصصة لهم)
-  const userFilter = isManager ? {} : { assigneeId: session.user.id };
+  // user-level filter (non-managers see only tasks assigned to them)
+  const userFilter = isManager ? {} : { assigneeId: userId };
 
   const tasks = await prisma.task.findMany({
     where: { ...companyFilter, ...userFilter },
@@ -51,54 +31,53 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json(tasks);
-}
+});
 
 // POST /api/tasks -> create new task
-export async function POST(req: NextRequest) {
-  let session = await getServerSession(authOptions);
-  if (!session?.user) {
-    // try bearer/JWT token
-    // attempt custom JWT cookie "token"
-    const raw = getAuthServer(req as any);
-    if (raw) {
-      try {
-        const decoded = jwt.verify(raw, JWT_SECRET) as any;
-        session = { user: decoded } as any;
-      } catch {}
-    }
-  }
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
-  }
-  const role = (session.user as any).role as string;
-  if (!['LAWYER_PARTNER','MANAGING_PARTNER','MANAGING_PARTNER','OWNER','ADMIN'].includes(role)) {
+export const POST = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  if (!role || !['LAWYER_PARTNER','MANAGING_PARTNER','LAWYER_MANAGER','OWNER','ADMIN'].includes(role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  
   const data = await req.json();
   const { title, description, clientId, projectId, assigneeId, dueDate } = data;
   if (!title || !assigneeId || !dueDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
+
+  // Verify client/project belong to company
+  if (clientId) {
+    const client = await prisma.client.findFirst({ where: { id: Number(clientId), companyId } });
+    if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+  }
+  if (projectId) {
+    const project = await prisma.project.findFirst({ where: { id: Number(projectId), companyId } });
+    if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+  }
+
   const task = await prisma.task.create({
     data: {
       title,
       description,
-      clientId: clientId ?? null,
-      projectId: projectId ?? null,
-      assignerId: session.user.id,
-      assigneeId,
+      clientId: clientId ? Number(clientId) : null,
+      projectId: projectId ? Number(projectId) : null,
+      assignerId: userId,
+      assigneeId: Number(assigneeId),
       dueDate: new Date(dueDate),
     }
   });
+  
   if (projectId) {
     await prisma.projectAssignment.upsert({
-      where: { userId_projectId: { userId: assigneeId, projectId } },
-      create: { userId: assigneeId, projectId },
+      where: { userId_projectId: { userId: Number(assigneeId), projectId: Number(projectId) } },
+      create: { userId: Number(assigneeId), projectId: Number(projectId) },
       update: {},
     });
   }
-  // create notification to assignee
-  await prisma.notification.create({ data: { userId: assigneeId, type: 'TASK_ASSIGN', message: `You were assigned task "${title}"` } });
+  return NextResponse.json(task, { status: 201 });
+});  await prisma.notification.create({ data: { userId: assigneeId, type: 'TASK_ASSIGN', message: `You were assigned task "${title}"` } });
   // send email if user has email
   const assignee = await prisma.user.findUnique({ where: { id: assigneeId }, select:{ email:true } });
   if (assignee?.email) {

@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
+import { withCompany } from '@/lib/with-company';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function getUser(req: NextRequest) {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return null;
-  try {
-    return jwt.verify(token, JWT_SECRET) as any;
-  } catch {
-    return null;
-  }
-}
-
-function isHR(role: string | null) {
+function isHR(role: string | undefined) {
   if(!role) return false;
   const r = role.toUpperCase();
   if (r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER') return true;
@@ -28,42 +15,47 @@ function isHR(role: string | null) {
 // HR: sees all / filter by employee
 // Employee: sees own only
 // ---------------------------------------------------------------------------
-export async function GET(req: NextRequest) {
-  const user = getUser(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
   const empIdParam = req.nextUrl.searchParams.get('employeeId');
   const where: any = {};
   if (empIdParam) where.employeeId = Number(empIdParam);
 
-  const companyId = (user as any).companyId as number | undefined;
-
-  if (!isHR(user.role)) {
-    // not HR: limit to their own employeeId
-    if (!user.employeeId) return NextResponse.json([], { status: 200 });
-    where.employeeId = user.employeeId;
+  if (!isHR(role)) {
+    // not HR: limit to their own employee record
+    const user = await prisma.user.findUnique({ where: { id: userId }, include: { employee: true } });
+    if (!user?.employee?.id) return NextResponse.json([], { status: 200 });
+    where.employeeId = user.employee.id;
   } else {
-    // HR / admin – scope by companyId when available to avoid mixing offices
-    if (companyId) {
-      where.employee = { user: { companyId } };
-    }
+    // HR / admin – scope by companyId
+    where.employee = { user: { companyId } };
   }
+  
   const penalties = await prisma.penalty.findMany({
     where,
     include: { employee: { select: { name: true } }, createdBy: { select: { name: true } } },
     orderBy: { date: 'desc' },
   });
   return NextResponse.json(penalties);
-}
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/penalties  (HR only)
 // body: { employeeId, amount, currency, reason, date? }
 // ---------------------------------------------------------------------------
-export async function POST(req: NextRequest) {
-  const user = getUser(req);
-  if (!user || !isHR(user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+export const POST = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isHR(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  
   const { employeeId, amount, days, currency: curInput='USD', reason, date } = await req.json();
   if (!employeeId) return NextResponse.json({ error:'employeeId required'},{status:400});
+
+  // Verify employee belongs to company
+  const employee = await prisma.employee.findFirst({
+    where: { id: Number(employeeId), user: { companyId } }
+  });
+  if (!employee) return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
 
   let amt:number|undefined = amount;
   let curr = curInput;
@@ -74,6 +66,7 @@ export async function POST(req: NextRequest) {
     amt = (Number(latest.amount)/30*Number(days));
   }
   if(amt===undefined) return NextResponse.json({ error:'amount or days required'},{status:400});
+  
   const penalty = await prisma.penalty.create({
     data:{
       employeeId:Number(employeeId),
@@ -81,8 +74,8 @@ export async function POST(req: NextRequest) {
       currency: curr,
       reason: reason ?? (days?`UNPAID_LEAVE ${days} days`:null),
       date: date? new Date(date): new Date(),
-      createdById: user.id? Number(user.id): user.sub? Number(user.sub): undefined,
+      createdById: userId,
     }
   });
   return NextResponse.json(penalty, { status: 201 });
-}
+});
