@@ -116,4 +116,4 @@ export const POST = withCompany(async (request: NextRequest, { companyId, userId
       { status: 500 }
     );
   }
-}
+});

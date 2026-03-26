@@ -76,12 +76,24 @@ export const POST = withCompany(async (req: NextRequest, { companyId, userId, ro
       update: {},
     });
   }
-  return NextResponse.json(task, { status: 201 });
-});  await prisma.notification.create({ data: { userId: assigneeId, type: 'TASK_ASSIGN', message: `You were assigned task "${title}"` } });
-  // send email if user has email
-  const assignee = await prisma.user.findUnique({ where: { id: assigneeId }, select:{ email:true } });
-  if (assignee?.email) {
-    try { await import('@/lib/email').then(m=>m.sendMail(assignee.email, 'New Task Assigned', `<p>You have a new task: <b>${title}</b></p>`)); } catch {}
+
+  // create notification and send email
+  try {
+    await prisma.notification.create({ 
+      data: { 
+        userId: Number(assigneeId), 
+        type: 'TASK_ASSIGN', 
+        message: `You were assigned task "${title}"` 
+      } 
+    });
+    
+    const assignee = await prisma.user.findUnique({ where: { id: Number(assigneeId) }, select: { email: true } });
+    if (assignee?.email) {
+      await import('@/lib/email').then(m => m.sendMail(assignee.email!, 'New Task Assigned', `<p>You have a new task: <b>${title}</b></p>`));
+    }
+  } catch (err) {
+    console.error('Task notification/email failed', err);
   }
+
   return NextResponse.json(task, { status: 201 });
-}
+});
