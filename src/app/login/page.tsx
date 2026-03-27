@@ -73,7 +73,7 @@ export default function LoginPage() {
       </div>
 
       {/* Form Side */}
-      <div className="flex items-center justify-center p-8 bg-legal-900 lg:bg-background relative overflow-hidden">
+      <div className="flex items-center justify-center p-8 bg-legal-900 lg:bg-transparent relative overflow-hidden">
         {/* Decorative background shape */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
         

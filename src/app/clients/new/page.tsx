@@ -52,7 +52,7 @@ export default function NewClientPage() {
   };
 
   return (
-    <div className="px-8 py-12 bg-background min-h-screen">
+    <div className="px-8 py-12 min-h-screen">
       <div className="max-w-4xl mx-auto">
         <header className="mb-12 flex justify-between items-end animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <div>

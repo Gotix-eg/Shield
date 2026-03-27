@@ -26,9 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="antialiased min-h-screen bg-background text-foreground selection:bg-accent/30">
+      <body className="antialiased min-h-screen text-foreground selection:bg-accent/30">
         <NavBar />
-        <main className="max-w-[1440px] mx-auto min-h-[calc(100vh-64px)]">
+        <main className="max-w-[1440px] mx-auto min-h-[calc(100vh-64px)] relative z-10">
           {children}
         </main>
         <Toaster position="top-right" />

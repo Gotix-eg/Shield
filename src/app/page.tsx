@@ -52,7 +52,7 @@ export default function Home() {
       </section>
 
       {/* Value Props Section */}
-      <section className="py-32 px-8 bg-background relative overflow-hidden">
+      <section className="py-32 px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
             <div className="space-y-6">
