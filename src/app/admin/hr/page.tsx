@@ -35,19 +35,27 @@ export default function HRDashboard() {
     }
   },[]);
   return (
-    <div className="container mx-auto max-w-4xl p-8">
-      <h1 className="mb-8 text-3xl font-bold">HR Dashboard</h1>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">HR Management</h1>
+        <p className="text-slate-400 font-light max-w-xl">Centralized hub for employee records, leaves, and attendance.</p>
+      </header>
+      
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((t) => (
           <Link
             key={t.href}
             href={t.href}
-            className="flex h-32 items-center justify-center rounded-lg border bg-gray-50 text-lg font-medium shadow hover:bg-blue-50"
+            className="legal-card p-10 flex flex-col items-center justify-center text-center group hover:border-legal-gold/30 transition-all duration-500"
           >
-            {t.label}
+            <div className="w-12 h-12 rounded-full bg-legal-gold/5 flex items-center justify-center mb-6 group-hover:bg-legal-gold/10 transition-colors">
+              <Settings className="w-6 h-6 text-legal-gold/40 group-hover:text-legal-gold transition-colors" />
+            </div>
+            <span className="text-lg font-serif text-slate-300 group-hover:text-white transition-colors">{t.label}</span>
           </Link>
         ))}
       </div>
     </div>
   );
 }
+import { Settings } from "lucide-react";

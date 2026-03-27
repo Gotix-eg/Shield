@@ -174,168 +174,168 @@ export default function ExpensesPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl p-6">
-      <h1 className="mb-6 text-3xl font-bold">{t("title", { defaultValue: "Expenses" })}</h1>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Expenses</h1>
+        <p className="text-slate-400 font-light max-w-xl">Track and manage professional disbursements and billable expenses.</p>
+      </header>
 
       {/* form */}
-      <form onSubmit={handleSubmit} className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {isAdmin && (
-          <select
-            className="rounded border px-3 py-2"
-            value={selectedUserId}
-            onChange={(e)=>setSelectedUserId(e.target.value? Number(e.target.value):"")}
-            required
-          >
-            <option value="">Select Lawyer</option>
-            {lawyers.map(l=> (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </select>
-        )}
-        <select
-          className="rounded border px-3 py-2"
-          value={clientId}
-          onChange={(e) => {
-            setClientId(e.target.value);
-            setProjectId("");
-          }}
-        >
-          <option value="">{t("allClients", { defaultValue: "Select Client" })}</option>
-          {clients.map((c: any) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <select
-          className="rounded border px-3 py-2"
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          disabled={!clientId}
-        >
-          <option value="">{t("allProjects", { defaultValue: "Select Project" })}</option>
-          {projects
-            .filter((p: any) => {
-              const projClientId = (p.clientId ?? (p.client?.id)) as number | undefined;
-              const clientOk = !clientId || projClientId === Number(clientId);
-              const targetUser = isAdmin && selectedUserId !== "" ? Number(selectedUserId) : currentUserId;
-              const assignedOk = assignments.some((a:any)=>a.projectId===p.id && (!targetUser || a.userId===targetUser));
-              return clientOk && assignedOk;
-            })
-            .map((p: any) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-        </select>
-        <input type="file" onChange={e=>setReceiptFile(e.target.files?.[0]||null)} className="md:col-span-2" />
-        <input
-          className="rounded border px-3 py-2"
-          placeholder={t("type", { defaultValue: "Expense Type" })}
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        />
-        <input
-          className="md:col-span-2 rounded border px-3 py-2"
-          placeholder={t("description", { defaultValue: "Description" })}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <div className="flex gap-2">
-          <input
-            type="number"
-            className="w-full rounded border px-3 py-2"
-            placeholder={t("amount", { defaultValue: "Amount" })}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <select
-            className="rounded border px-2"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-          >
-            {[
-              "USD",
-              "EUR",
-              "GBP",
-              "SAR",
-              "EGP",
-              "AED",
-              "QAR",
-              "KWD",
-              "OMR",
-              "JPY",
-              "CNY",
-              "INR",
-            ].map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="submit"
-          disabled={loading || !projectId || !amount}
-          className="rounded bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
-        >
-          {t("add", { defaultValue: loading ? "Saving..." : "Add" })}
-        </button>
-      </form>
-
-
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="border px-3 py-2">{t("headers.client", { defaultValue: "Client" })}</th>
-            <th className="border px-3 py-2">{t("headers.project", { defaultValue: "Project" })}</th>
-            <th className="border px-3 py-2 text-right">{t("headers.amount", { defaultValue: "Amount" })}</th>
-            <th className="border px-3 py-2">{t("headers.description", { defaultValue: "Description" })}</th>
-            <th className="border px-3 py-2">{t("headers.date", { defaultValue: "Date" })}</th>
-            <th className="border px-3 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {expenses.map((e) => (
-            <tr key={e.id}>
-              <td className="border px-3 py-1 text-sm">{e.project?.client?.name}</td>
-              <td className="border px-3 py-1 text-sm">{e.project?.name}</td>
-              {editingId === e.id ? (
-                <>
-                  <td className="border px-3 py-1 text-sm text-right">
-                    <input value={editAmount} onChange={(ev) => setEditAmount(ev.target.value)} className="border rounded px-1 w-24" /> {e.currency}
-                  </td>
-                  <td className="border px-3 py-1 text-sm"><input value={editDescription} onChange={(ev) => setEditDescription(ev.target.value)} className="border rounded px-1 w-full" /></td>
-                  <td className="border px-3 py-1 text-sm">{new Date(e.incurredOn).toLocaleDateString()}</td>
-                  <td className="border px-3 py-1 text-sm">
-                    <button className="text-green-600 mr-2" onClick={async () => { await fetch(`/api/expenses/${e.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify({ amount: Number(editAmount), description: editDescription }) }); setEditingId(null); loadExpenses(); }}>{t('save', { defaultValue: 'Save' })}</button>
-                    <button className="text-gray-600" onClick={() => setEditingId(null)}>{t('cancel', { defaultValue: 'Cancel' })}</button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td className="border px-3 py-1 text-sm text-right">{Number(e.amount).toFixed(2)} {e.currency}</td>
-                  <td className="border px-3 py-1 text-sm">{e.description} {e.receiptUrl && (<a href={e.receiptUrl} target="_blank" rel="noopener" className="text-blue-600 ml-1">📎</a>)}</td>
-                  <td className="border px-3 py-1 text-sm">{new Date(e.incurredOn).toLocaleDateString()}</td>
-                  <td className="border px-3 py-1 text-sm">
-                    <button className="text-blue-600 mr-2" onClick={() => { setEditingId(e.id); setEditAmount(String(e.amount)); setEditDescription(e.description); }}>{t('edit', { defaultValue: 'Edit' })}</button>
-                    <button className="text-red-600" onClick={async () => { if (confirm('Delete?')) { await fetch(`/api/expenses/${e.id}`, { method: 'DELETE', headers }); loadExpenses(); } }}>{t('delete', { defaultValue: 'Delete' })}</button>
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-          {expenses.length === 0 && (
-            <tr>
-              <td colSpan={6} className="border px-3 py-4 text-center text-sm text-gray-500">
-                {t('noData', { defaultValue: 'No expenses yet.' })}
-              </td>
-            </tr>
+      <div className="legal-card p-8 mb-12">
+        <h3 className="text-xl font-serif text-white mb-8">New Expense</h3>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {isAdmin && (
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Lawyer</label>
+              <select
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                value={selectedUserId}
+                onChange={(e)=>setSelectedUserId(e.target.value? Number(e.target.value):"")}
+                required
+              >
+                <option value="">Select Lawyer</option>
+                {lawyers.map(l=> (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+            </div>
           )}
-        </tbody>
-      </table>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Client</label>
+            <select
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              value={clientId}
+              onChange={(e) => {
+                setClientId(e.target.value);
+                setProjectId("");
+              }}
+            >
+              <option value="">Select Client</option>
+              {clients.map((c: any) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Project</label>
+            <select
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+              disabled={!clientId}
+            >
+              <option value="">Select Project</option>
+              {projects
+                .filter((p: any) => {
+                  const projClientId = (p.clientId ?? (p.client?.id)) as number | undefined;
+                  const clientOk = !clientId || projClientId === Number(clientId);
+                  const targetUser = isAdmin && selectedUserId !== "" ? Number(selectedUserId) : currentUserId;
+                  const assignedOk = assignments.some((a:any)=>a.projectId===p.id && (!targetUser || a.userId===targetUser));
+                  return clientOk && assignedOk;
+                })
+                .map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Receipt / Document</label>
+            <input type="file" onChange={e=>setReceiptFile(e.target.files?.[0]||null)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-1.5 text-xs text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-legal-gold/10 file:text-legal-gold hover:file:bg-legal-gold/20" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Expense Type</label>
+            <input
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              placeholder="e.g. Travel, Court Fees"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Amount & Currency</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+              <select
+                className="w-24 bg-white/5 border border-white/10 rounded-lg px-2 py-2.5 text-xs text-white focus:border-legal-gold/50 transition-colors"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+              >
+                {['USD','EUR','EGP','SAR','AED','QAR','KWD','OMR','GBP'].map(c=> (<option key={c} value={c}>{c}</option>))}
+              </select>
+            </div>
+          </div>
+          
+          <div className="md:col-span-3 space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Description</label>
+            <textarea
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors min-h-[100px]"
+              placeholder="Detailed explanation of the expense..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="md:col-span-3 pt-4">
+            <button
+              type="submit"
+              className="btn-legal px-12 min-w-[160px]"
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Submit Expense"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="legal-card overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-white/5 border-b border-white/5">
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Date</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Project</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Description</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Amount</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Receipt</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {expenses.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-8 py-16 text-center text-slate-500 font-light italic">
+                  No expense records found.
+                </td>
+              </tr>
+            ) : (
+              expenses.map((exp) => (
+                <tr key={exp.id} className="group hover:bg-white/5 transition-colors">
+                  <td className="px-8 py-6 text-slate-400 font-mono text-xs">{new Date(exp.incurredOn).toLocaleDateString()}</td>
+                  <td className="px-8 py-6 text-slate-200">{exp.project?.name}</td>
+                  <td className="px-8 py-6 text-slate-400 text-sm font-light">{exp.description}</td>
+                  <td className="px-8 py-6 font-bold text-legal-gold">{exp.amount.toLocaleString()} {exp.currency}</td>
+                  <td className="px-8 py-6 text-center">
+                    {exp.receiptUrl ? (
+                      <a href={exp.receiptUrl} target="_blank" className="btn-legal-outline px-4 py-1.5 text-[10px] border-legal-gold/30 text-legal-gold hover:bg-legal-gold/10">View</a>
+                    ) : (
+                      <span className="text-slate-600 text-xs">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
 }

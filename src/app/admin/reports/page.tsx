@@ -63,17 +63,26 @@ export default function AdminReportsPage() {
   },[role]);
 
   return (
-    <div className="container mx-auto max-w-4xl p-8">
-      <h1 className="mb-8 text-3xl font-bold">Reports</h1>
-      <div className="grid gap-6 sm:grid-cols-2">
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Financial Reports</h1>
+        <p className="text-slate-400 font-light max-w-xl">Comprehensive analytical reports on costs, performance, and profitability.</p>
+      </header>
+
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {tiles.map((tile) => (
           <Link
             key={tile.href}
             href={tile.href}
-            className="rounded-lg border border-gray-300 p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md"
+            className="legal-card p-8 group hover:border-legal-gold/30 transition-all duration-500 flex flex-col justify-between h-full"
           >
-            <h2 className="mb-2 text-xl font-semibold text-blue-600">{tile.title}</h2>
-            <p className="text-sm text-gray-600">{tile.description}</p>
+            <div>
+              <h2 className="mb-4 text-2xl font-serif text-white group-hover:text-legal-gold transition-colors">{tile.title}</h2>
+              <p className="text-sm text-slate-500 font-light leading-relaxed">{tile.description}</p>
+            </div>
+            <div className="mt-8 flex items-center justify-end">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-legal-gold font-bold group-hover:translate-x-2 transition-transform">Explore Report →</span>
+            </div>
           </Link>
         ))}
       </div>

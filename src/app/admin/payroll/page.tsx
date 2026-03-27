@@ -101,89 +101,101 @@ export default function PayrollPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Payroll Batches</h1>
-      <div className="flex gap-2 items-end mb-4">
-        <div>
-          <label className="block text-sm">Year</label>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Payroll Management</h1>
+        <p className="text-slate-400 font-light max-w-xl">Review and approve salary batches and financial records.</p>
+      </header>
+
+      <div className="legal-card p-6 mb-8 flex flex-wrap gap-6 items-end">
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-widest text-slate-500">Year</label>
           <input
             type="number"
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            className="border px-2 py-1 rounded w-24"
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors w-32"
           />
         </div>
-        <div>
-          <label className="block text-sm">Month</label>
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-widest text-slate-500">Month</label>
           <input
             type="number"
             min={1}
             max={12}
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
-            className="border px-2 py-1 rounded w-16"
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors w-24"
           />
         </div>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="btn-legal px-8 h-[42px]"
           onClick={createBatch}
           disabled={loading}
         >
-          Create Batch
+          {loading ? 'Processing...' : 'Create Batch'}
         </button>
       </div>
 
-      <table className="min-w-full border text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border px-2 py-1">#</th>
-            <th className="border px-2 py-1">Period</th>
-            <th className="border px-2 py-1">Status</th>
-            <th className="border px-2 py-1">Employees</th>
-            <th className="border px-2 py-1">Net Total</th>
-            <th className="border px-2 py-1">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {batches.map((b) => {
-            const net = b.items.reduce((acc, i) => acc + Number(i.netSalary), 0);
-            return (
-              <tr key={b.id}>
-                <td className="border px-2 py-1">{b.id}</td>
-                <td className="border px-2 py-1">{b.month}/{b.year}</td>
-                <td className="border px-2 py-1">{b.status}</td>
-                <td className="border px-2 py-1">{b.items.length}</td>
-                <td className="border px-2 py-1">{net.toFixed(2)}</td>
-                <td className="border px-2 py-1 space-x-2">
-                  {!role?.startsWith('ACCOUNTANT') && b.status === "DRAFT" && (
-                    <>
-                      <button className="text-sm bg-green-600 text-white px-2 py-1 rounded" onClick={() => hrApprove(b.id)}>
-                        HR Approve
-                      </button>
-                      <button
-                        className="text-sm bg-red-600 text-white px-2 py-1 rounded ml-2"
-                        onClick={() => deleteDraft(b.id)}
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
-                  {role?.startsWith('ACCOUNTANT') && b.status === "HR_APPROVED" && (
-                    <button className="text-sm bg-purple-600 text-white px-2 py-1 rounded" onClick={() => accApprove(b.id)}>
-                      Accountant Approve
-                    </button>
-                  )}
-                  {b.status === "ACC_APPROVED" && (
-                    <button className="text-sm bg-red-600 text-white px-2 py-1 rounded" onClick={() => accReverse(b.id)}>
-                      Undo
-                    </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="legal-card overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-white/5 border-b border-white/5">
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">#</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Period</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Status</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Employees</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Net Total</th>
+              <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {batches.map((b) => {
+              const net = b.items.reduce((acc, i) => acc + Number(i.netSalary), 0);
+              return (
+                <tr key={b.id} className="group hover:bg-white/5 transition-colors">
+                  <td className="px-8 py-6 text-slate-400 font-mono text-xs">{b.id}</td>
+                  <td className="px-8 py-6 text-slate-200">{b.month}/{b.year}</td>
+                  <td className="px-8 py-6">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-white/5 border border-white/10 text-slate-400">
+                      {b.status}
+                    </span>
+                  </td>
+                  <td className="px-8 py-6 text-slate-400">{b.items.length}</td>
+                  <td className="px-8 py-6 font-bold text-legal-gold">{net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center justify-center gap-4">
+                      {!role?.startsWith('ACCOUNTANT') && b.status === "DRAFT" && (
+                        <>
+                          <button className="btn-legal-outline px-4 py-1.5 text-[10px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" onClick={() => hrApprove(b.id)}>
+                            HR Approve
+                          </button>
+                          <button
+                            className="btn-legal-outline px-4 py-1.5 text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            onClick={() => deleteDraft(b.id)}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {role?.startsWith('ACCOUNTANT') && b.status === "HR_APPROVED" && (
+                        <button className="btn-legal px-4 py-1.5 text-[10px]" onClick={() => accApprove(b.id)}>
+                          Finalize
+                        </button>
+                      )}
+                      {b.status === "ACC_APPROVED" && (
+                        <button className="btn-legal-outline px-4 py-1.5 text-[10px] border-red-500/30 text-red-400 hover:bg-red-500/10" onClick={() => accReverse(b.id)}>
+                          Reverse
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

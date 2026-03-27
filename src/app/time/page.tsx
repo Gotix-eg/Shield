@@ -301,14 +301,15 @@ export default function TimeEntriesPage() {
 
   // ---------- RENDER ----------
   return (
-    <main className="mx-auto max-w-5xl p-4">
-      <h1 className="mb-4 text-3xl font-bold">Time Entries</h1>
-
-      <p className="mb-4 text-sm text-gray-600">
-        <Link href="/dashboard" className="text-blue-600 underline">
-          ← Back to Dashboard
-        </Link>
-      </p>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Time Entries</h1>
+        <p className="text-slate-400 font-light max-w-xl">
+          <Link href="/dashboard" className="text-legal-gold hover:underline">
+            ← Back to Dashboard
+          </Link>
+        </p>
+      </header>
 
       {/* active timer */}
       {entries.some((e) => !e.endTs) && (
@@ -320,15 +321,21 @@ export default function TimeEntriesPage() {
           const secs = Math.floor((elapsedMs % 60000) / 1000);
           const pad = (n: number) => n.toString().padStart(2, "0");
           return (
-            <div className="mb-6 flex items-center gap-4 rounded bg-yellow-100 p-4 text-lg font-semibold text-gray-800">
-              <span>
-                Active Timer: {pad(hrs)}:{pad(mins)}:{pad(secs)} (Project: {active.project?.name})
-              </span>
+            <div className="mb-8 flex items-center justify-between gap-6 rounded-xl bg-amber-500/10 border border-amber-500/20 p-6 animate-pulse">
+              <div className="flex items-center gap-4">
+                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                <span className="text-xl font-serif text-amber-400">
+                  Active Timer: {pad(hrs)}:{pad(mins)}:{pad(secs)}
+                </span>
+                <span className="text-slate-400 font-light ml-4">
+                  Project: {active.project?.name}
+                </span>
+              </div>
               <button
                 onClick={() => stopEntry(active.id)}
-                className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
+                className="btn-legal bg-red-500 border-red-500 hover:text-red-500 hover:border-red-500"
               >
-                Stop
+                Stop Timer
               </button>
             </div>
           );
@@ -336,149 +343,145 @@ export default function TimeEntriesPage() {
       )}
 
       {/* quick add by Date + Hours */}
-      <div className="mb-6 grid gap-2 sm:grid-cols-6">
-        {isAdmin && (
-          <select
-            value={selectedUserId}
-            onChange={(e)=>setSelectedUserId(e.target.value? Number(e.target.value):"")}
-            className="rounded border px-3 py-2"
-          >
-            <option value="">For myself</option>
-            {lawyers.map(l=> (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </select>
-        )}
-        <select
-          value={clientId}
-          onChange={(e) => {
-            const val = e.target.value ? Number(e.target.value) : "";
-            setClientId(val);
-            setProjectId("");
-          }}
-          className="rounded border px-3 py-2"
-          required
-        >
-          <option value="">Select client</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : "")}
-          className="rounded border px-3 py-2"
-          required
-        >
-          <option value="">Select project</option>
-          {projects
-            .filter((p) => clientId !== "" && p.clientId === clientId)
-            .map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-        </select>
-        <input type="date" value={quickDate} onChange={(e)=>setQuickDate(e.target.value)} onBlur={tryAutoQuickSubmit} className="rounded border px-3 py-2" required />
-        <input type="number" step="0.25" min="0" placeholder="Hours" value={quickHours} onChange={(e)=>setQuickHours(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter'){ e.preventDefault(); tryAutoQuickSubmit(); } }} onBlur={tryAutoQuickSubmit} className="rounded border px-3 py-2" required />
-        <input type="text" placeholder="Notes" value={notes} onChange={(e)=>setNotes(e.target.value)} className="rounded border px-3 py-2" />
-        <button type="button" onClick={addQuickHours} className="rounded bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50" disabled={submitting || clientId==="" || projectId===""}>
-          Add Hours
-        </button>
+      <div className="legal-card p-6 mb-8">
+        <h3 className="text-lg font-serif text-white mb-6">Quick Entry</h3>
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6 items-end">
+          {isAdmin && (
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">For Lawyer</label>
+              <select
+                value={selectedUserId}
+                onChange={(e)=>setSelectedUserId(e.target.value? Number(e.target.value):"")}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              >
+                <option value="">For myself</option>
+                {lawyers.map(l=> (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Client</label>
+            <select
+              value={clientId}
+              onChange={(e) => {
+                const val = e.target.value ? Number(e.target.value) : "";
+                setClientId(val);
+                setProjectId("");
+              }}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              required
+            >
+              <option value="">Select client</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Project</label>
+            <select
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : "")}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              required
+            >
+              <option value="">Select project</option>
+              {projects
+                .filter((p) => clientId !== "" && p.clientId === clientId)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Date</label>
+            <input type="date" value={quickDate} onChange={(e)=>setQuickDate(e.target.value)} onBlur={tryAutoQuickSubmit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Hours</label>
+            <input type="number" step="0.25" min="0" placeholder="0.00" value={quickHours} onChange={(e)=>setQuickHours(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter'){ e.preventDefault(); tryAutoQuickSubmit(); } }} onBlur={tryAutoQuickSubmit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+          </div>
+          <button type="button" onClick={addQuickHours} className="btn-legal w-full h-[42px]" disabled={submitting || clientId==="" || projectId===""}>
+            Add Hours
+          </button>
+        </div>
       </div>
 
       {/* advanced entry form (start/end) */}
-      <form onSubmit={submitEntry} className="mb-6 grid gap-2 sm:grid-cols-6">
-        <select
-          value={clientId}
-          onChange={(e) => {
-            const val = e.target.value ? Number(e.target.value) : "";
-            setClientId(val);
-            setProjectId("");
-          }}
-          className="rounded border px-3 py-2"
-          required
-        >
-          <option value="">Select client</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+      <div className="legal-card p-6 mb-12">
+        <h3 className="text-lg font-serif text-white mb-6">Manual Entry & Timer</h3>
+        <form onSubmit={submitEntry} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-end">
+          <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Start Time</label>
+              <input
+                type="datetime-local"
+                value={startTs}
+                onChange={(e) => setStartTs(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">End Time</label>
+              <input
+                type="datetime-local"
+                value={endTs}
+                onChange={(e) => setEndTs(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
+              />
+            </div>
+          </div>
 
-        <select
-          value={projectId}
-          onChange={(e) =>
-            setProjectId(e.target.value ? Number(e.target.value) : "")
-          }
-          className="rounded border px-3 py-2"
-          required
-        >
-          <option value="">Select project</option>
-          {projects
-            .filter((p) => clientId !== "" && p.clientId === clientId)
-            .map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-        </select>
+          <div className="lg:col-span-1 space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500">Notes</label>
+            <input
+              type="text"
+              placeholder="What were you working on?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+            />
+          </div>
 
-        <input
-          type="datetime-local"
-          value={startTs}
-          onChange={(e) => setStartTs(e.target.value)}
-          className="rounded border px-3 py-2"
-          required
-        />
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="btn-legal flex-1 h-[42px]"
+              disabled={submitting}
+            >
+              {submitting
+                ? editingId
+                  ? "Saving..."
+                  : "Adding..."
+                : editingId
+                ? "Save"
+                : "Add Entry"}
+            </button>
 
-        <input
-          type="datetime-local"
-          value={endTs}
-          onChange={(e) => setEndTs(e.target.value)}
-          className="rounded border px-3 py-2"
-          required
-        />
-
-        <input
-          type="text"
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="rounded border px-3 py-2"
-        />
-
-        <button
-          type="submit"
-          className="rounded bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
-          disabled={submitting}
-        >
-          {submitting
-            ? editingId
-              ? "Saving..."
-              : "Adding..."
-            : editingId
-            ? "Save"
-            : "Add"}
-        </button>
-
-        <button
-          type="button"
-          onClick={startTimer}
-          className="rounded bg-green-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
-          disabled={
-            submitting ||
-            clientId === "" ||
-            projectId === "" ||
-            role === "STAFF" && entries.some((e) => !e.endTs)
-          }
-        >
-          Start Timer
-        </button>
-      </form>
+            <button
+              type="button"
+              onClick={startTimer}
+              className="btn-legal-outline flex-1 h-[42px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/50"
+              disabled={
+                submitting ||
+                clientId === "" ||
+                projectId === "" ||
+                role === "STAFF" && entries.some((e) => !e.endTs)
+              }
+            >
+              Start Timer
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* summary */}
       {(() => {
