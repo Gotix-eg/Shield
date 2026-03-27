@@ -185,8 +185,8 @@ export default function ClientsPage() {
       <Toaster />
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div>
-          <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">العملاء</h1>
-          <p className="text-slate-400 font-light max-w-xl">إدارة الدليل المهني للعملاء والحفاظ على علاقات عمل قوية.</p>
+          <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Clients</h1>
+          <p className="text-slate-400 font-light max-w-xl">Maintain and manage your firm's professional relationships.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <a
@@ -195,7 +195,7 @@ export default function ClientsPage() {
             className="btn-legal-outline flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            نموذج الاستيراد
+            Template
           </a>
 
           <input
@@ -211,14 +211,14 @@ export default function ClientsPage() {
             disabled={isImporting}
             className="btn-legal-outline flex items-center gap-2 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
           >
-            {isImporting ? 'جاري الاستيراد...' : 'استيراد CSV'}
+            {isImporting ? 'Importing...' : 'Import CSV'}
           </button>
 
           <button
             onClick={() => router.push('/dashboard/clients/new')}
             className="btn-legal"
           >
-            <span className="text-xl">+</span> إضافة عميل جديد
+            <span className="text-xl">+</span> NEW CLIENT
           </button>
         </div>
       </header>
@@ -231,7 +231,7 @@ export default function ClientsPage() {
 
       {error && (
         <div className="legal-card p-6 border-red-500/20 bg-red-500/5 mb-8">
-          <h3 className="font-serif text-red-400 text-lg mb-1">خطأ</h3>
+          <h3 className="font-serif text-red-400 text-lg mb-1">Error</h3>
           <p className="text-red-300/70">{error}</p>
         </div>
       )}
@@ -239,23 +239,23 @@ export default function ClientsPage() {
       {!loading && !error && (
         <div className="legal-card overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
           <div className="overflow-x-auto">
-            <table className="w-full text-right border-collapse">
+            <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-white/5 border-b border-white/5">
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">الكود</th>
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">الاسم</th>
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">البريد الإلكتروني</th>
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">الهاتف</th>
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">المدينة</th>
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">البلد</th>
-                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">الإجراءات</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Code</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Name</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Email</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Phone</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">City</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Country</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {clients.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-8 py-16 text-center text-slate-500 font-light italic">
-                      لا يوجد عملاء حالياً.
+                      The directory is currently empty.
                     </td>
                   </tr>
                 ) : (
@@ -263,11 +263,11 @@ export default function ClientsPage() {
                     <tr key={client.id} className="group hover:bg-white/5 transition-colors">
                       <td className="px-8 py-6 text-slate-400 font-mono text-xs">{client.code || '-'}</td>
                       <td className="px-8 py-6">
-                        <div className="flex items-center gap-4 justify-end">
-                          <span className="text-slate-200 font-medium group-hover:text-legal-gold transition-colors">{client.name}</span>
+                        <div className="flex items-center gap-4">
                           <div className="w-8 h-8 rounded-full bg-legal-gold/10 flex items-center justify-center text-legal-gold font-serif text-xs border border-legal-gold/20">
                             {client.name.charAt(0)}
                           </div>
+                          <span className="text-slate-200 font-medium group-hover:text-legal-gold transition-colors">{client.name}</span>
                         </div>
                       </td>
                       <td className="px-8 py-6 text-slate-300 text-sm">{client.contactEmail}</td>
@@ -279,14 +279,14 @@ export default function ClientsPage() {
                           <button
                             onClick={() => router.push(`/clients/${client.id}`)}
                             className="text-slate-400 hover:text-legal-gold transition-colors p-1"
-                            title="عرض"
+                            title="View"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           </button>
                           <button
                             onClick={() => handleDelete(client.id)}
                             className="text-slate-400 hover:text-red-400 transition-colors p-1"
-                            title="حذف"
+                            title="Delete"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           </button>

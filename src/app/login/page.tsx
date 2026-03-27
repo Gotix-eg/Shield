@@ -53,15 +53,15 @@ export default function LoginPage() {
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2070&auto=format&fit=crop')" }}
         ></div>
         
-        <div className="relative z-10 max-w-lg text-right">
-          <span className="text-legal-gold text-[12px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-right-8 duration-1000">نظام الإدارة القانونية المتكامل</span>
-          <h2 className="text-7xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-right-12 duration-1000 delay-200">
+        <div className="relative z-10 max-w-lg">
+          <span className="text-legal-gold text-[12px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-left-8 duration-1000">INTELLIGENT LEGAL MANAGEMENT SYSTEM</span>
+          <h2 className="text-7xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-left-12 duration-1000 delay-200">
             PRO LAW <br /> 
-            <span className="italic text-legal-gold text-5xl">للتميز المهني.</span>
+            <span className="italic text-legal-gold text-5xl">for professional excellence.</span>
           </h2>
-          <div className="h-px w-24 bg-legal-gold/50 mb-8 ml-auto"></div>
-          <p className="text-slate-400 font-light leading-relaxed text-xl animate-in fade-in slide-in-from-right-16 duration-1000 delay-500">
-            نظام متطور مصمم خصيصاً لمكاتب المحاماة العصرية. يتيح لك إدارة القضايا، تتبع ساعات العمل، أتمتة العمليات المحاسبية المعقدة، وإدارة الموارد البشرية—كل ذلك في منصة واحدة آمنة وسهلة الاستخدام.
+          <div className="h-px w-24 bg-legal-gold/50 mb-8"></div>
+          <p className="text-slate-400 font-light leading-relaxed text-xl animate-in fade-in slide-in-from-left-16 duration-1000 delay-500">
+            A sophisticated system designed specifically for modern law firms. Manage cases, track billable hours, automate complex accounting, and handle HR operations—all within a single, secure, and intuitive interface.
           </p>
         </div>
       </div>
@@ -69,34 +69,34 @@ export default function LoginPage() {
       {/* Form Side (Right) */}
       <div className="flex items-center justify-center p-8 bg-[#0a0f1a] lg:bg-transparent relative overflow-hidden">
         {/* Decorative background shape */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
         
-        <div className="w-full max-w-md relative z-10 text-right">
+        <div className="w-full max-w-md relative z-10">
           <header className="mb-12">
             <h1 className="text-6xl font-serif text-legal-gold mb-4 tracking-tighter">PRO LAW</h1>
             <p className="text-slate-400 font-light leading-relaxed mb-8 text-lg">
-              الحل الأمثل لإدارة ممارستك القانونية. قم بتبسيط عمليات مكتبك، وأتمتة الفواتير، وإدارة علاقات العملاء بدقة وأمان لا مثيل لهما.
+              The ultimate solution for managing your legal practice. Streamline firm operations, automate billing, and manage client relationships with unmatched precision and security.
             </p>
-            <div className="h-[1px] w-full bg-gradient-to-l from-legal-gold/50 to-transparent mb-12"></div>
-            <h2 className="text-2xl font-serif text-white mb-2">تسجيل الدخول</h2>
-            <p className="text-slate-500 font-light text-sm">الرجاء إدخال بيانات الاعتماد الخاصة بك.</p>
+            <div className="h-[1px] w-full bg-gradient-to-r from-legal-gold/50 to-transparent mb-12"></div>
+            <h2 className="text-2xl font-serif text-white mb-2">Member Login</h2>
+            <p className="text-slate-500 font-light text-sm">Please enter your secure credentials.</p>
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {error && (
-              <div className="p-4 bg-red-500/10 border-r-4 border-red-500 animate-in fade-in zoom-in duration-300">
-                <p className="text-sm text-red-400 font-medium text-right">{error}</p>
+              <div className="p-4 bg-red-500/10 border-l-4 border-red-500 animate-in fade-in zoom-in duration-300">
+                <p className="text-sm text-red-400 font-medium">{error}</p>
               </div>
             )}
             
             <div className="space-y-6">
               <div className="group">
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold mr-1 text-right">البريد الإلكتروني</label>
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">Corporate Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-white focus:outline-none focus:border-legal-gold/50 focus:bg-white/[0.07] transition-all duration-300 text-right"
+                  className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-white focus:outline-none focus:border-legal-gold/50 focus:bg-white/[0.07] transition-all duration-300"
                   placeholder="name@firm.com"
                   required
                 />
@@ -104,14 +104,14 @@ export default function LoginPage() {
 
               <div className="group">
                 <div className="flex justify-between items-center mb-2 px-1">
-                  <a href="#" className="text-[10px] uppercase tracking-widest text-slate-600 hover:text-legal-gold transition-colors">نسيت كلمة السر؟</a>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 group-focus-within:text-legal-gold transition-colors font-bold text-right">كلمة المرور</label>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 group-focus-within:text-legal-gold transition-colors font-bold">Security Password</label>
+                  <a href="#" className="text-[10px] uppercase tracking-widest text-slate-600 hover:text-legal-gold transition-colors">Forgot Password?</a>
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-white focus:outline-none focus:border-legal-gold/50 focus:bg-white/[0.07] transition-all duration-300 text-right"
+                  className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-white focus:outline-none focus:border-legal-gold/50 focus:bg-white/[0.07] transition-all duration-300"
                   placeholder="••••••••"
                   required
                 />
@@ -127,7 +127,7 @@ export default function LoginPage() {
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-legal-900/30 border-t-legal-900 rounded-full animate-spin"></div>
                 ) : (
-                  <>دخول المنصة <span className="text-xl">→</span></>
+                  <>Enter Platform <span className="text-xl">→</span></>
                 )}
               </span>
             </button>

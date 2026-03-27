@@ -23,19 +23,19 @@ const ROLE_PAGES: Record<string,string[]> = {
 };
 
   const links:NavLink[] = [
-  { href: "/clients",   label: "العملاء", key:"clients" },
-  { href: "/projects", label: "المشاريع", key:"projects" },
-  { href: "/admin/tasks", label: "المهام", key:"tasks" },
-  { href: "/time", label: "الوقت", key:"time" },
-  { href: "/expenses", label: "المصاريف", key:"expenses" },
-  { href: "/leaves", label: "الإجازات", key:"leaves" },
-  { href: "/invoices",  label: "الفواتير", key:"invoices" },
-  { href: "/admin/reports", label: "التقارير", key:"reports" },
-  { href: "/admin/time", label: "إدارة الوقت", key:"admin_time" },
-  { href: "/accounts", label: "الحسابات", key:"accounts" },
-  { href: "/admin/payroll", label: "الرواتب", key:"payroll" },
-  { href: "/admin", label: "الإدارة", key:"settings" },
-  { href: "/admin/hr", label: "الموارد البشرية", key:"hr" },
+    { href: "/clients",   label: "Clients", key:"clients" },
+    { href: "/projects", label: "Projects", key:"projects" },
+    { href: "/admin/tasks", label: "Tasks", key:"tasks" },
+    { href: "/time", label: "Time", key:"time" },
+    { href: "/expenses", label: "Expenses", key:"expenses" },
+    { href: "/leaves", label: "Leaves", key:"leaves" },
+    { href: "/invoices",  label: "Invoices", key:"invoices" },
+    { href: "/admin/reports", label: "Reports", key:"reports" },
+    { href: "/admin/time", label: "Admin Time", key:"admin_time" },
+    { href: "/accounts", label: "Accounts", key:"accounts" },
+    { href: "/admin/payroll", label: "Payroll", key:"payroll" },
+    { href: "/admin", label: "Admin", key:"settings" },
+    { href: "/admin/hr", label: "HR", key:"hr" },
   ];
 
 function decodeRole(token?:string):UserRole|null{
