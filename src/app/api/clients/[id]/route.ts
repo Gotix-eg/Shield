@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { withCompany } from "@/lib/with-company";
 
 export const GET = withCompany(async (request: NextRequest, { companyId }) => {
   const idStr = request.nextUrl.pathname.split('/').pop() || '';
