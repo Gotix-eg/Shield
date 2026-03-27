@@ -3,6 +3,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { getAuth } from "@/lib/auth";
 import Link from "next/link";
+import { Clock, BarChart3 } from "lucide-react";
 
 interface ClientOption {
   id: number;
@@ -305,11 +306,59 @@ export default function TimeEntriesPage() {
       <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Time Entries</h1>
         <p className="text-slate-400 font-light max-w-xl">
-          <Link href="/dashboard" className="text-legal-gold hover:underline">
-            ← Back to Dashboard
-          </Link>
+          Track billable hours and manage your daily legal activities.
         </p>
       </header>
+
+      {/* summary cards */}
+      {(() => {
+        const minutesForEntry = (e: TimeEntry) => {
+          if (!e.endTs) return (now - new Date(e.startTs).getTime()) / 60000;
+          return e.durationMins;
+        };
+        const isToday = (d: Date) => d.toDateString() === new Date().toDateString();
+        const todayMins = entries.filter((e) => isToday(new Date(e.startTs))).reduce((s, e) => s + minutesForEntry(e), 0);
+        
+        const nowDate = new Date();
+        const weekStart = new Date(nowDate);
+        weekStart.setDate(nowDate.getDate() - nowDate.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 7);
+        const weekMins = entries.filter((e) => {
+          const d = new Date(e.startTs);
+          return d >= weekStart && d < weekEnd;
+        }).reduce((s, e) => s + minutesForEntry(e), 0);
+
+        const fmt = (mins: number) => {
+          const h = Math.floor(mins / 60);
+          const m = Math.round(mins % 60);
+          return `${h}h ${m}m`;
+        };
+
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
+            <div className="legal-card p-6 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Today's Total</p>
+                <p className="text-3xl font-serif text-white">{fmt(todayMins)}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-legal-gold/5 flex items-center justify-center text-legal-gold">
+                <Clock className="w-6 h-6" />
+              </div>
+            </div>
+            <div className="legal-card p-6 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Weekly Total</p>
+                <p className="text-3xl font-serif text-white">{fmt(weekMins)}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-legal-gold/5 flex items-center justify-center text-legal-gold">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* active timer */}
       {entries.some((e) => !e.endTs) && (
@@ -321,19 +370,24 @@ export default function TimeEntriesPage() {
           const secs = Math.floor((elapsedMs % 60000) / 1000);
           const pad = (n: number) => n.toString().padStart(2, "0");
           return (
-            <div className="mb-8 flex items-center justify-between gap-6 rounded-xl bg-amber-500/10 border border-amber-500/20 p-6 animate-pulse">
-              <div className="flex items-center gap-4">
-                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                <span className="text-xl font-serif text-amber-400">
-                  Active Timer: {pad(hrs)}:{pad(mins)}:{pad(secs)}
-                </span>
-                <span className="text-slate-400 font-light ml-4">
-                  Project: {active.project?.name}
-                </span>
+            <div className="mb-12 flex items-center justify-between gap-6 rounded-xl bg-amber-500/10 border border-amber-500/20 p-8 animate-pulse">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <div className="w-4 h-4 rounded-full bg-amber-500 animate-ping absolute inset-0"></div>
+                  <div className="w-4 h-4 rounded-full bg-amber-500 relative z-10"></div>
+                </div>
+                <div>
+                  <span className="text-2xl font-serif text-amber-400 block leading-none mb-1">
+                    {pad(hrs)}:{pad(mins)}:{pad(secs)}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-widest text-amber-500/60 font-bold">
+                    Active Session: {active.project?.name}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => stopEntry(active.id)}
-                className="btn-legal bg-red-500 border-red-500 hover:text-red-500 hover:border-red-500"
+                className="btn-legal bg-red-500 border-red-500 hover:text-red-500 hover:border-red-500 px-8 py-3"
               >
                 Stop Timer
               </button>
@@ -342,250 +396,155 @@ export default function TimeEntriesPage() {
         })()
       )}
 
-      {/* quick add by Date + Hours */}
-      <div className="legal-card p-6 mb-8">
-        <h3 className="text-lg font-serif text-white mb-6">Quick Entry</h3>
-        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6 items-end">
-          {isAdmin && (
+      {/* Forms Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
+        {/* quick add */}
+        <div className="legal-card p-8">
+          <h3 className="text-xl font-serif text-white mb-8">Quick Entry</h3>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {isAdmin && (
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500">Lawyer</label>
+                <select
+                  value={selectedUserId}
+                  onChange={(e)=>setSelectedUserId(e.target.value? Number(e.target.value):"")}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                >
+                  <option value="">Myself</option>
+                  {lawyers.map(l=> (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-slate-500">For Lawyer</label>
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Client</label>
               <select
-                value={selectedUserId}
-                onChange={(e)=>setSelectedUserId(e.target.value? Number(e.target.value):"")}
+                value={clientId}
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : "";
+                  setClientId(val);
+                  setProjectId("");
+                }}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
               >
-                <option value="">For myself</option>
-                {lawyers.map(l=> (
-                  <option key={l.id} value={l.id}>{l.name}</option>
+                <option value="">Select client</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
-          )}
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500">Client</label>
-            <select
-              value={clientId}
-              onChange={(e) => {
-                const val = e.target.value ? Number(e.target.value) : "";
-                setClientId(val);
-                setProjectId("");
-              }}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
-              required
-            >
-              <option value="">Select client</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500">Project</label>
-            <select
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : "")}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
-              required
-            >
-              <option value="">Select project</option>
-              {projects
-                .filter((p) => clientId !== "" && p.clientId === clientId)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Project</label>
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : "")}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
+              >
+                <option value="">Select project</option>
+                {projects.filter((p) => clientId !== "" && p.clientId === clientId).map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
-            </select>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Date</label>
+              <input type="date" value={quickDate} onChange={(e)=>setQuickDate(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Hours</label>
+              <input type="number" step="0.25" min="0" placeholder="0.00" value={quickHours} onChange={(e)=>setQuickHours(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+            </div>
+            <div className="flex items-end">
+              <button type="button" onClick={addQuickHours} className="btn-legal w-full h-[42px]" disabled={submitting || clientId==="" || projectId===""}>
+                Add Hours
+              </button>
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500">Date</label>
-            <input type="date" value={quickDate} onChange={(e)=>setQuickDate(e.target.value)} onBlur={tryAutoQuickSubmit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500">Hours</label>
-            <input type="number" step="0.25" min="0" placeholder="0.00" value={quickHours} onChange={(e)=>setQuickHours(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter'){ e.preventDefault(); tryAutoQuickSubmit(); } }} onBlur={tryAutoQuickSubmit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
-          </div>
-          <button type="button" onClick={addQuickHours} className="btn-legal w-full h-[42px]" disabled={submitting || clientId==="" || projectId===""}>
-            Add Hours
-          </button>
+        </div>
+
+        {/* manual timer */}
+        <div className="legal-card p-8">
+          <h3 className="text-xl font-serif text-white mb-8">Manual Entry & Timer</h3>
+          <form onSubmit={submitEntry} className="space-y-6">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500">Start Time</label>
+                <input type="datetime-local" value={startTs} onChange={(e) => setStartTs(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500">End Time</label>
+                <input type="datetime-local" value={endTs} onChange={(e) => setEndTs(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500">Notes</label>
+              <input type="text" placeholder="Description of work..." value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" />
+            </div>
+            <div className="flex gap-4 pt-2">
+              <button type="submit" className="btn-legal flex-1 h-[42px]" disabled={submitting}>
+                {submitting ? "Saving..." : editingId ? "Save Entry" : "Add Entry"}
+              </button>
+              <button type="button" onClick={startTimer} className="btn-legal-outline flex-1 h-[42px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" disabled={submitting || clientId === "" || projectId === "" || role === "STAFF" && entries.some((e) => !e.endTs)}>
+                Start Timer
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
-      {/* advanced entry form (start/end) */}
-      <div className="legal-card p-6 mb-12">
-        <h3 className="text-lg font-serif text-white mb-6">Manual Entry & Timer</h3>
-        <form onSubmit={submitEntry} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-end">
-          <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-slate-500">Start Time</label>
-              <input
-                type="datetime-local"
-                value={startTs}
-                onChange={(e) => setStartTs(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-slate-500">End Time</label>
-              <input
-                type="datetime-local"
-                value={endTs}
-                onChange={(e) => setEndTs(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500">Notes</label>
-            <input
-              type="text"
-              placeholder="What were you working on?"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              className="btn-legal flex-1 h-[42px]"
-              disabled={submitting}
-            >
-              {submitting
-                ? editingId
-                  ? "Saving..."
-                  : "Adding..."
-                : editingId
-                ? "Save"
-                : "Add Entry"}
-            </button>
-
-            <button
-              type="button"
-              onClick={startTimer}
-              className="btn-legal-outline flex-1 h-[42px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/50"
-              disabled={
-                submitting ||
-                clientId === "" ||
-                projectId === "" ||
-                role === "STAFF" && entries.some((e) => !e.endTs)
-              }
-            >
-              Start Timer
-            </button>
-          </div>
-        </form>
+      {/* history table */}
+      <div className="legal-card overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/5">
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Date</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Project</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Duration</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Notes</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {loading ? (
+                <tr><td colSpan={5} className="px-8 py-16 text-center text-slate-500">Loading history...</td></tr>
+              ) : error ? (
+                <tr><td colSpan={5} className="px-8 py-16 text-center text-red-400">{error}</td></tr>
+              ) : entries.length === 0 ? (
+                <tr><td colSpan={5} className="px-8 py-16 text-center text-slate-500 italic font-light">No time entries recorded.</td></tr>
+              ) : (
+                entries.map((e) => {
+                  const isActive = !e.endTs;
+                  const duration = isActive ? (Date.now() - new Date(e.startTs).getTime()) / 60000 : e.durationMins;
+                  return (
+                    <tr key={e.id} className="group hover:bg-white/5 transition-colors">
+                      <td className="px-8 py-6 text-slate-400 font-mono text-xs">{new Date(e.startTs).toLocaleString()}</td>
+                      <td className="px-8 py-6 text-slate-200">{e.project?.name}</td>
+                      <td className="px-8 py-6 text-right font-bold text-legal-gold">{(duration / 60).toFixed(2)}h</td>
+                      <td className="px-8 py-6 text-slate-400 text-sm font-light max-w-xs truncate">{e.notes}</td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {isActive ? (
+                            <button onClick={() => stopEntry(e.id)} className="text-amber-400 hover:text-amber-300 transition-colors">Stop</button>
+                          ) : (
+                            <>
+                              <button onClick={() => editEntry(e)} className="text-slate-400 hover:text-legal-gold transition-colors">Edit</button>
+                              <button onClick={() => deleteEntry(e.id)} className="text-slate-400 hover:text-red-400 transition-colors">Delete</button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      {/* summary */}
-      {(() => {
-        const minutesForEntry = (e: TimeEntry) => {
-          if (!e.endTs) {
-            return (now - new Date(e.startTs).getTime()) / 60000;
-          }
-          return e.durationMins;
-        };
-
-        const isToday = (d: Date) => d.toDateString() === new Date().toDateString();
-        const todayMins = entries
-          .filter((e) => isToday(new Date(e.startTs)))
-          .reduce((s, e) => s + minutesForEntry(e), 0);
-
-        const nowDate = new Date();
-        const weekStart = new Date(nowDate);
-        weekStart.setDate(nowDate.getDate() - nowDate.getDay());
-        weekStart.setHours(0, 0, 0, 0);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 7);
-        const weekMins = entries
-          .filter((e) => {
-            const d = new Date(e.startTs);
-            return d >= weekStart && d < weekEnd;
-          })
-          .reduce((s, e) => s + minutesForEntry(e), 0);
-
-        const fmt = (mins: number) => {
-          const h = Math.floor(mins / 60);
-          const m = Math.round(mins % 60);
-          return `${h}h ${m.toString().padStart(2, "0")}m`;
-        };
-        return (
-          <div className="mb-4 flex gap-6 text-sm font-semibold">
-            <span>Today: {fmt(todayMins)}</span>
-            <span>This Week: {fmt(weekMins)}</span>
-          </div>
-        );
-      })()}
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <p className="text-red-600">{error}</p>
-      ) : (
-        <table className="min-w-full table-auto border text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-4 py-2 text-left">Date</th>
-              <th className="border px-4 py-2 text-left">Project</th>
-              <th className="border px-2 py-1 text-right">Duration (mins)</th>
-              <th className="border px-4 py-2 text-left">Notes</th>
-              <th className="border px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => {
-              const isActive = !e.endTs;
-              const duration = isActive
-                ? (Date.now() - new Date(e.startTs).getTime()) / 60000
-                : e.durationMins;
-              return (
-                <tr key={e.id}>
-                  <td className="border px-4 py-2">
-                    {new Date(e.startTs).toLocaleString()}
-                  </td>
-                  <td className="border px-4 py-2">{e.project?.name}</td>
-                  <td className="border px-2 py-1 text-right">
-                    {duration.toFixed(1)}
-                  </td>
-                  <td className="border px-4 py-2">{e.notes}</td>
-                  <td className="border px-4 py-2 text-center">
-                    {isActive ? (
-                      <button
-                        onClick={() => stopEntry(e.id)}
-                        className="text-green-700 hover:underline"
-                      >
-                        Stop
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => editEntry(e)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          Edit
-                        </button>{" "}
-                        |{" "}
-                        <button
-                          onClick={() => deleteEntry(e.id)}
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </main>
+    </div>
   );
 }
