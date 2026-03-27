@@ -4,11 +4,12 @@ import { NextRequest } from "next/server";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('JWT_SECRET must be defined in production environment variables.');
-}
-
-const FALLBACK_SECRET = JWT_SECRET || 'dev-only-unsafe-secret';
+const getSecret = () => {
+  if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be defined in production environment variables.');
+  }
+  return JWT_SECRET || 'dev-only-unsafe-secret';
+};
 
 // للحصول على token في العميل (المتصفح)
 export function getAuth(): string | null {

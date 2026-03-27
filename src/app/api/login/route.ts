@@ -5,10 +5,12 @@ import jwt from "jsonwebtoken";
 import { rateLimit } from "@/lib/rate-limit";
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('JWT_SECRET must be defined in production.');
-}
-const SAFE_JWT_SECRET = JWT_SECRET || "dev-only-unsafe-secret";
+const getSecret = () => {
+  if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be defined in production.');
+  }
+  return JWT_SECRET || "dev-only-unsafe-secret";
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, companyId: user.companyId },
-      SAFE_JWT_SECRET,
+      getSecret(),
       { expiresIn: "1h" }
     );
 

@@ -4,10 +4,12 @@ import { runWithCompanyId } from './tenant-context';
 import { prisma } from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('JWT_SECRET must be defined in production.');
-}
-const SAFE_JWT_SECRET = JWT_SECRET || "dev-only-unsafe-secret";
+const getSecret = () => {
+  if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be defined in production.');
+  }
+  return JWT_SECRET || "dev-only-unsafe-secret";
+};
 
 export function withCompany<T>(handler: (req: NextRequest, context: { companyId?: number; userId?: number; role?: string }) => Promise<T>) {
   return async function wrapped(req: NextRequest): Promise<T> {
@@ -26,8 +28,9 @@ export function withCompany<T>(handler: (req: NextRequest, context: { companyId?
     
     if (token) {
       try {
+        const secret = getSecret();
         // MANDATORY: Only trust tokens verified with JWT_SECRET
-        const payload = jwt.verify(token, SAFE_JWT_SECRET) as { companyId?: number; sub?: string; id?: number; role?: string };
+        const payload = jwt.verify(token, secret) as { companyId?: number; sub?: string; id?: number; role?: string };
         companyId = payload.companyId;
         role = payload.role;
         
