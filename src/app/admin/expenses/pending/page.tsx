@@ -102,8 +102,8 @@ export default function PendingExpensesPage() {
                 </td>
                 <td className="px-3 py-2">
                   <select className="border rounded mr-2 text-xs" value={selectedBank[e.id] ?? ''} onChange={ev=>setSelectedBank(prev=>({...prev,[e.id]: ev.target.value ? Number(ev.target.value):''}))}>
-                    <option value="">Bank</option>
-                    {banks?.map(b=> <option key={b.id} value={b.id}>{b.name} ({b.currency})</option>)}
+                    <option value="" className="bg-slate-900">Bank</option>
+                    {banks?.map(b=> <option key={b.id} value={b.id} className="bg-slate-900">{b.name} ({b.currency})</option>)}
                   </select>
                   <button
                     onClick={() => approve(e.id)}

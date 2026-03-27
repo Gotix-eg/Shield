@@ -95,14 +95,14 @@ export default function LawyersPage() {
         <div>
           <label className="block text-sm">Position</label>
           <select value={editData.positionId} onChange={(e)=>setEditData({...editData,positionId:e.target.value?Number(e.target.value):""})} className="border px-2 py-1 rounded w-full">
-            <option value="">None</option>
-            {positions.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
+            <option value="" className="bg-slate-900">None</option>
+            {positions.map(p=> <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-sm">Role</label>
           <select value={editData.role} onChange={(e)=>setEditData({...editData,role:e.target.value})} className="border px-2 py-1 rounded w-full">
-            {ROLES.map(r=> <option key={r.value} value={r.value}>{r.label}</option>)}</select>
+            {ROLES.map(r=> <option key={r.value} value={r.value} className="bg-slate-900">{r.label}</option>)}</select>
         </div>
         {editData.role === 'LAWYER_MANAGER' && (
           <div className="mb-2">
@@ -149,13 +149,13 @@ export default function LawyersPage() {
     }
     return (
       <div className="relative inline-block w-56">
-        <button type="button" onClick={()=>setOpen(!open)} className="border px-2 py-1 rounded w-full text-left">
+        <button type="button" onClick={()=>setOpen(!open)} className="btn-legal-outline w-full text-left justify-between">
           {selected.length?`${selected.length} selected`:'Select lawyers'}
         </button>
         {open && (
-          <div className="absolute z-10 bg-white border rounded shadow max-h-52 overflow-auto w-full mt-1">
+          <div className="absolute z-10 legal-card max-h-52 overflow-auto w-full mt-2 p-2">
             {options.map(opt=> (
-              <label key={opt.id} className="flex items-center px-2 py-1 gap-2 hover:bg-gray-100 cursor-pointer text-sm">
+              <label key={opt.id} className="flex items-center px-3 py-2 gap-3 hover:bg-white/5 cursor-pointer text-sm rounded-lg">
                 <input type="checkbox" checked={selected.includes(opt.id)} onChange={()=>toggle(opt.id)} />
                 <span>{opt.name}</span>
               </label>
@@ -225,9 +225,9 @@ export default function LawyersPage() {
             onChange={(e) => setPositionId(e.target.value ? Number(e.target.value) : "")}
             className="border px-2 py-1 rounded"
           >
-            <option value="">None</option>
+            <option value="" className="bg-slate-900">None</option>
             {positions.map((p) => (
-              <option key={p.id} value={p.id}>
+              <option key={p.id} value={p.id} className="bg-slate-900">
                 {p.name}
               </option>
             ))}
@@ -244,7 +244,7 @@ export default function LawyersPage() {
         <div>
           <label className="block text-sm">Role</label>
           <select value={role} onChange={(e)=>setRole(e.target.value)} className="border px-2 py-1 rounded">
-            {ROLES.map(r=> <option key={r.value} value={r.value}>{r.label}</option>)}
+            {ROLES.map(r=> <option key={r.value} value={r.value} className="bg-slate-900">{r.label}</option>)}
           </select>
         </div>
         {role === 'LAWYER_MANAGER' && (

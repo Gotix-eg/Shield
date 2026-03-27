@@ -164,3 +164,20 @@ input:focus {
   border-color: var(--accent) !important;
   background: rgba(255, 255, 255, 0.05) !important;
 }
+
+select:focus,
+textarea:focus {
+  border-color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+select option,
+select optgroup {
+  background-color: #0a0f1a !important;
+  color: #f8fafc !important;
+}
+
+select option:checked {
+  background-color: var(--accent) !important;
+  color: #0a0f1a !important;
+}

@@ -117,18 +117,18 @@ export default function ProfitLossReportPage() {
         <div>
           <label className="block text-sm mb-1">{t('filters.client','Client')}</label>
           <select value={clientId} onChange={e=>setClientId(e.target.value)} className="border rounded px-2 py-1 text-sm">
-            <option value="">All</option>
+            <option value="" className="bg-slate-900">All</option>
             {clients.map(c=> (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id} className="bg-slate-900">{c.name}</option>
             ))}
           </select>
         </div>
         <div>
           <label className="block text-sm mb-1">{t('filters.project','Project')}</label>
           <select value={projectId} onChange={e=>setProjectId(e.target.value)} className="border rounded px-2 py-1 text-sm">
-            <option value="">All</option>
+            <option value="" className="bg-slate-900">All</option>
             {projects.filter(p=> !clientId || p.clientId===Number(clientId)).map(p=> (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>
             ))}
           </select>
         </div>

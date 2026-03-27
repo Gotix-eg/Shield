@@ -194,9 +194,9 @@ export default function LeavesPage() {
             onChange={handleChange}
             className="col-span-2 rounded border px-3 py-2"
           >
-            <option value="">Select Employee</option>
+            <option value="" className="bg-slate-900">Select Employee</option>
             {employees.map((e) => (
-              <option key={e.id} value={e.id}>
+              <option key={e.id} value={e.id} className="bg-slate-900">
                 {e.name}
               </option>
             ))}
@@ -219,9 +219,9 @@ export default function LeavesPage() {
           className="rounded border px-3 py-2"
         />
         <select name="type" value={form.type} onChange={handleChange} className="rounded border px-3 py-2">
-          <option value="ANNUAL">ANNUAL</option>
-          <option value="SICK">SICK</option>
-          <option value="UNPAID">UNPAID</option>
+          <option value="ANNUAL" className="bg-slate-900">ANNUAL</option>
+          <option value="SICK" className="bg-slate-900">SICK</option>
+          <option value="UNPAID" className="bg-slate-900">UNPAID</option>
         </select>
         <button disabled={saving} className="rounded bg-legal-gold px-4 py-2 text-white disabled:opacity-50">
           {saving ? "Saving…" : "Add"}

@@ -118,7 +118,7 @@ export default function PositionsPage() {
           <label className="block text-sm">Currency</label>
           <select value={newCurrency ?? "USD"} onChange={(e) => setNewCurrency(e.target.value as CurrencyCode)} className="border px-2 py-1 rounded">
             {Object.values(CurrencyCode).map((c) => (
-              <option key={c} value={c}>
+              <option key={c} value={c} className="bg-slate-900">
                 {c}
               </option>
             ))}
@@ -161,7 +161,7 @@ export default function PositionsPage() {
               <td className="px-4 py-2">
                 {editingId === p.id ? (
                   <select value={tempCurrency} onChange={e=>setTempCurrency(e.target.value as CurrencyCode)} className="border rounded px-1">
-                    {Object.values(CurrencyCode).map(c=>(<option key={c} value={c}>{c}</option>))}
+                    {Object.values(CurrencyCode).map(c=>(<option key={c} value={c} className="bg-slate-900">{c}</option>))}
                   </select>
                 ) : (
                   p.currency ?? "-"

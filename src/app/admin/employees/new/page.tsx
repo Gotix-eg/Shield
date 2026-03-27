@@ -122,14 +122,14 @@ export default function NewEmployeePage() {
         <div>
           <label className="block">Status</label>
           <select
-            className="w-full rounded border px-3 py-2"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             name="status"
             value={form.status}
             onChange={handleChange}
           >
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-            <option value="TERMINATED">TERMINATED</option>
+            <option value="ACTIVE" className="bg-slate-900">ACTIVE</option>
+            <option value="INACTIVE" className="bg-slate-900">INACTIVE</option>
+            <option value="TERMINATED" className="bg-slate-900">TERMINATED</option>
           </select>
         </div>
         <div>
@@ -151,7 +151,7 @@ export default function NewEmployeePage() {
         <div>
           <label className="block">Currency</label>
           <select
-            className="w-full rounded border px-3 py-2"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             name="salaryCurrency"
             value={form.salaryCurrency}
             onChange={handleChange}
@@ -169,7 +169,7 @@ export default function NewEmployeePage() {
               "CNY",
               "INR",
             ].map((c) => (
-              <option key={c} value={c}>
+              <option key={c} value={c} className="bg-slate-900">
                 {c}
               </option>
             ))}
@@ -178,14 +178,14 @@ export default function NewEmployeePage() {
         <div>
           <label className="block">Position</label>
           <select
-            className="w-full rounded border px-3 py-2"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             name="positionId"
             value={form.positionId}
             onChange={handleChange}
           >
-            <option value="">-- Select Position --</option>
+            <option value="" className="bg-slate-900">-- Select Position --</option>
             {positions.map((p) => (
-              <option key={p.id} value={p.id}>
+              <option key={p.id} value={p.id} className="bg-slate-900">
                 {p.name}
               </option>
             ))}
@@ -194,7 +194,7 @@ export default function NewEmployeePage() {
         <div>
           <label className="block">Role</label>
           <select
-            className="w-full rounded border px-3 py-2"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             name="role"
             value={form.role}
             onChange={handleChange}
@@ -210,7 +210,7 @@ export default function NewEmployeePage() {
               "HR",
               "ADMIN_REPORTS",
             ].map((r) => (
-              <option key={r} value={r}>
+              <option key={r} value={r} className="bg-slate-900">
                 {r}
               </option>
             ))}
