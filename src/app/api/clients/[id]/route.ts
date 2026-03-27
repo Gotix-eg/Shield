@@ -70,27 +70,3 @@ export const DELETE = withCompany(async (request: NextRequest, { companyId, user
     return NextResponse.json({ error: error.message || "Failed to delete" }, { status: 500 });
   }
 });
-  // check related records
-  const [invoiceCount, projectCount] = await Promise.all([
-    prisma.invoice.count({ where: { clientId: id } }),
-    prisma.project.count({ where: { clientId: id } }),
-  ]);
-  if (invoiceCount > 0 || projectCount > 0) {
-    return NextResponse.json(
-      { error: "Cannot delete client with related records" },
-      { status: 400 }
-    );
-  }
-  if (!exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  try {
-    await prisma.client.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    if (err.code === "P2003") {
-      // Foreign key constraint fails
-      return NextResponse.json({ error: "Cannot delete client with related records" }, { status: 400 });
-    }
-    console.error(err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
-}
