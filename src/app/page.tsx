@@ -9,11 +9,13 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center pt-20 px-8 overflow-hidden">
         {/* Background Visuals */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(197,160,89,0.05)_0%,transparent_70%)]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-legal-900 via-legal-900/95 to-legal-900 z-10"></div>
           <div 
-            className="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay scale-105"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop')" }}
+            className="absolute inset-0 opacity-40 bg-cover bg-center mix-blend-luminosity scale-105"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop')" }}
           ></div>
+          {/* Animated Overlay */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 z-20"></div>
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center animate-in fade-in slide-in-from-bottom-12 duration-1000">
