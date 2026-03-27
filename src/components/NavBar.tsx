@@ -46,21 +46,16 @@ function decodeRole(token?:string):UserRole|null{
   }catch{ return null; }
 }
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut, Bell, ChevronDown } from "lucide-react";
+import { LogOut, Bell, ChevronDown, LayoutDashboard, Users, FolderKanban, CheckSquare, Clock, CreditCard, Calendar, FileText, BarChart3, Settings, Users2, Banknote, Briefcase } from "lucide-react";
 
 export default function NavBar() {
   const [role,setRole]=useState<UserRole|null>(null);
   const [unread,setUnread]=useState(0);
-  const [isScrolled, setIsScrolled] = useState(false);
   
   const pathname = usePathname();
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const router = useRouter();
 
   useEffect(()=>{
     const token=getAuth()||undefined;
@@ -78,67 +73,82 @@ export default function NavBar() {
 
   const handleLogout = () => {
     clearAuth();
-    window.location.href = "/login";
+    router.push("/login");
   };
 
+  const navLinks = [
+    { href: "/dashboard", label: "Dashboard", key: "dashboard", icon: LayoutDashboard },
+    { href: "/clients", label: "Clients", key: "clients", icon: Users },
+    { href: "/projects", label: "Projects", key: "projects", icon: FolderKanban },
+    { href: "/admin/tasks", label: "Tasks", key: "tasks", icon: CheckSquare },
+    { href: "/time", label: "Time", key: "time", icon: Clock },
+    { href: "/expenses", label: "Expenses", key: "expenses", icon: CreditCard },
+    { href: "/leaves", label: "Leaves", key: "leaves", icon: Calendar },
+    { href: "/invoices", label: "Invoices", key: "invoices", icon: FileText },
+    { href: "/admin/reports", label: "Reports", key: "reports", icon: BarChart3 },
+    { href: "/admin/time", label: "Admin Time", key: "admin_time", icon: Clock },
+    { href: "/accounts", label: "Accounts", key: "accounts", icon: Banknote },
+    { href: "/admin/payroll", label: "Payroll", key: "payroll", icon: CreditCard },
+    { href: "/admin", label: "Settings", key: "settings", icon: Settings },
+    { href: "/admin/hr", label: "HR", key: "hr", icon: Users2 },
+  ];
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
-      isScrolled ? "bg-legal-900/95 backdrop-blur-2xl border-b border-white/10 py-2 shadow-2xl" : "bg-transparent py-4"
-    }`}>
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-10">
-        <div className="flex items-center gap-12">
-          <Link href="/dashboard" className="group flex flex-col items-center">
-            <span className="text-3xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform">PRO LAW</span>
-            <span className="text-[7px] uppercase tracking-[0.6em] text-slate-400 font-bold mt-1 group-hover:text-legal-gold transition-colors">Elite Firm Management</span>
-          </Link>
-          
-          <div className="hidden lg:flex items-center gap-2">
-            {links.filter(l => allowedPages.includes(l.key)).map(({ href, label }) => {
-              const active = pathname === href || pathname.startsWith(href + "/");
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`px-4 py-2 rounded-full text-[12px] font-medium tracking-wide transition-all duration-500 relative group overflow-hidden ${
-                    active 
-                      ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
-                      : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <span className="relative z-10">{label}</span>
-                  {active && (
-                    <span className="absolute inset-0 bg-gradient-to-r from-legal-gold/20 to-transparent opacity-50"></span>
-                  )}
-                  <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-legal-gold transition-all duration-500 ${
-                    active ? "opacity-100 scale-100" : "opacity-0 scale-0 group-hover:opacity-50 group-hover:scale-100"
-                  }`}></span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <Link href="/notifications" className="relative group">
-            <div className="p-2.5 rounded-full bg-white/5 border border-white/5 group-hover:bg-white/10 group-hover:border-white/20 transition-all duration-300">
-              <Bell className="w-5 h-5 text-slate-400 group-hover:text-legal-gold transition-colors" />
-              {unread > 0 && (
-                <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-[10px] font-bold text-white rounded-full flex items-center justify-center border-2 border-legal-900 animate-bounce">
-                  {unread}
-                </span>
-              )}
-            </div>
-          </Link>
-
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 group transition-all duration-500 shadow-lg"
-          >
-            <span className="text-xs font-bold tracking-widest text-slate-300 group-hover:text-red-400">SIGN OUT</span>
-            <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-400 transition-colors" />
-          </button>
-        </div>
+    <aside className="w-[var(--sidebar-width)] h-screen sticky top-0 left-0 bg-[#0a0f1a] border-r border-white/5 flex flex-col z-[100] shrink-0">
+      {/* Sidebar Logo */}
+      <div className="p-8 pb-12">
+        <Link href="/dashboard" className="group flex flex-col items-center">
+          <span className="text-4xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500">PRO LAW</span>
+          <span className="text-[8px] uppercase tracking-[0.6em] text-slate-500 font-bold mt-2 group-hover:text-legal-gold transition-colors duration-500">Elite Firm Management</span>
+        </Link>
       </div>
-    </nav>
+
+      {/* Navigation Links */}
+      <nav className="flex-1 overflow-y-auto px-6 space-y-1 custom-scrollbar">
+        {navLinks.filter(l => l.key === "dashboard" || allowedPages.includes(l.key)).map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-4 px-5 py-3.5 rounded-xl text-[13px] font-medium tracking-wide transition-all duration-300 relative group ${
+                active 
+                  ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Icon className={`w-4.5 h-4.5 transition-colors duration-300 ${active ? "text-legal-gold" : "text-slate-500 group-hover:text-white"}`} />
+              <span className="relative z-10">{label}</span>
+              {active && (
+                <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-4 rounded-l-full bg-legal-gold"></span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Sidebar Footer */}
+      <div className="p-6 mt-auto border-t border-white/5 space-y-4">
+        <Link href="/notifications" className="flex items-center justify-between px-5 py-3.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 group">
+          <div className="flex items-center gap-4">
+            <Bell className="w-4.5 h-4.5 text-slate-400 group-hover:text-legal-gold transition-colors" />
+            <span className="text-[13px] font-medium text-slate-400 group-hover:text-white transition-colors">Notifications</span>
+          </div>
+          {unread > 0 && (
+            <span className="bg-red-500 text-[10px] font-bold text-white px-2 py-0.5 rounded-full animate-pulse">
+              {unread}
+            </span>
+          )}
+        </Link>
+
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 px-5 py-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 hover:border-red-500/30 group transition-all duration-500 shadow-xl"
+        >
+          <LogOut className="w-4.5 h-4.5 text-red-400 transition-colors" />
+          <span className="text-[13px] font-bold tracking-widest text-red-400 group-hover:text-red-300">SIGN OUT</span>
+        </button>
+      </div>
+    </aside>
   );
 }

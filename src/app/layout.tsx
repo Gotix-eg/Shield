@@ -26,11 +26,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="antialiased min-h-screen text-foreground selection:bg-accent/30">
-        <NavBar />
-        <main className="max-w-[1440px] mx-auto min-h-[calc(100vh-64px)] relative z-10">
-          {children}
-        </main>
+      <body className="antialiased min-h-screen text-foreground selection:bg-accent/30 bg-[#0a0f1a]">
+        <div className="flex min-h-screen relative">
+          <NavBar />
+          <main className="flex-1 min-h-screen relative z-10 overflow-x-hidden">
+            {children}
+          </main>
+        </div>
         <Toaster position="top-right" />
       </body>
     </html>
