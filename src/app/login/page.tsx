@@ -54,14 +54,14 @@ export default function LoginPage() {
         ></div>
         
         <div className="relative z-10 max-w-lg">
-          <span className="text-legal-gold text-[10px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-left-8 duration-1000">EST. 2026</span>
+          <span className="text-legal-gold text-[10px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-left-8 duration-1000">INTELLIGENT LEGAL MANAGEMENT</span>
           <h2 className="text-6xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-left-12 duration-1000 delay-200">
-            Precision in <br /> 
-            <span className="italic text-legal-gold">Practice.</span>
+            Elevate Your <br /> 
+            <span className="italic text-legal-gold">Legal Practice.</span>
           </h2>
           <div className="h-px w-24 bg-legal-gold/50 mb-8"></div>
           <p className="text-slate-400 font-light leading-relaxed text-lg animate-in fade-in slide-in-from-left-16 duration-1000 delay-500">
-            Welcome to the future of legal management. A space where excellence meets innovation, designed for the world's leading firms.
+            Pro Law is a comprehensive ecosystem built for the modern law firm. Manage cases, track billable hours, automate complex accounting, and handle HR operations—all within a single, secure, and intuitive interface designed for professional excellence.
           </p>
         </div>
         
