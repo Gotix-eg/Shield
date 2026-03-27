@@ -138,11 +138,11 @@ export default function AssignmentsPage() {
 
   /* ---------- JSX ---------- */
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-4">Project Assignments</h1>
       <button
         onClick={() => setShowModal(true)}
-        className="mb-4 bg-blue-600 text-white px-4 py-2 rounded"
+        className="mb-4 bg-legal-gold text-white px-4 py-2 rounded"
       >
         Assign
       </button>
@@ -207,7 +207,7 @@ export default function AssignmentsPage() {
                 onClick={() => setMode("lawyer")}
                 className={`px-3 py-1 rounded border ${
                   mode === "lawyer"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-legal-gold text-white"
                     : "bg-white text-black"
                 }`}
               >
@@ -218,7 +218,7 @@ export default function AssignmentsPage() {
                 onClick={() => setMode("group")}
                 className={`px-3 py-1 rounded border ${
                   mode === "group"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-legal-gold text-white"
                     : "bg-white text-black"
                 }`}
               >

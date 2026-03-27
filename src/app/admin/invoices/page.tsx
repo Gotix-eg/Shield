@@ -33,7 +33,7 @@ export default function InvoicesPage() {
               <td className="px-2 py-1 border">{inv.total} {inv.currency}</td>
               <td className="px-2 py-1 border">{inv.status}</td>
               <td className="px-2 py-1 border">
-                <Link className="text-blue-600" href={`/admin/invoices/${inv.id}`}>View</Link>
+                <Link className="text-legal-gold" href={`/admin/invoices/${inv.id}`}>View</Link>
               </td>
             </tr>
           ))}

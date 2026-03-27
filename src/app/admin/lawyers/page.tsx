@@ -205,7 +205,7 @@ export default function LawyersPage() {
 
   return (
     <> 
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-4">Lawyers</h1>
 
       {/* Add form */}
@@ -262,7 +262,7 @@ export default function LawyersPage() {
           <label className="block text-sm">Password</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="border px-2 py-1 rounded" />
         </div>
-        <button onClick={addLawyer} className="bg-blue-600 text-white px-4 py-2 rounded h-9">
+        <button onClick={addLawyer} className="bg-legal-gold text-white px-4 py-2 rounded h-9">
           Add
         </button>
       </div>

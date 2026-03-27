@@ -61,7 +61,7 @@ export default function PendingExpensesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-4">Pending Expenses Approval</h1>
 
       {loading ? (
@@ -97,7 +97,7 @@ export default function PendingExpensesPage() {
                 <td className="px-3 py-2 truncate max-w-[200px]">{e.description ?? "-"}</td>
                 <td className="px-3 py-2">
                   {e.receiptUrl ? (
-                    <a href={e.receiptUrl} target="_blank" rel="noopener" className="text-blue-600 underline">View</a>
+                    <a href={e.receiptUrl} target="_blank" rel="noopener" className="text-legal-gold underline">View</a>
                   ) : '-' }
                 </td>
                 <td className="px-3 py-2">
@@ -118,7 +118,7 @@ export default function PendingExpensesPage() {
         </table>
       )}
 
-      <Link href="/admin" className="mt-6 inline-block text-blue-600">
+      <Link href="/admin" className="mt-6 inline-block text-legal-gold">
         ← Back to Admin
       </Link>
     </div>

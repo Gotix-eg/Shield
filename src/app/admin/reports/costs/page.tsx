@@ -104,7 +104,7 @@ export default function CostsReportPage() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="container mx-auto max-w-5xl p-8">
+    <div className="dashboard-container max-w-5xl p-8">
       <h1 className="mb-6 text-3xl font-bold">{t('title')}</h1>
 
       {/* filters */}
@@ -179,7 +179,7 @@ export default function CostsReportPage() {
         {/* buttons */}
         <button
           type="submit"
-          className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 sm:col-span-2 lg:col-span-1"
+          className="rounded bg-legal-gold px-4 py-2 font-semibold text-white hover:bg-legal-gold/90 sm:col-span-2 lg:col-span-1"
         >
           {t('buttons.applyFilters')}
         </button>
@@ -232,7 +232,7 @@ export default function CostsReportPage() {
                       return (
                         <React.Fragment key={key}>
                           {/* project subtotal */}
-                          <tr className="bg-blue-50 font-semibold">
+                          <tr className="bg-legal-gold/10 font-semibold">
                             <td className="border px-3 py-2">{projectName}</td>
                             <td className="border px-3 py-2" />
                             <td className="border px-3 py-2 text-right">{projectHours.toFixed(2)}</td>

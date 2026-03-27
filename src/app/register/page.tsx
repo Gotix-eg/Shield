@@ -81,14 +81,14 @@ export default function RegisterPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
-            className="w-full rounded bg-blue-600 py-2 font-semibold text-white disabled:opacity-50"
+            className="w-full rounded bg-legal-gold py-2 font-semibold text-white disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
         <p className="mt-4 text-center text-sm">
-          Already have an account? <a href="/login" className="text-blue-600 underline">Login</a>
+          Already have an account? <a href="/login" className="text-legal-gold underline">Login</a>
         </p>
       </div>
     </main>

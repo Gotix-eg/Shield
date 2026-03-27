@@ -87,7 +87,7 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-xl">
+    <div className="dashboard-container p-6 max-w-xl">
       <Toaster />
       <h1 className="text-2xl font-bold mb-4 text-white">New Project</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -231,7 +231,7 @@ export default function NewProjectPage() {
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90"
           >
             Save
           </button>

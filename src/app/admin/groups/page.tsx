@@ -60,7 +60,7 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-3xl p-6">
+    <div className="dashboard-container max-w-3xl p-6">
       <h1 className="text-2xl font-bold mb-4">Groups</h1>
 
       <form onSubmit={addGroup} className="flex gap-2 mb-6">
@@ -72,7 +72,7 @@ export default function GroupsPage() {
           onChange={(e) => setName(e.target.value)}
         />
         <button
-          className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50"
+          className="bg-legal-gold text-white px-4 py-1 rounded disabled:opacity-50"
           disabled={!name.trim()}
         >
           Add
@@ -99,7 +99,7 @@ export default function GroupsPage() {
                   <Link href={`/admin/groups/${g.id}`}>{g.name}</Link>
                 </td>
                 <td className="p-2">{g.members?.length ?? 0}</td>
-                <td className="p-2"><Link className="text-blue-600 text-sm" href={`/admin/groups/${g.id}`}>Edit</Link></td>
+                <td className="p-2"><Link className="text-legal-gold text-sm" href={`/admin/groups/${g.id}`}>Edit</Link></td>
                 <td className="p-2 text-right">
                   <button
                     onClick={() => deleteGroup(g.id)}

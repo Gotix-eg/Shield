@@ -262,252 +262,313 @@ export default function EmployeeDetailPage() {
     }
   };
 
-  if (loading) return <p className="p-8">Loading…</p>;
-  if (error) return <p className="p-8 text-red-600">{error}</p>;
-  if (!emp) return <p className="p-8">Not found</p>;
-
   return (
-    <div className="container mx-auto max-w-4xl p-8 space-y-6">
-      <div>
-        <Link href="/admin/employees" className="text-blue-600">← Back to list</Link>
-      </div>
-      <h1 className="text-3xl font-bold">{emp.name}</h1>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <strong>Email:</strong> {emp.email || "—"}
-        </div>
-        <div>
-          <strong>Department:</strong> {emp.department || "—"}
-        </div>
-        <div>
-          <strong>Status:</strong> {emp.status}
-        </div>
-        <div>
-          <strong>Hire Date:</strong> {emp.hireDate ? new Date(emp.hireDate).toLocaleDateString() : "—"}
-        </div>
-        {/* Update department */}
-        <div className="mt-4">
-          <form onSubmit={async(e)=>{
-            e.preventDefault();setAdding(true);setError(null);
-            try{
-              const token=getAuth();
-              const res=await fetch(`/api/employees/${id}`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({department:deptEdit})});
-              if(!res.ok) throw new Error(await res.text());
-              await fetchEmp();
-            }catch(err:any){setError(err.message);}finally{setAdding(false);}            
-          }} className="flex items-end gap-4">
-            <input className="rounded border px-3 py-2" value={deptEdit} onChange={(e)=>setDeptEdit(e.target.value)} />
-            <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">{adding?'Saving…':'Save Department'}</button>
-          </form>
-        </div>
-        {/* Update status */}
-        <div className="mt-4">
-          <form onSubmit={handleUpdateStatus} className="flex items-end gap-4">
-            <select value={statusEdit} onChange={(e)=>setStatusEdit(e.target.value)} className="rounded border px-3 py-2">
-              {['ACTIVE','INACTIVE'].map(s=><option key={s}>{s}</option>)}
-            </select>
-            <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
-              {adding? 'Saving…':'Save Status'}
-            </button>
-          </form>
-        </div>
-        {/* Position */}
-        <div className="mt-4">
-          <form onSubmit={handleUpdatePosition} className="flex items-end gap-4">
-            <select
-              value={positionEdit ?? emp?.user?.positionId ?? ''}
-              onChange={(e)=>setPositionEdit(Number(e.target.value) || null)}
-              className="rounded border px-3 py-2"
-            >
-              <option value="">— Select Position —</option>
-              {positions.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
-            </select>
-            <button disabled={adding || positionEdit===null} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
-              {adding? 'Saving…':'Save Position'}
-            </button>
-          </form>
-        </div>
-        {/* Leave Balance */}
-        {isHR && (
-          <div className="mt-4">
-            <form onSubmit={handleSaveBalance} className="flex items-end gap-4">
-              <div>
-                <label className="block text-sm">Leave Balance (days)</label>
-                <input type="number" step="0.1" className="rounded border px-3 py-2 w-24" value={balanceEdit} onChange={(e)=>setBalanceEdit(Number(e.target.value))} />
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 rounded-2xl bg-legal-gold/10 border border-legal-gold/20 flex items-center justify-center text-2xl font-serif text-legal-gold shadow-2xl">
+              {emp.name.charAt(0)}
+            </div>
+            <div>
+              <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">{emp.name}</h1>
+              <div className="flex items-center gap-4">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
+                  emp.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-500/10 text-slate-400'
+                }`}>
+                  {emp.status}
+                </span>
+                <span className="text-slate-500 text-xs font-light">Employee ID: #{emp.id}</span>
               </div>
-              <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">{adding? 'Saving…':'Save Balance'}</button>
-            </form>
+            </div>
           </div>
-        )}
-        {/* Role */}
-        <div className="mt-4">
-          <form onSubmit={handleUpdateRole} className="flex items-end gap-4">
-            <select
-              value={roleEdit ?? emp?.user?.role ?? ''}
-              onChange={(e)=>setRoleEdit(e.target.value)}
-              className="rounded border px-3 py-2"
-            >
-              <option value="">— Select Role —</option>
-              {ROLE_OPTIONS.map(r=>(<option key={r} value={r}>{r}</option>))}
-            </select>
-            <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
-              {adding? 'Saving…':'Save Role'}
-            </button>
-          </form>
+          <Link href="/admin/employees" className="btn-legal-outline">Back to Directory</Link>
+        </div>
+      </header>
+
+      {error && <p className="text-red-400 mb-8 bg-red-400/10 p-4 rounded-lg border border-red-400/20">{error}</p>}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Details */}
+        <div className="lg:col-span-2 space-y-8">
+          <div className="legal-card p-8">
+            <h3 className="text-xl font-serif text-white mb-8">Professional Profile</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Email Address</p>
+                  <p className="text-slate-200 font-medium">{emp.email || "No email provided"}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Department</p>
+                  <p className="text-slate-200 font-medium">{emp.department || "General Administration"}</p>
+                </div>
+              </div>
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Current Role</p>
+                  <p className="text-legal-gold font-bold">{emp.user?.role || "STAFF"}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Hire Date</p>
+                  <p className="text-slate-200 font-medium">{emp.hireDate ? new Date(emp.hireDate).toLocaleDateString() : "—"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12 pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Update department */}
+              <div className="space-y-4">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Update Department</label>
+                <form onSubmit={async(e)=>{
+                  e.preventDefault();setAdding(true);setError(null);
+                  try{
+                    const token=getAuth();
+                    const res=await fetch(`/api/employees/${id}`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({department:deptEdit})});
+                    if(!res.ok) throw new Error(await res.text());
+                    await fetchEmp();
+                  }catch(err:any){setError(err.message);}finally{setAdding(false);}            
+                }} className="flex gap-2">
+                  <input className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors" value={deptEdit} onChange={(e)=>setDeptEdit(e.target.value)} />
+                  <button disabled={adding} className="btn-legal px-4 text-[10px]">{adding?'...':'Save'}</button>
+                </form>
+              </div>
+
+              {/* Update status */}
+              <div className="space-y-4">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Employee Status</label>
+                <form onSubmit={handleUpdateStatus} className="flex gap-2">
+                  <select value={statusEdit} onChange={(e)=>setStatusEdit(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors">
+                    {['ACTIVE','INACTIVE'].map(s=><option key={s} className="bg-slate-900">{s}</option>)}
+                  </select>
+                  <button disabled={adding} className="btn-legal px-4 text-[10px]">
+                    {adding? '...':'Update'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Position */}
+              <div className="space-y-4">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Professional Position</label>
+                <form onSubmit={handleUpdatePosition} className="flex gap-2">
+                  <select
+                    value={positionEdit ?? emp?.user?.positionId ?? ''}
+                    onChange={(e)=>setPositionEdit(Number(e.target.value) || null)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                  >
+                    <option value="" className="bg-slate-900">— Select Position —</option>
+                    {positions.map(p=>(<option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>))}
+                  </select>
+                  <button disabled={adding || positionEdit===null} className="btn-legal px-4 text-[10px]">
+                    {adding? '...':'Save'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Role */}
+              <div className="space-y-4">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">System Role</label>
+                <form onSubmit={handleUpdateRole} className="flex gap-2">
+                  <select
+                    value={roleEdit ?? emp?.user?.role ?? ''}
+                    onChange={(e)=>setRoleEdit(e.target.value)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                  >
+                    <option value="" className="bg-slate-900">— Select Role —</option>
+                    {ROLE_OPTIONS.map(r=>(<option key={r} value={r} className="bg-slate-900">{r}</option>))}
+                  </select>
+                  <button disabled={adding} className="btn-legal px-4 text-[10px]">
+                    {adding? '...':'Update'}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {/* Managed Scope Section (Conditional) */}
+          {(['LAWYER_MANAGER','LAWYER_PARTNER','MANAGING_PARTNER'].includes(roleEdit ?? emp?.user?.role as string)) && (
+            <div className="legal-card p-8 space-y-8">
+              <h3 className="text-xl font-serif text-white">Management Scope</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Assigned Projects ({projectIds.length})</label>
+                  <div className="max-h-60 overflow-y-auto bg-white/5 border border-white/10 rounded-lg p-4 space-y-2 custom-scrollbar">
+                    {projects.map(p => (
+                      <label key={p.id} className="flex items-center gap-3 group cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={projectIds.includes(p.id)} 
+                          onChange={e=>{
+                            const next = e.target.checked ? [...projectIds,p.id] : projectIds.filter(id=>id!==p.id);
+                            setProjectIds(next);
+                          }}
+                          className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-legal-gold checked:border-legal-gold transition-all"
+                        />
+                        <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">{p.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Supervised Lawyers ({lawyerIds.length})</label>
+                  <div className="max-h-60 overflow-y-auto bg-white/5 border border-white/10 rounded-lg p-4 space-y-2 custom-scrollbar">
+                    {lawyers.map(l => (
+                      <label key={l.id} className="flex items-center gap-3 group cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={lawyerIds.includes(l.id)} 
+                          onChange={e=>{
+                            const next = e.target.checked ? [...lawyerIds,l.id] : lawyerIds.filter(id=>id!==l.id);
+                            setLawyerIds(next);
+                          }}
+                          className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-legal-gold checked:border-legal-gold transition-all"
+                        />
+                        <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">{l.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Salary History */}
+          <div className="legal-card overflow-hidden">
+            <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between">
+              <h3 className="text-xl font-serif text-white">Salary Evolution</h3>
+              <span className="text-[10px] uppercase tracking-widest text-slate-500">{emp.salaries.length} records</span>
+            </div>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white/5 border-b border-white/5">
+                  <th className="px-8 py-4 text-[10px] uppercase tracking-widest font-bold text-legal-gold">Effective From</th>
+                  <th className="px-8 py-4 text-[10px] uppercase tracking-widest font-bold text-legal-gold text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {emp.salaries.length === 0 ? (
+                  <tr><td colSpan={2} className="px-8 py-12 text-center text-slate-500 italic font-light">No salary history records found.</td></tr>
+                ) : (
+                  emp.salaries.map((s) => (
+                    <tr key={s.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-8 py-5 text-slate-400 font-mono text-xs">{new Date(s.effectiveFrom).toLocaleDateString()}</td>
+                      <td className="px-8 py-5 text-right font-bold text-legal-gold">{Number(s.amount).toLocaleString()} <span className="text-[10px] opacity-60 ml-1">{s.currency}</span></td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            <div className="p-8 bg-white/5 border-t border-white/5">
+              <form onSubmit={handleAddSalary} className="flex flex-wrap items-end gap-6">
+                <div className="space-y-2 flex-1 min-w-[150px]">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">New Amount</label>
+                  <input
+                    type="number"
+                    required
+                    step="0.01"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                    value={newSalary.amount}
+                    onChange={(e) => setNewSalary({ ...newSalary, amount: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2 w-32">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Currency</label>
+                  <select
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                    value={newSalary.currency}
+                    onChange={(e) => setNewSalary({ ...newSalary, currency: e.target.value })}
+                  >
+                    {["USD", "EUR", "EGP", "SAR", "AED", "QAR", "KWD", "OMR", "JPY", "CNY", "INR"].map((c) => (
+                      <option key={c} className="bg-slate-900">{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <button disabled={adding} className="btn-legal px-8 h-[38px]">
+                  {adding ? "Adding…" : "Add Salary Entry"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Actions */}
+        <div className="space-y-8">
+          {/* Account Security */}
+          <div className="legal-card p-8 space-y-8">
+            <h3 className="text-xl font-serif text-white">Security & Access</h3>
+            
+            <div className="space-y-4">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Account Email</label>
+              <form onSubmit={handleUpdateEmail} className="flex flex-col gap-3">
+                <input
+                  type="email"
+                  required
+                  className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                  value={emailEdit}
+                  onChange={(e) => setEmailEdit(e.target.value)}
+                />
+                <button disabled={adding} className="btn-legal w-full py-2.5 text-[10px]">
+                  {adding ? "Saving…" : "Update Email"}
+                </button>
+              </form>
+            </div>
+
+            <div className="space-y-4 pt-8 border-t border-white/5">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Reset Password</label>
+              <form onSubmit={async(e)=>{e.preventDefault();if(!pwd)return;setAdding(true);setError(null);
+                try{
+                  const token=getAuth();
+                  const res=await fetch(`/api/employees/${id}`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({password:pwd})});
+                  if(!res.ok) throw new Error(await res.text());
+                  setPwd("");
+                  alert('Password updated');
+                }catch(err:any){setError(err.message);}finally{setAdding(false);}        
+              }} className="flex flex-col gap-3">
+                <input type="password" required className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors" value={pwd} onChange={(e)=>setPwd(e.target.value)} placeholder="New secure password" />
+                <button disabled={adding} className="btn-legal w-full py-2.5 text-[10px]">{adding?'Saving…':'Update Password'}</button>
+              </form>
+            </div>
+
+            {isHR && (
+              <div className="space-y-4 pt-8 border-t border-white/5">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Leave Balance (Days)</label>
+                <form onSubmit={handleSaveBalance} className="flex gap-3">
+                  <input type="number" step="0.1" className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors" value={balanceEdit} onChange={(e)=>setBalanceEdit(Number(e.target.value))} />
+                  <button disabled={adding} className="btn-legal px-4 text-[10px]">{adding? '...':'Save'}</button>
+                </form>
+              </div>
+            )}
+          </div>
+
+          {/* Penalties Summary */}
+          <div className="legal-card overflow-hidden">
+            <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between">
+              <h3 className="text-xl font-serif text-white">Penalties</h3>
+              <span className="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full">{penalties.length}</span>
+            </div>
+            <div className="divide-y divide-white/5">
+              {penalties.length === 0 ? (
+                <div className="px-8 py-12 text-center text-slate-500 italic font-light text-sm">No disciplinary records.</div>
+              ) : (
+                penalties.map((p) => (
+                  <div key={p.id} className="px-8 py-4 hover:bg-white/5 transition-colors group">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-slate-400 font-mono text-[10px]">{new Date(p.date).toLocaleDateString()}</span>
+                      <span className="text-red-400 font-bold text-xs">-{p.amount} {p.currency}</span>
+                    </div>
+                    <p className="text-slate-500 text-[11px] font-light italic truncate group-hover:text-slate-300 transition-colors">{p.reason ?? "Disciplinary deduction"}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            {penalties.length > 0 && (
+              <div className="p-6 bg-white/5 text-center">
+                <Link href="/admin/penalties" className="text-[10px] uppercase tracking-widest text-legal-gold font-bold hover:underline">View All Penalties →</Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {(['LAWYER_MANAGER','LAWYER_PARTNER','MANAGING_PARTNER'].includes(roleEdit ?? emp?.user?.role as string)) && (
-        <section className="border rounded p-4 mb-6 space-y-4">
-          <h2 className="text-lg font-semibold">Managed Scope</h2>
-          <details className="border rounded p-3 bg-white">
-            <summary className="cursor-pointer select-none font-medium">Projects ({projectIds.length})</summary>
-            <div className="max-h-40 overflow-y-auto mt-2 space-y-1 text-sm">
-              {projects.map(p => (
-                <label key={p.id} className="flex items-center gap-2">
-                  <input type="checkbox" checked={projectIds.includes(p.id)} onChange={e=>{
-                    const next = e.target.checked ? [...projectIds,p.id] : projectIds.filter(id=>id!==p.id);
-                    setProjectIds(next);
-                  }}/>
-                  {p.name}
-                </label>
-              ))}
-            </div>
-          </details>
-          <details className="border rounded p-3 bg-white">
-            <summary className="cursor-pointer select-none font-medium">Lawyers ({lawyerIds.length})</summary>
-            <div className="max-h-40 overflow-y-auto mt-2 space-y-1 text-sm">
-              {lawyers.map(l => (
-                <label key={l.id} className="flex items-center gap-2">
-                  <input type="checkbox" checked={lawyerIds.includes(l.id)} onChange={e=>{
-                    const next = e.target.checked ? [...lawyerIds,l.id] : lawyerIds.filter(id=>id!==l.id);
-                    setLawyerIds(next);
-                  }}/>
-                  {l.name}
-                </label>
-              ))}
-            </div>
-          </details>
-        </section>
-      )}
-
-      <section>
-        <h2 className="mb-2 text-xl font-semibold">Salary History</h2>
-        <table className="min-w-full border-collapse mb-4">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="border px-4 py-2">Effective From</th>
-              <th className="border px-4 py-2">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {emp.salaries.map((s) => (
-              <tr key={s.id} className="hover:bg-gray-50">
-                <td className="border px-4 py-2">{new Date(s.effectiveFrom).toLocaleDateString()}</td>
-                <td className="border px-4 py-2">{s.amount} {s.currency}</td>
-              </tr>
-            ))}
-            {emp.salaries.length === 0 && (
-              <tr>
-                <td colSpan={2} className="border px-4 py-2 text-center text-gray-500">
-                  No salary records
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        <form onSubmit={handleAddSalary} className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="block text-sm">Amount*</label>
-            <input
-              type="number"
-              required
-              step="0.01"
-              className="rounded border px-3 py-2"
-              value={newSalary.amount}
-              onChange={(e) => setNewSalary({ ...newSalary, amount: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm">Currency</label>
-            <select
-              className="rounded border px-3 py-2"
-              value={newSalary.currency}
-              onChange={(e) => setNewSalary({ ...newSalary, currency: e.target.value })}
-            >
-              {["USD", "EUR", "EGP", "SAR", "AED", "QAR", "KWD", "OMR", "JPY", "CNY", "INR"].map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
-            {adding ? "Adding…" : "Add Salary"}
-          </button>
-        </form>
-      </section>
-
-      {/* Penalties */}
-      <section>
-        <h2 className="mb-2 text-xl font-semibold">Penalties</h2>
-        <table className="min-w-full border-collapse mb-4">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="border px-4 py-2">Date</th>
-              <th className="border px-4 py-2">Amount</th>
-              <th className="border px-4 py-2">Currency</th>
-              <th className="border px-4 py-2">Reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {penalties.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50">
-                <td className="border px-4 py-2">{new Date(p.date).toLocaleDateString()}</td>
-                <td className="border px-4 py-2">{p.amount}</td>
-                <td className="border px-4 py-2">{p.currency}</td>
-                <td className="border px-4 py-2">{p.reason ?? "-"}</td>
-              </tr>
-            ))}
-            {penalties.length === 0 && (
-              <tr>
-                <td colSpan={4} className="border px-4 py-2 text-center text-gray-500">No penalties</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h2 className="mb-2 text-xl font-semibold">Update Email</h2>
-        <form onSubmit={handleUpdateEmail} className="flex items-end gap-4">
-          <input
-            type="email"
-            required
-            className="rounded border px-3 py-2"
-            value={emailEdit}
-            onChange={(e) => setEmailEdit(e.target.value)}
-          />
-          <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
-            {adding ? "Saving…" : "Save Email"}
-          </button>
-        </form>
-      </section>
-
-      {/* Password update */}
-      <section>
-        <h2 className="mb-2 text-xl font-semibold">Change Password</h2>
-        <form onSubmit={async(e)=>{e.preventDefault();if(!pwd)return;setAdding(true);setError(null);
-          try{
-            const token=getAuth();
-            const res=await fetch(`/api/employees/${id}`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({password:pwd})});
-            if(!res.ok) throw new Error(await res.text());
-            setPwd("");
-            alert('Password updated');
-          }catch(err:any){setError(err.message);}finally{setAdding(false);}        
-        }} className="flex items-end gap-4">
-          <input type="password" required className="rounded border px-3 py-2" value={pwd} onChange={(e)=>setPwd(e.target.value)} placeholder="New password" />
-          <button disabled={adding} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">{adding?'Saving…':'Save Password'}</button>
-        </form>
-      </section>
     </div>
   );
 }

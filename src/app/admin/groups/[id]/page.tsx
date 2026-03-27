@@ -69,12 +69,12 @@ export default function GroupDetail() {
   if (!groupName) return (
     <div className="p-6">
       <p>Group not found.</p>
-      <button className="text-blue-600" onClick={() => router.back()}>Back</button>
+      <button className="text-legal-gold" onClick={() => router.back()}>Back</button>
     </div>
   );
 
   return (
-    <div className="container mx-auto max-w-3xl p-6">
+    <div className="dashboard-container max-w-3xl p-6">
       <h1 className="text-2xl font-bold mb-4">Group: {groupName}</h1>
 
       <form onSubmit={addMember} className="flex gap-2 mb-6">
@@ -90,7 +90,7 @@ export default function GroupDetail() {
             </option>
           ))}
         </select>
-        <button className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50" disabled={!selectedUser}>Add</button>
+        <button className="bg-legal-gold text-white px-4 py-1 rounded disabled:opacity-50" disabled={!selectedUser}>Add</button>
       </form>
 
       {members.length === 0 ? (

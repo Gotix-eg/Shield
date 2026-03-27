@@ -77,7 +77,7 @@ export default function MyAttendance() {
       ) : (
         <button
           onClick={clockIn}
-          className="w-full rounded bg-blue-600 px-4 py-4 text-white text-lg"
+          className="w-full rounded bg-legal-gold px-4 py-4 text-white text-lg"
         >
           Clock In
         </button>

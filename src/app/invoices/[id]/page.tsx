@@ -174,18 +174,18 @@ export default function InvoicePage() {
   if (!invoice) return <div className="flex items-center justify-center h-screen">{t('view.loading', { ns: 'invoices' })}</div>;
 
   return (
-    <div className="container mx-auto p-6" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="dashboard-container p-6" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => router.push('/invoices')}
-          className="text-blue-600 underline text-sm"
+          className="text-legal-gold underline text-sm"
         >
           {t('view.back', { ns: 'invoices' })}
         </button>
         <div className="flex gap-4">
           <button
             onClick={handleSendEmail}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            className="bg-legal-gold hover:bg-legal-gold/90 text-white px-4 py-2 rounded"
           >
             {t('view.sendEmail', { ns: 'invoices' })}
           </button>

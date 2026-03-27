@@ -241,7 +241,7 @@ export default function CrudTest() {
       
       <button
         onClick={runTests}
-        className="mb-6 rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
+        className="mb-6 rounded bg-legal-gold px-6 py-2 text-white hover:bg-legal-gold/90"
       >
         Run All Tests
       </button>
@@ -258,7 +258,7 @@ export default function CrudTest() {
       </p>
 
       <p className="mt-4 text-sm text-gray-600">
-        <Link href="/dashboard" className="text-blue-600 underline">
+        <Link href="/dashboard" className="text-legal-gold underline">
           ← Return to Dashboard
         </Link>
       </p>

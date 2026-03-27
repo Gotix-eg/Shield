@@ -97,7 +97,7 @@ export default function TrustAdminPage() {
         {(['TRUST', 'EXPENSE'] as const).map((t) => (
           <button
             key={t}
-            className={`rounded px-3 py-1 text-sm ${accountType===t? 'bg-blue-600 text-white':'bg-gray-200'}`}
+            className={`rounded px-3 py-1 text-sm ${accountType===t? 'bg-legal-gold text-white':'bg-gray-200'}`}
             onClick={() => setAccountType(t)}
           >
             {t}
@@ -128,7 +128,7 @@ export default function TrustAdminPage() {
                 <td className="border p-2">{a.currency}</td>
                 <td className="border p-2">
                   <button
-                    className="rounded bg-blue-600 px-2 py-1 text-white hover:bg-blue-500"
+                    className="rounded bg-legal-gold px-2 py-1 text-white hover:bg-legal-gold/100"
                     onClick={() => openAccount(a)}
                   >
                     View

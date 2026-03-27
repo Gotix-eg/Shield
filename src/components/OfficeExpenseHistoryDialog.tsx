@@ -108,7 +108,7 @@ export default function OfficeExpenseHistoryDialog({ open, onClose }: Props) {
                         <td className="border px-2 py-1">{it.memo}</td>
                         <td className="border px-2 py-1">
                           <button
-                            className="text-blue-600 mr-2"
+                            className="text-legal-gold mr-2"
                             onClick={() => {
                               setEditingId(it.id);
                               setEditAmount(String(it.amount));

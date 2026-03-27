@@ -105,7 +105,7 @@ export default function ProjectTaskModal({ projectId, onClose, onSaved }: Props)
           <button
             onClick={save}
             disabled={saving}
-            className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50"
+            className="bg-legal-gold text-white px-4 py-1 rounded disabled:opacity-50"
           >
             Save
           </button>

@@ -75,7 +75,7 @@ export default function NewEmployeePage() {
   };
 
   return (
-    <div className="container mx-auto max-w-xl p-8">
+    <div className="dashboard-container max-w-xl p-8">
       <h1 className="mb-6 text-3xl font-bold">Add Employee</h1>
       {error && <p className="mb-4 text-red-600">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -274,7 +274,7 @@ export default function NewEmployeePage() {
         </div>
         <button
           disabled={loading}
-          className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+          className="rounded bg-legal-gold px-4 py-2 text-white disabled:opacity-50"
         >
           {loading ? "Saving…" : "Save"}
         </button>

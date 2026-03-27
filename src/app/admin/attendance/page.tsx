@@ -79,45 +79,42 @@ export default function AttendancePage() {
   /* -------------------------------- */
 
   return (
-    <div className="container mx-auto max-w-6xl p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Attendance</h1>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Attendance</h1>
+            <p className="text-slate-400 font-light max-w-xl">Monitor employee clock-in/out times and calculate total working hours.</p>
+          </div>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors w-64"
+              placeholder="Filter by employee name..."
+            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={filter.from}
+                onChange={(e) => setFilter({ ...filter, from: e.target.value })}
+                className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              />
+              <input
+                type="date"
+                value={filter.to}
+                onChange={(e) => setFilter({ ...filter, to: e.target.value })}
+                className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors"
+              />
+              <button onClick={fetchData} className="btn-legal-outline px-4">Apply</button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {/* filter */}
-      <div className="flex flex-wrap items-end gap-4 border p-4 rounded">
-        <div>
-          <label className="block text-sm">From</label>
-          <input
-            type="date"
-            value={filter.from}
-            onChange={(e) => setFilter({ ...filter, from: e.target.value })}
-            className="rounded border px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm">To</label>
-          <input
-            type="date"
-            value={filter.to}
-            onChange={(e) => setFilter({ ...filter, to: e.target.value })}
-            className="rounded border px-3 py-2"
-          />
-        </div>
-        <button
-          onClick={fetchData}
-          className="rounded bg-gray-600 px-4 py-2 text-white"
-        >
-          Apply
-        </button>
-        <div>
-          <label className="block text-sm">Employee Name</label>
-          <input
-            type="text"
-            value={nameFilter}
-            onChange={(e) => setNameFilter(e.target.value)}
-            className="rounded border px-3 py-2"
-            placeholder="Filter by name"
-          />
-        </div>
+      {/* action buttons */}
+      <div className="flex gap-4 mb-8">
         <button
           onClick={async () => {
             try {
@@ -143,11 +140,11 @@ export default function AttendancePage() {
               alert("Failed to export CSV");
             }
           }}
-          className="rounded bg-blue-600 px-4 py-2 text-white"
+          className="btn-legal px-6"
         >
           Export CSV
         </button>
-        <label className="inline-flex items-center gap-2 cursor-pointer text-white bg-green-600 px-4 py-2 rounded">
+        <label className="btn-legal-outline px-6 cursor-pointer">
           Import CSV
           <input
             type="file"
@@ -172,52 +169,47 @@ export default function AttendancePage() {
             }}
           />
         </label>
-        <div className="ml-auto text-sm font-medium">
-          Total Hours: {totalHours.toFixed(2)}
+        <div className="ml-auto flex flex-col items-end justify-center">
+          <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Total Working Hours</span>
+          <span className="text-2xl font-serif text-legal-gold">{totalHours.toFixed(2)} hrs</span>
         </div>
       </div>
 
       {/* manual add form */}
-      <div className="border p-4 rounded mb-6 space-y-3 bg-gray-50">
-        <h2 className="font-medium">Add Record (manual)</h2>
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="block text-sm">Employee</label>
+      <div className="legal-card p-8 mb-12">
+        <h3 className="text-xl font-serif text-white mb-8">Manual Entry</h3>
+        <div className="flex flex-wrap items-end gap-6">
+          <div className="space-y-2 flex-1 min-w-[200px]">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Employee</label>
             <select
               value={form.employeeId}
-              onChange={(e) =>
-                setForm({ ...form, employeeId: e.target.value })
-              }
-              className="border rounded px-3 py-2"
+              onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             >
-              <option value="">Select…</option>
+              <option value="" className="bg-slate-900">Select Employee…</option>
               {empOptions.map((o) => (
-                <option key={o.id} value={o.id}>
+                <option key={o.id} value={o.id} className="bg-slate-900">
                   {o.name} (#{o.id})
                 </option>
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm">Clock In</label>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Clock In</label>
             <input
               type="datetime-local"
               value={form.clockIn}
-              onChange={(e) =>
-                setForm({ ...form, clockIn: e.target.value })
-              }
-              className="border rounded px-3 py-2"
+              onChange={(e) => setForm({ ...form, clockIn: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             />
           </div>
-          <div>
-            <label className="block text-sm">Clock Out</label>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Clock Out</label>
             <input
               type="datetime-local"
               value={form.clockOut}
-              onChange={(e) =>
-                setForm({ ...form, clockOut: e.target.value })
-              }
-              className="border rounded px-3 py-2"
+              onChange={(e) => setForm({ ...form, clockOut: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
             />
           </div>
           <button
@@ -248,45 +240,50 @@ export default function AttendancePage() {
                 alert(await res.text());
               }
             }}
-            className="rounded bg-green-600 px-4 py-2 text-white"
+            className="btn-legal px-8 h-[42px]"
           >
-            Save
+            Save Record
           </button>
         </div>
       </div>
 
-      {loading && <p>Loading…</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {error && <p className="text-red-400 mb-4">{error}</p>}
 
       {/* table */}
-      <table className="min-w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="border px-4 py-2">Employee</th>
-            <th className="border px-4 py-2">Clock In</th>
-            <th className="border px-4 py-2">Clock Out</th>
-            <th className="border px-4 py-2">Hours</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredRecords.map((r) => (
-            <tr key={r.id} className="hover:bg-gray-50">
-              <td className="border px-4 py-2">{r.employee.name}</td>
-              <td className="border px-4 py-2">
-                {new Date(r.clockIn).toLocaleString()}
-              </td>
-              <td className="border px-4 py-2">
-                {r.clockOut
-                  ? new Date(r.clockOut).toLocaleString()
-                  : "—"}
-              </td>
-              <td className="border px-4 py-2">
-                {hoursDiff(r.clockIn, r.clockOut)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="legal-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/5">
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Employee</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Clock In</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Clock Out</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Hours</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {loading ? (
+                <tr><td colSpan={4} className="px-8 py-16 text-center text-slate-500 italic font-light">Loading attendance records...</td></tr>
+              ) : filteredRecords.length === 0 ? (
+                <tr><td colSpan={4} className="px-8 py-16 text-center text-slate-500 italic font-light">No attendance records found.</td></tr>
+              ) : (
+                filteredRecords.map((r) => (
+                  <tr key={r.id} className="group hover:bg-white/5 transition-colors">
+                    <td className="px-8 py-6 text-slate-200 font-medium">{r.employee.name}</td>
+                    <td className="px-8 py-6 text-slate-400 font-mono text-xs">{new Date(r.clockIn).toLocaleString()}</td>
+                    <td className="px-8 py-6 text-slate-400 font-mono text-xs">
+                      {r.clockOut ? new Date(r.clockOut).toLocaleString() : "—"}
+                    </td>
+                    <td className="px-8 py-6 text-right font-bold text-legal-gold">
+                      {hoursDiff(r.clockIn, r.clockOut)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

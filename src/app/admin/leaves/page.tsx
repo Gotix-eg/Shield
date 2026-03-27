@@ -158,7 +158,7 @@ export default function LeavesPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl p-8 space-y-6">
+    <div className="dashboard-container max-w-6xl p-8 space-y-6">
       <h1 className="text-3xl font-bold">Leave Requests</h1>
       {stats && (
           <div className="flex gap-6 text-sm">
@@ -223,7 +223,7 @@ export default function LeavesPage() {
           <option value="SICK">SICK</option>
           <option value="UNPAID">UNPAID</option>
         </select>
-        <button disabled={saving} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
+        <button disabled={saving} className="rounded bg-legal-gold px-4 py-2 text-white disabled:opacity-50">
           {saving ? "Saving…" : "Add"}
         </button>
       </form>

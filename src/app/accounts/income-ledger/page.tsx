@@ -90,7 +90,7 @@ export default function IncomeLedgerPage() {
                   <td className="border px-3 py-1">{e.bank ? `${e.bank.name}` : '-'}</td>
                   <td className="border px-3 py-1">
                     {e.project ? (
-                      <Link className="text-blue-600 underline" href={`/projects/${e.project.id}`}>{e.project.name}</Link>
+                      <Link className="text-legal-gold underline" href={`/projects/${e.project.id}`}>{e.project.name}</Link>
                     ) : (
                       '-'
                     )}

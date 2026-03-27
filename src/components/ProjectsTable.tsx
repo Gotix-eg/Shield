@@ -43,7 +43,7 @@ export default function ProjectsTable({ projects, onEdit, onDelete }: Props) {
                   {project as any}.hourlyRate ? `$${(project as any).hourlyRate}` : 'N/A'
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => onEdit(project.id)} className="text-blue-600 hover:text-blue-900 mr-4">
+                  <button onClick={() => onEdit(project.id)} className="text-legal-gold hover:text-legal-gold/90 mr-4">
                     Edit
                   </button>
                   <button onClick={() => onDelete(project.id)} className="text-red-600 hover:text-red-900">

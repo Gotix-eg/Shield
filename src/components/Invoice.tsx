@@ -166,7 +166,7 @@ export default function Invoice({ invoice }: { invoice: Invoice }) {
           <h2 className="text-xl font-semibold">Invoice Items</h2>
           <button
             onClick={handleAddItem}
-            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            className="rounded bg-legal-gold px-4 py-2 text-white hover:bg-legal-gold/90"
           >
             Add Item
           </button>
@@ -177,7 +177,7 @@ export default function Invoice({ invoice }: { invoice: Invoice }) {
             <div
               key={index}
               className={`p-4 border rounded ${
-                editingItem === index ? "bg-blue-50" : ""
+                editingItem === index ? "bg-legal-gold/10" : ""
               }`}
             >
               {editingItem === index ? (
@@ -240,7 +240,7 @@ export default function Invoice({ invoice }: { invoice: Invoice }) {
                     </button>
                     <button
                       onClick={handleSaveItem}
-                      className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                      className="rounded bg-legal-gold px-4 py-2 text-white hover:bg-legal-gold/90"
                     >
                       Save
                     </button>
@@ -260,7 +260,7 @@ export default function Invoice({ invoice }: { invoice: Invoice }) {
                     </span>
                     <button
                       onClick={() => setEditingItem(index)}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-legal-gold hover:text-legal-gold"
                     >
                       Edit
                     </button>
@@ -305,7 +305,7 @@ export default function Invoice({ invoice }: { invoice: Invoice }) {
           <span
             className={`px-4 py-2 rounded-full text-sm font-medium ${
               invoice.status === "draft"
-                ? "bg-blue-100 text-blue-800"
+                ? "bg-legal-gold/20 text-legal-gold"
                 : invoice.status === "sent"
                 ? "bg-green-100 text-green-800"
                 : invoice.status === "paid"

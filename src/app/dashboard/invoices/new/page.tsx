@@ -263,12 +263,12 @@ export default function NewInvoicePage() {
 
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">New Invoice</h1>
         <button
           onClick={() => router.push('/dashboard/invoices')}
-          className="text-blue-600 underline text-sm"
+          className="text-legal-gold underline text-sm"
         >
           ← Back
         </button>
@@ -447,7 +447,7 @@ export default function NewInvoicePage() {
             <button
               type="button"
               onClick={handleAddItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-legal-gold text-white px-4 py-2 rounded hover:bg-legal-gold/90"
             >
               Add Item
             </button>

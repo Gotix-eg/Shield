@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { getAuth } from "@/lib/auth";
 import { useTranslation } from "react-i18next";
 
@@ -58,70 +59,115 @@ export default function LawyersReportPage() {
   }, []);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">{t("lawyerReport", { defaultValue: "Lawyers Report" })}</h1>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Lawyers Performance</h1>
+            <p className="text-slate-400 font-light max-w-xl">Analytical report on lawyer utilization, billable hours, and performance ratings.</p>
+          </div>
+          <Link href="/admin/reports" className="btn-legal-outline">Back to Reports</Link>
+        </div>
+      </header>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-4 items-end flex-wrap">
-        <div>
-          <label className="block text-sm font-medium mb-1">Project</label>
-          <select value={projectId} onChange={e=>setProjectId(e.target.value)} className="border rounded px-2 py-1 min-w-[200px]">
-            <option value="">All</option>
-            {projects.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+      <div className="legal-card p-8 mb-12">
+        <h3 className="text-xl font-serif text-white mb-8">Performance Filters</h3>
+        <div className="flex gap-6 mb-4 items-end flex-wrap">
+          <div className="space-y-2 flex-1 min-w-[200px]">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Project</label>
+            <select 
+              value={projectId} 
+              onChange={e=>setProjectId(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+            >
+              <option value="" className="bg-slate-900">All Projects</option>
+              {projects.map(p=> <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2 flex-1 min-w-[200px]">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Lawyer</label>
+            <select 
+              value={lawyerId} 
+              onChange={e=>setLawyerId(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+            >
+              <option value="" className="bg-slate-900">All Lawyers</option>
+              {lawyers.map(l=> <option key={l.id} value={l.id} className="bg-slate-900">{l.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Start Date</label>
+            <input 
+              type="date" 
+              value={start} 
+              onChange={(e)=>setStart(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">End Date</label>
+            <input 
+              type="date" 
+              value={end} 
+              onChange={(e)=>setEnd(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+            />
+          </div>
+          <button onClick={load} disabled={loading} className="btn-legal px-8 h-[42px]">
+            {loading ? "Loading..." : "Apply Filters"}
+          </button>
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Lawyer</label>
-          <select value={lawyerId} onChange={e=>setLawyerId(e.target.value)} className="border rounded px-2 py-1 min-w-[200px]">
-            <option value="">All</option>
-            {lawyers.map(l=> <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("startDate", { defaultValue: "Start" })}</label>
-          <input type="date" value={start} onChange={(e)=>setStart(e.target.value)} className="border rounded px-2 py-1" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("endDate", { defaultValue: "End" })}</label>
-          <input type="date" value={end} onChange={(e)=>setEnd(e.target.value)} className="border rounded px-2 py-1" />
-        </div>
-        <button onClick={load} disabled={loading} className="bg-blue-600 text-white rounded px-4 py-2 h-fit">
-          {loading ? t("loading", { defaultValue: "Loading..." }) : t("applyFilters", { defaultValue: "Apply" })}
-        </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="border px-3 py-2">{t("lawyer", { defaultValue: "Lawyer" })}</th>
-              <th className="border px-3 py-2 text-right">{t("hours", { defaultValue: "Hours" })}</th>
-              <th className="border px-3 py-2 text-right">{t("billableHours", { defaultValue: "Billable" })}</th>
-              <th className="border px-3 py-2 text-right">{t("utilisation", { defaultValue: "Utilisation %" })}</th>
-              <th className="border px-3 py-2 text-right">{t("cost", { defaultValue: "Cost" })}</th>
-              <th className="border px-3 py-2">{t("rating", { defaultValue: "Rating" })}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((r) => (
-              <tr key={r.userId}>
-                <td className="border px-3 py-1 text-sm">{r.userName}</td>
-                <td className="border px-3 py-1 text-sm text-right">{r.totalHours.toFixed(2)}</td>
-                <td className="border px-3 py-1 text-sm text-right">{r.billableHours.toFixed(2)}</td>
-                <td className="border px-3 py-1 text-sm text-right">{r.utilisationPct.toFixed(1)}%</td>
-                <td className="border px-3 py-1 text-sm text-right">{r.cost.toFixed(2)} {r.currency}</td>
-                <td className="border px-3 py-1 text-sm">{t(r.rating.toLowerCase(), { defaultValue: r.rating })}</td>
+      <div className="legal-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/5">
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Lawyer</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Total Hours</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Billable</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Utilisation</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Cost</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Rating</th>
               </tr>
-            ))}
-            {data.length === 0 && !loading && (
-              <tr>
-                <td colSpan={6} className="border px-3 py-4 text-center text-sm text-gray-500">
-                  {t("noData", { defaultValue: "No data" })}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {data.length === 0 && !loading ? (
+                <tr>
+                  <td colSpan={6} className="px-8 py-16 text-center text-slate-500 italic font-light">No performance data found for the selected criteria.</td>
+                </tr>
+              ) : (
+                data.map((r) => (
+                  <tr key={r.userId} className="group hover:bg-white/5 transition-colors">
+                    <td className="px-8 py-6 text-slate-200 font-medium">{r.userName}</td>
+                    <td className="px-8 py-6 text-right text-slate-400 font-mono text-xs">{r.totalHours.toFixed(2)}</td>
+                    <td className="px-8 py-6 text-right text-slate-300 font-bold">{r.billableHours.toFixed(2)}</td>
+                    <td className="px-8 py-6 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-legal-gold font-bold">{r.utilisationPct.toFixed(1)}%</span>
+                        <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-legal-gold" style={{ width: `${Math.min(r.utilisationPct, 100)}%` }}></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6 text-right text-slate-400 font-mono text-xs">{r.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })} {r.currency}</td>
+                    <td className="px-8 py-6 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
+                        r.rating === 'EXCELLENT' ? 'bg-emerald-500/10 text-emerald-400' :
+                        r.rating === 'GOOD' ? 'bg-legal-gold/10 text-legal-gold' :
+                        'bg-slate-500/10 text-slate-400'
+                      }`}>
+                        {r.rating}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

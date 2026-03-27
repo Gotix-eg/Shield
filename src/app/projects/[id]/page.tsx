@@ -143,7 +143,7 @@ export default function ProjectDetailPage() {
   }, []);
 
   return (
-    <div className="container mx-auto p-6 max-w-3xl">
+    <div className="dashboard-container p-6 max-w-3xl">
       <Toaster />
       <h1 className="text-2xl font-bold mb-4">Advance Payments</h1>
       <p className="mb-6 text-sm text-gray-600">Project ID: {projectId}</p>
@@ -226,7 +226,7 @@ export default function ProjectDetailPage() {
           <button
             onClick={submitPayment}
             disabled={!amount || !bankId}
-            className="bg-blue-600 text-white rounded px-4 py-1 hover:bg-blue-700 disabled:opacity-50"
+            className="bg-legal-gold text-white rounded px-4 py-1 hover:bg-legal-gold/90 disabled:opacity-50"
           >
             Add
           </button>
@@ -255,7 +255,7 @@ export default function ProjectDetailPage() {
           <button
             onClick={uploadAttachments}
             disabled={!attFiles || attFiles.length === 0}
-            className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50"
+            className="bg-legal-gold text-white px-4 py-1 rounded disabled:opacity-50"
           >
             Upload
           </button>
@@ -286,7 +286,7 @@ export default function ProjectDetailPage() {
                       href={a.url}
                       target="_blank"
                       rel="noopener"
-                      className="text-blue-600 underline"
+                      className="text-legal-gold underline"
                     >
                       View
                     </a>
@@ -382,7 +382,7 @@ export default function ProjectDetailPage() {
       )}
 
       <p className="mt-6 text-sm text-gray-600">
-        <Link href="/projects" className="text-blue-600 underline">
+        <Link href="/projects" className="text-legal-gold underline">
           ← Back to Projects
         </Link>
       </p>

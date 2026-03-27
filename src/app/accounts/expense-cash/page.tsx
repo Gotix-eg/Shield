@@ -54,7 +54,7 @@ export default function ExpenseCashPage() {
 
   return (
     <div className="p-8 space-y-6">
-      <Link href="/accounts/general-cash" className="text-blue-500 hover:underline">← Back to Cash Ledgers</Link>
+      <Link href="/accounts/general-cash" className="text-legal-gold hover:underline">← Back to Cash Ledgers</Link>
       <h1 className="text-2xl font-bold">Project Expense Cash</h1>
 
       <div className="flex gap-4 items-end flex-wrap">

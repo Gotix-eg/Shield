@@ -50,43 +50,62 @@ export default function BankTransferPage() {
   if (isLoading) return <p>Loading...</p>;
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-2xl font-bold">Bank Transfer</h1>
-      <Link href="/accounts/banks" className="text-blue-600 underline">&larr; Back to Banks</Link>
-
-      <form onSubmit={submit} className="flex flex-wrap gap-2 items-end mt-6 max-w-lg">
-        <div className="flex flex-col">
-          <label className="text-sm">From Bank</label>
-          <select value={fromBankId} onChange={(e)=>setFromBankId(Number(e.target.value))} className="border px-2 py-1">
-            <option value="">Select bank</option>
-            {banks.map((b:any)=>(<option key={b.id} value={b.id}>{`${b.name} (${b.currency})`}</option>))}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-sm">To Bank</label>
-          <select value={toBankId} onChange={(e)=>setToBankId(Number(e.target.value))} className="border px-2 py-1">
-            <option value="">Select bank</option>
-            {banks.map((b:any)=>(<option key={b.id} value={b.id}>{`${b.name} (${b.currency})`}</option>))}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-sm">Amount</label>
-          <input type="number" step="0.01" value={amount} onChange={(e)=>setAmount(e.target.value)} className="border px-2 py-1" />
-        </div>
-        {/* rate field shows only if currencies differ */}
-        {(fromBankId && toBankId && banks.find((b:any)=>b.id===fromBankId)?.currency !== banks.find((b:any)=>b.id===toBankId)?.currency) && (
-          <div className="flex flex-col">
-            <label className="text-sm">Rate (1 {banks.find((b:any)=>b.id===fromBankId)?.currency} = ? {banks.find((b:any)=>b.id===toBankId)?.currency})</label>
-            <input type="number" step="0.0001" value={rate} onChange={(e)=>setRate(e.target.value)} className="border px-2 py-1" />
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Inter-Bank Transfer</h1>
+            <p className="text-slate-400 font-light max-w-xl">Move funds securely between firm bank accounts with currency conversion support.</p>
           </div>
-        )}
-
-        <div className="flex flex-col flex-1">
-          <label className="text-sm">Notes</label>
-          <input value={notes} onChange={(e)=>setNotes(e.target.value)} className="border px-2 py-1 w-full" />
+          <Link href="/accounts/banks" className="btn-legal-outline">Back to Banks</Link>
         </div>
-        <button disabled={busy} type="submit" className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50">{busy ? 'Processing...' : 'Transfer'}</button>
-      </form>
+      </header>
+
+      <div className="legal-card p-10 max-w-2xl">
+        <form onSubmit={submit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Source Account</label>
+              <select value={fromBankId} onChange={(e)=>setFromBankId(Number(e.target.value))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-legal-gold/50 transition-colors" required>
+                <option value="">Select bank...</option>
+                {banks.map((b:any)=>(<option key={b.id} value={b.id}>{`${b.name} (${b.currency})`}</option>))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Destination Account</label>
+              <select value={toBankId} onChange={(e)=>setToBankId(Number(e.target.value))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-legal-gold/50 transition-colors" required>
+                <option value="">Select bank...</option>
+                {banks.map((b:any)=>(<option key={b.id} value={b.id}>{`${b.name} (${b.currency})`}</option>))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Transfer Amount</label>
+              <input type="number" step="0.01" value={amount} onChange={(e)=>setAmount(e.target.value)} placeholder="0.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+            </div>
+            {/* rate field shows only if currencies differ */}
+            {(fromBankId && toBankId && banks.find((b:any)=>b.id===fromBankId)?.currency !== banks.find((b:any)=>b.id===toBankId)?.currency) && (
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Exchange Rate (1 {banks.find((b:any)=>b.id===fromBankId)?.currency} = ?)</label>
+                <input type="number" step="0.0001" value={rate} onChange={(e)=>setRate(e.target.value)} placeholder="1.0000" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-legal-gold/50 transition-colors" required />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Transfer Notes</label>
+            <textarea value={notes} onChange={(e)=>setNotes(e.target.value)} placeholder="Reason for transfer..." className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-legal-gold/50 transition-colors min-h-[100px]" />
+          </div>
+
+          <div className="pt-4">
+            <button disabled={busy} type="submit" className="btn-legal px-12 py-4 text-lg w-full md:w-auto">
+              {busy ? 'Processing Transfer...' : 'Execute Transfer'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

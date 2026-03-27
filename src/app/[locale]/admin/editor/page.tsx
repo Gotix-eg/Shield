@@ -17,7 +17,7 @@ const SaveButton = () => {
   return (
     <button
       onClick={handleSave}
-      className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
+      className="rounded bg-legal-gold px-3 py-1 text-sm text-white hover:bg-legal-gold/90"
     >
       Save
     </button>

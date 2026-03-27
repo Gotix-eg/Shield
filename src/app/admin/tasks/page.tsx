@@ -152,138 +152,170 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="dashboard-container">
       <Toaster />
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={()=>setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Task</button>
-        <h1 className="text-2xl font-semibold">Tasks</h1>
-      </div>
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Tasks Management</h1>
+            <p className="text-slate-400 font-light max-w-xl">Assign, track, and manage legal tasks across all active projects.</p>
+          </div>
+          <button onClick={()=>setShowModal(true)} className="btn-legal px-8">Add New Task</button>
+        </div>
+      </header>
 
       {loading ? (
-        <p>Loading...</p>
+        <div className="legal-card p-16 text-center text-slate-500 italic font-light">Loading tasks...</div>
       ) : (
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {[
-                  "Title",
-                  "Client",
-                  "Project",
-                  "Assignee",
-                  "Due Date",
-                  "Status",
-                  "Actions",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {tasks.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2">{t.title}</td>
-                  <td className="px-3 py-2">{t.client?.name || "-"}</td>
-                  <td className="px-3 py-2">{t.project?.name || "-"}</td>
-                  <td className="px-3 py-2">{t.assignee.name}</td>
-                  <td className="px-3 py-2">
-                    {new Date(t.dueDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-3 py-2 capitalize">
-                    {t.status.toLowerCase()}
-                  </td>
-                  <td className="px-3 py-2 space-x-2">
-                    {t.status === 'PENDING' && (
-                      <button className="text-blue-600 hover:underline" onClick={() => updateStatus(t.id,'IN_PROGRESS')}>Start</button>
-                    )}
-                    {t.status === 'IN_PROGRESS' && (
-                      <button className="text-green-600 hover:underline" onClick={() => updateStatus(t.id,'DONE')}>Done</button>
-                    )}
-                    <button className="text-indigo-600 hover:underline" onClick={() => reassign(t)}>Assign</button>
-                  </td>
+        <div className="legal-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white/5 border-b border-white/5">
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Task Title</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Client / Project</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Assignee</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Due Date</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Status</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {tasks.length === 0 ? (
+                  <tr><td colSpan={6} className="px-8 py-16 text-center text-slate-500 italic font-light">No tasks found.</td></tr>
+                ) : (
+                  tasks.map((t) => (
+                    <tr key={t.id} className="group hover:bg-white/5 transition-colors">
+                      <td className="px-8 py-6 text-slate-200 font-medium">{t.title}</td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="text-slate-400 text-xs font-light">{t.client?.name || "-"}</span>
+                          <span className="text-slate-500 text-[10px] uppercase tracking-wider">{t.project?.name || "-"}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-slate-300">{t.assignee.name}</td>
+                      <td className="px-8 py-6 text-slate-400 font-mono text-xs">{new Date(t.dueDate).toLocaleDateString()}</td>
+                      <td className="px-8 py-6">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
+                          t.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' :
+                          t.status === 'IN_PROGRESS' ? 'bg-legal-gold/10 text-legal-gold' :
+                          'bg-amber-500/10 text-amber-400'
+                        }`}>
+                          {t.status}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-center space-x-4">
+                        {t.status === 'PENDING' && (
+                          <button className="text-legal-gold hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest" onClick={() => updateStatus(t.id,'IN_PROGRESS')}>Start</button>
+                        )}
+                        {t.status === 'IN_PROGRESS' && (
+                          <button className="text-emerald-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest" onClick={() => updateStatus(t.id,'DONE')}>Complete</button>
+                        )}
+                        <button className="text-slate-500 hover:text-legal-gold transition-colors text-[10px] font-bold uppercase tracking-widest" onClick={() => reassign(t)}>Assign</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Add Task</h2>
-            <div className="space-y-3">
-              <input
-                className="w-full border p-2"
-                placeholder="Title"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-              <textarea
-                className="w-full border p-2"
-                placeholder="Description"
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-              ></textarea>
-              <select
-                className="w-full border p-2"
-                value={form.clientId}
-                onChange={e => setForm({ ...form, clientId: e.target.value, projectId: '' })}
-              >
-                <option value="">Select Client</option>
-                {clients.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <select
-                className="w-full border p-2"
-                value={form.projectId}
-                onChange={e => setForm({ ...form, projectId: e.target.value })}
-                disabled={!form.clientId}
-              >
-                <option value="">Select Project</option>
-                {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              <select
-                className="w-full border p-2"
-                value={form.assigneeId}
-                onChange={e => setForm({ ...form, assigneeId: e.target.value })}
-              >
-                <option value="">Select Lawyer</option>
-                {lawyers.map(l => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
-                ))}
-              </select>
-              <input
-                type="date"
-                className="w-full border p-2"
-                value={form.dueDate}
-                onChange={e => setForm({ ...form, dueDate: e.target.value })}
-              />
+        <div className="fixed inset-0 bg-[#0a0f1a]/80 backdrop-blur-md flex items-center justify-center z-[200] p-6 animate-in fade-in duration-300">
+          <div className="legal-card bg-surface w-full max-w-lg p-10 border-legal-gold/20 shadow-2xl animate-in zoom-in-95 duration-300">
+            <h2 className="text-3xl font-serif text-white mb-8">Create Task</h2>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Task Title</label>
+                <input
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                  placeholder="e.g. Draft Purchase Agreement"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Description</label>
+                <textarea
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors h-24 resize-none"
+                  placeholder="Additional task details..."
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                ></textarea>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Client</label>
+                  <select
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                    value={form.clientId}
+                    onChange={e => setForm({ ...form, clientId: e.target.value, projectId: '' })}
+                  >
+                    <option value="" className="bg-slate-900">Select Client</option>
+                    {clients.map(c => (
+                      <option key={c.id} value={c.id} className="bg-slate-900">{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Project</label>
+                  <select
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors disabled:opacity-30"
+                    value={form.projectId}
+                    onChange={e => setForm({ ...form, projectId: e.target.value })}
+                    disabled={!form.clientId}
+                  >
+                    <option value="" className="bg-slate-900">Select Project</option>
+                    {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p => (
+                      <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Assignee</label>
+                  <select
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                    value={form.assigneeId}
+                    onChange={e => setForm({ ...form, assigneeId: e.target.value })}
+                  >
+                    <option value="" className="bg-slate-900">Select Lawyer</option>
+                    {lawyers.map(l => (
+                      <option key={l.id} value={l.id} className="bg-slate-900">{l.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Due Date</label>
+                  <input
+                    type="date"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                    value={form.dueDate}
+                    onChange={e => setForm({ ...form, dueDate: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="mt-4 flex justify-end space-x-2">
+
+            <div className="mt-10 flex gap-4">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 border rounded"
+                className="flex-1 btn-legal-outline py-3"
               >
                 Cancel
               </button>
               <button
                 onClick={addTask}
                 disabled={!form.title.trim() || !form.assigneeId || !form.dueDate}
-                className="px-4 py-2 rounded text-white disabled:opacity-50"
-                style={{backgroundColor: (!form.title.trim() || !form.assigneeId || !form.dueDate) ? '#94a3b8':'#2563eb'}}
+                className="flex-[2] btn-legal py-3 disabled:opacity-50"
               >
-                Save
+                Create Task
               </button>
             </div>
           </div>

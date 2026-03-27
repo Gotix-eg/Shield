@@ -69,7 +69,7 @@ export default function InvoiceEditPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="container mx-auto p-4 flex-1">
+      <div className="dashboard-container p-4 flex-1">
         <h1 className="text-2xl font-bold mb-4">{t('edit.title', { ns: 'invoices' })}</h1>
         {loading && <p>{t('common.loading')}</p>}
         {invoice && (

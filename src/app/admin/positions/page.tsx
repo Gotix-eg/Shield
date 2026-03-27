@@ -96,7 +96,7 @@ export default function PositionsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-4">Positions</h1>
 
       {/* Add form */}
@@ -124,7 +124,7 @@ export default function PositionsPage() {
             ))}
           </select>
         </div>
-        <button onClick={addPosition} className="bg-blue-600 text-white px-4 py-2 rounded h-9">
+        <button onClick={addPosition} className="bg-legal-gold text-white px-4 py-2 rounded h-9">
           Add
         </button>
       </div>
@@ -175,7 +175,7 @@ export default function PositionsPage() {
                   </>
                 ) : (
                   <>
-                    <button onClick={()=>startEdit(p)} className="text-blue-600">Edit</button>
+                    <button onClick={()=>startEdit(p)} className="text-legal-gold">Edit</button>
                     <button onClick={()=>deletePosition(p.id)} className="text-red-600">Delete</button>
                   </>
                 )}

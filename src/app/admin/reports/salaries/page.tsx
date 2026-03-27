@@ -45,68 +45,90 @@ export default function SalariesReportPage() {
   }, { totalGross: 0, totalNet: 0 });
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Salary Report</h1>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Salary Report</h1>
+            <p className="text-slate-400 font-light max-w-xl">Detailed analysis of payroll, gross earnings, and net distributions.</p>
+          </div>
+          <Link href="/admin/reports" className="btn-legal-outline">Back to Reports</Link>
+        </div>
+      </header>
 
-      <div className="mb-4 flex gap-4 items-end">
-        <div>
-          <label className="block text-sm">From</label>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="border px-2 py-1 rounded" />
+      <div className="legal-card p-8 mb-12">
+        <h3 className="text-xl font-serif text-white mb-8">Filter Records</h3>
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">From Date</label>
+            <input 
+              type="date" 
+              value={from} 
+              onChange={(e) => setFrom(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">To Date</label>
+            <input 
+              type="date" 
+              value={to} 
+              onChange={(e) => setTo(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+            />
+          </div>
+          <button onClick={load} className="btn-legal px-8 h-[42px]">Search Records</button>
         </div>
-        <div>
-          <label className="block text-sm">To</label>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="border px-2 py-1 rounded" />
-        </div>
-        <button onClick={load} className="bg-blue-600 text-white px-4 py-1 rounded">Search</button>
       </div>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : rows.length === 0 ? (
-        <p>No salary records found for this period.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="text-sm w-full border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Period</th>
-                <th className="border px-2 py-1">Employee</th>
-                <th className="border px-2 py-1 text-right">Gross</th>
-                <th className="border px-2 py-1 text-right">Deductions</th>
-                <th className="border px-2 py-1 text-right">Net</th>
-                <th className="border px-2 py-1">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, idx) => (
-                <tr key={`${r.batchId}-${r.employeeId}-${idx}`} className="border-t">
-                  <td className="px-2 py-1">{dayjs(r.createdAt).format("YYYY-MM-DD")}</td>
-                  <td className="px-2 py-1">{r.period}</td>
-                  <td className="px-2 py-1">{r.employeeName}</td>
-                  <td className="px-2 py-1 text-right">{r.grossSalary.toFixed(2)}</td>
-                  <td className="px-2 py-1 text-right">{r.totalDeductions.toFixed(2)}</td>
-                  <td className="px-2 py-1 text-right">{r.netSalary.toFixed(2)}</td>
-                  <td className="px-2 py-1">{r.status}</td>
+      <div className="legal-card overflow-hidden">
+        {loading ? (
+          <div className="p-16 text-center text-slate-500 italic font-light">Loading report data...</div>
+        ) : rows.length === 0 ? (
+          <div className="p-16 text-center text-slate-500 italic font-light">No salary records found for this period.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white/5 border-b border-white/5">
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Date</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Period</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Employee</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Gross</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-right">Net</th>
+                  <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Status</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="font-semibold">
-                <td colSpan={3} className="text-right pr-2">Totals</td>
-                <td className="text-right">{totals.totalGross.toFixed(2)}</td>
-                <td className="text-right">{(totals.totalGross - totals.totalNet).toFixed(2)}</td>
-                <td className="text-right">{totals.totalNet.toFixed(2)}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      )}
-
-      <Link href="/admin/reports" className="mt-6 inline-block text-blue-600">
-         Back to Reports
-      </Link>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {rows.map((r, idx) => (
+                  <tr key={`${r.batchId}-${r.employeeId}-${idx}`} className="group hover:bg-white/5 transition-colors">
+                    <td className="px-8 py-6 text-slate-400 font-mono text-xs">{dayjs(r.createdAt).format("YYYY-MM-DD")}</td>
+                    <td className="px-8 py-6 text-slate-300 font-medium">{r.period}</td>
+                    <td className="px-8 py-6 text-slate-200">{r.employeeName}</td>
+                    <td className="px-8 py-6 text-right font-mono text-xs text-slate-400">{r.grossSalary.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="px-8 py-6 text-right font-bold text-legal-gold">{r.netSalary.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="px-8 py-6 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
+                        r.status === 'PAID' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                      }`}>
+                        {r.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-white/5">
+                <tr className="font-bold">
+                  <td colSpan={3} className="px-8 py-6 text-right text-slate-400 text-xs uppercase tracking-widest">Grand Totals</td>
+                  <td className="px-8 py-6 text-right text-slate-200 font-mono">{totals.totalGross.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td className="px-8 py-6 text-right text-legal-gold text-lg font-serif">{totals.totalNet.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -158,7 +158,7 @@ export default function QuickTxnDialog({ open, onClose, defaultType, defaultAcco
           <button onClick={onClose} className="rounded bg-gray-200 px-4 py-1 text-sm hover:bg-gray-300">
             Cancel
           </button>
-          <button onClick={submit} disabled={loading} className="rounded bg-blue-600 px-4 py-1 text-sm text-white hover:bg-blue-700">
+          <button onClick={submit} disabled={loading} className="rounded bg-legal-gold px-4 py-1 text-sm text-white hover:bg-legal-gold/90">
             {loading ? 'Saving…' : 'Save'}
           </button>
         </div>

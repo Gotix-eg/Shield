@@ -152,7 +152,7 @@ export default function ProfitLossReportPage() {
         </div>
         <button
           onClick={fetchReport}
-          className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+          className="bg-legal-gold text-white px-4 py-1 rounded hover:bg-legal-gold/90"
         >
           {t('common.apply','Apply')}
         </button>

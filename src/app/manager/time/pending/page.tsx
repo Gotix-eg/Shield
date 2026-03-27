@@ -76,7 +76,7 @@ export default function ManagerPendingTimePage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-6">Pending Time Approvals</h1>
       {loading ? (
         <p>Loading...</p>
@@ -161,7 +161,7 @@ export default function ManagerPendingTimePage() {
                       <button onClick={cancel} className="text-gray-500">Cancel</button>
                     </>
                   ) : (
-                    <button onClick={() => beginEdit(e)} className="text-blue-600">Edit</button>
+                    <button onClick={() => beginEdit(e)} className="text-legal-gold">Edit</button>
                   )}
                 </td>
               </tr>

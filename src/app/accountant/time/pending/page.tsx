@@ -80,7 +80,7 @@ export default function AccountantPendingTimePage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-6">Pending Time – Accountant</h1>
       {loading ? (
         <p>Loading...</p>
@@ -115,7 +115,7 @@ export default function AccountantPendingTimePage() {
                 <td className="px-3 py-2 text-center">{e.durationMins}</td>
                 <td className="px-3 py-2 max-w-[200px] truncate">{e.notes || "-"}</td>
                 <td className="px-3 py-2 flex gap-3">
-                  <button onClick={() => confirmApprove(e.id, false)} className="text-blue-600 hover:underline">
+                  <button onClick={() => confirmApprove(e.id, false)} className="text-legal-gold hover:underline">
                     Approve Only
                   </button>
                   <button onClick={() => openCurrencyModal(e.id)} className="text-green-600 hover:underline">

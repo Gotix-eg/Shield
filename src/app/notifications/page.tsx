@@ -44,7 +44,7 @@ export default function NotificationsPage() {
   if (loading) return <p className="p-8">Loading…</p>;
 
   return (
-    <div className="container mx-auto max-w-3xl p-8 space-y-6">
+    <div className="dashboard-container max-w-3xl p-8 space-y-6">
       <h1 className="text-3xl font-bold">Notifications</h1>
       {list.length === 0 ? (
         <p>No notifications.</p>
@@ -66,7 +66,7 @@ export default function NotificationsPage() {
                 {!n.read && (
                   <button
                     onClick={() => markRead(n.id)}
-                    className="h-8 rounded bg-blue-600 px-3 text-white text-xs"
+                    className="h-8 rounded bg-legal-gold px-3 text-white text-xs"
                   >
                     Mark Read
                   </button>

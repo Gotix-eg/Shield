@@ -42,13 +42,26 @@ export default function AccountsHome() {
   ];
 
   return (
-    <div className="container mx-auto max-w-4xl p-8">
-      <h1 className="mb-8 text-3xl font-bold">Accounts</h1>
-      <div className="grid gap-6 grid-cols-1">
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Accounts</h1>
+        <p className="text-slate-400 font-light max-w-xl">Comprehensive financial management and ledger control center.</p>
+      </header>
+
+      <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {tiles.map(tile => (
-          <Link key={tile.href} href={tile.href} className="rounded-lg border border-gray-300 p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
-            <h2 className="mb-2 text-xl font-semibold text-blue-600">{tile.title}</h2>
-            <p className="text-sm text-gray-600">{tile.description}</p>
+          <Link 
+            key={tile.href} 
+            href={tile.href} 
+            className="legal-card p-8 group hover:border-legal-gold/30 transition-all duration-500 flex flex-col justify-between h-full"
+          >
+            <div>
+              <h2 className="mb-4 text-2xl font-serif text-white group-hover:text-legal-gold transition-colors">{tile.title}</h2>
+              <p className="text-sm text-slate-500 font-light leading-relaxed">{tile.description}</p>
+            </div>
+            <div className="mt-8 flex items-center justify-end">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-legal-gold font-bold group-hover:translate-x-2 transition-transform">Access Portal →</span>
+            </div>
           </Link>
         ))}
       </div>

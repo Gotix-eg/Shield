@@ -76,7 +76,7 @@ export default function OfficeExpensesAdminPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <h1 className="text-2xl font-bold mb-4">Office Expenses</h1>
 
       {loading ? (
@@ -145,7 +145,7 @@ export default function OfficeExpensesAdminPage() {
                       <td className="px-3 py-1 truncate max-w-[200px]">{t.memo ?? "-"}</td>
                       <td className="px-3 py-1">
                         <button
-                          className="text-blue-600 mr-2"
+                          className="text-legal-gold mr-2"
                           onClick={() => {
                             setEditId(t.id);
                             setEditAmount(String(t.amount));
@@ -168,7 +168,7 @@ export default function OfficeExpensesAdminPage() {
         </div>
       )}
 
-      <Link href="/admin" className="mt-6 inline-block text-blue-600">
+      <Link href="/admin" className="mt-6 inline-block text-legal-gold">
         ← Back to Admin
       </Link>
     </div>

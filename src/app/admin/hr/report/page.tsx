@@ -47,10 +47,10 @@ export default function HRReportPage(){
   if(error) return <p className="p-8 text-red-600">{error}</p>;
 
   return (
-    <div className="container mx-auto max-w-6xl p-8 space-y-6">
+    <div className="dashboard-container max-w-6xl p-8 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">HR Report</h1>
-        <button onClick={exportCSV} className="rounded bg-blue-600 px-4 py-2 text-white">Export CSV</button>
+        <button onClick={exportCSV} className="rounded bg-legal-gold px-4 py-2 text-white">Export CSV</button>
       </div>
       <div className="overflow-auto border rounded">
         <table className="min-w-full text-sm">

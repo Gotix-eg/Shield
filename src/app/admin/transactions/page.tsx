@@ -34,7 +34,7 @@ export default function TransactionsPage(){
   };
 
   return (
-    <div className="container mx-auto max-w-5xl p-8">
+    <div className="dashboard-container max-w-5xl p-8">
       <h1 className="mb-6 text-3xl font-bold">Transactions</h1>
       {loading ? 'Loading…' : (
         <table className="w-full border-collapse text-sm">

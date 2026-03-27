@@ -42,7 +42,7 @@ export default function AttendanceReport() {
   const grandLates = rows.reduce((s, r) => s + r.lates, 0);
 
   return (
-    <div className="container mx-auto max-w-5xl p-8 space-y-6">
+    <div className="dashboard-container max-w-5xl p-8 space-y-6">
       <h1 className="text-3xl font-bold">Attendance Report</h1>
 
       <div className="flex flex-wrap items-end gap-4 border p-4 rounded">

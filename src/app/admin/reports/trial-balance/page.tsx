@@ -50,7 +50,7 @@ export default function TrialBalancePage() {
   }, [token]);
 
   return (
-    <div className="container mx-auto max-w-6xl p-8">
+    <div className="dashboard-container max-w-6xl p-8">
       <h1 className="mb-6 text-3xl font-bold">{t('trial.title', 'Trial Balance')}</h1>
 
       {/* filters */}
@@ -75,7 +75,7 @@ export default function TrialBalancePage() {
         />
         <button
           type="submit"
-          className="rounded bg-blue-600 px-4 py-1 font-semibold text-white hover:bg-blue-700"
+          className="rounded bg-legal-gold px-4 py-1 font-semibold text-white hover:bg-legal-gold/90"
           disabled={loading}
         >
           {loading ? t('loading', 'Loading…') : t('apply', 'Apply')}

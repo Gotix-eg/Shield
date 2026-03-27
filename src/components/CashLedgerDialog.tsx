@@ -79,7 +79,7 @@ export default function CashLedgerDialog({ open, onClose, allowDelete = false }:
                 </span>
               ))}
             </div>
-            <button onClick={()=>setAddMode(p=>!p)} className="rounded bg-blue-600 px-3 py-1 text-white text-xs hover:bg-blue-700">
+            <button onClick={()=>setAddMode(p=>!p)} className="rounded bg-legal-gold px-3 py-1 text-white text-xs hover:bg-legal-gold/90">
               {addMode? 'Cancel' : 'Add'}
             </button>
           </div>

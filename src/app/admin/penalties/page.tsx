@@ -82,77 +82,124 @@ export default function PenaltiesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
-      <h1 className="text-2xl font-bold mb-4">Penalties</h1>
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Penalties</h1>
+            <p className="text-slate-400 font-light max-w-xl">Manage disciplinary deductions and employee performance adjustments.</p>
+          </div>
+          <div className="flex gap-3">
+            <input
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-legal-gold/50 transition-colors w-64"
+              placeholder="Filter by employee name..."
+            />
+          </div>
+        </div>
+      </header>
 
       {/* add form */}
-      <div className="flex gap-3 flex-wrap items-end mb-6">
-        <div>
-          <label className="block text-sm">Employee</label>
-          <select value={employeeId} onChange={(e)=>setEmployeeId(e.target.value)} className="border rounded px-2 py-1">
-            <option value="">-- select --</option>
-            {employees.map(emp=> <option key={emp.id} value={emp.id}>{emp.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm">Amount</label>
-          <input type="number" value={amount} onChange={(e)=>setAmount(e.target.value)} className="border rounded px-2 py-1 w-28" placeholder="auto" />
-        </div>
-        <div>
-          <label className="block text-sm">Days</label>
-          <input type="number" value={days} onChange={(e)=>setDays(e.target.value)} className="border rounded px-2 py-1 w-24" placeholder="e.g 2" />
-        </div>
-        <div>
-          <label className="block text-sm">Currency</label>
-          <select value={currency} onChange={(e)=>setCurrency(e.target.value as CurrencyCode)} className="border rounded px-2 py-1">
-            {Object.values(CurrencyCode).map(c=> <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm">Reason</label>
-          <input value={reason} onChange={(e)=>setReason(e.target.value)} className="border rounded px-2 py-1 w-48" />
-        </div>
-        <button onClick={addPenalty} className="bg-blue-600 text-white px-4 py-2 rounded h-9">Add</button>
-        <div className="ml-auto">
-          <label className="block text-sm">Filter by name</label>
-          <input
-            value={nameFilter}
-            onChange={(e) => setNameFilter(e.target.value)}
-            className="border rounded px-2 py-1 w-48"
-            placeholder="Employee name"
-          />
+      <div className="legal-card p-8 mb-12">
+        <h3 className="text-xl font-serif text-white mb-8">Record New Penalty</h3>
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="space-y-2 flex-1 min-w-[200px]">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Employee</label>
+            <select 
+              value={employeeId} 
+              onChange={(e)=>setEmployeeId(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+            >
+              <option value="" className="bg-slate-900">-- Select Employee --</option>
+              {employees.map(emp=> <option key={emp.id} value={emp.id} className="bg-slate-900">{emp.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2 w-32">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Amount</label>
+            <input 
+              type="number" 
+              value={amount} 
+              onChange={(e)=>setAmount(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+              placeholder="0.00" 
+            />
+          </div>
+          <div className="space-y-2 w-24">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Days</label>
+            <input 
+              type="number" 
+              value={days} 
+              onChange={(e)=>setDays(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+              placeholder="e.g. 2" 
+            />
+          </div>
+          <div className="space-y-2 w-32">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Currency</label>
+            <select 
+              value={currency} 
+              onChange={(e)=>setCurrency(e.target.value as CurrencyCode)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+            >
+              {Object.values(CurrencyCode).map(c=> <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2 flex-1 min-w-[250px]">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Reason / Memo</label>
+            <input 
+              value={reason} 
+              onChange={(e)=>setReason(e.target.value)} 
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors" 
+              placeholder="Reason for penalty..."
+            />
+          </div>
+          <button onClick={addPenalty} className="btn-legal px-8 h-[42px]">Add Penalty</button>
         </div>
       </div>
 
       {/* table */}
-      <table className="w-full bg-white shadow rounded">
-        <thead className="bg-gray-100 text-left">
-          <tr>
-            <th className="px-4 py-2">Date</th>
-            <th className="px-4 py-2">Employee</th>
-            <th className="px-4 py-2">Amount</th>
-            <th className="px-4 py-2">Currency</th>
-            <th className="px-4 py-2">Reason</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredPenalties.map(p=> (
-            <tr key={p.id} className="border-t">
-              <td className="px-4 py-2">{new Date(p.date).toLocaleDateString()}</td>
-              <td className="px-4 py-2">
-                <Link href={`/admin/employees/${p.employeeId}`} className="text-blue-600">{p.employee?.name}</Link>
-              </td>
-              <td className="px-4 py-2">{p.amount}</td>
-              <td className="px-4 py-2">{p.currency}</td>
-              <td className="px-4 py-2">{p.reason ?? "-"}</td>
-              <td className="px-4 py-2">
-                <button onClick={()=>deletePenalty(p.id)} className="text-red-600">Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="legal-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/5">
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Date</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Employee</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Amount</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">Reason</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {filteredPenalties.length === 0 ? (
+                <tr><td colSpan={5} className="px-8 py-16 text-center text-slate-500 italic font-light">No penalty records found.</td></tr>
+              ) : (
+                filteredPenalties.map(p=> (
+                  <tr key={p.id} className="group hover:bg-white/5 transition-colors">
+                    <td className="px-8 py-6 text-slate-400 font-mono text-xs">{new Date(p.date).toLocaleDateString()}</td>
+                    <td className="px-8 py-6">
+                      <Link href={`/admin/employees/${p.employeeId}`} className="text-slate-200 hover:text-legal-gold transition-colors font-medium underline decoration-legal-gold/20">
+                        {p.employee?.name}
+                      </Link>
+                    </td>
+                    <td className="px-8 py-6 text-red-400 font-bold font-mono">-{p.amount} <span className="text-[10px] ml-1">{p.currency}</span></td>
+                    <td className="px-8 py-6 text-slate-400 font-light italic">{p.reason ?? "-"}</td>
+                    <td className="px-8 py-6 text-center">
+                      <button 
+                        onClick={()=>deletePenalty(p.id)} 
+                        className="text-slate-500 hover:text-red-400 transition-colors text-xs font-bold uppercase tracking-widest"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

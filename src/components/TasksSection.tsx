@@ -146,7 +146,7 @@ export default function TasksSection({ projectId }: Props) {
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <button onClick={()=>setShowModal(false)} className="border px-3 py-1 rounded">Cancel</button>
-              <button onClick={addTask} className="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
+              <button onClick={addTask} className="bg-legal-gold text-white px-4 py-1 rounded">Save</button>
             </div>
           </div>
         </div>

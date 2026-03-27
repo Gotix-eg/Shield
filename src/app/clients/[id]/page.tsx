@@ -124,7 +124,7 @@ export default function ClientPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-legal-gold"></div>
     </div>
   );
 
@@ -147,7 +147,7 @@ export default function ClientPage() {
   );
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <Toaster position="top-right" />
       <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -161,7 +161,7 @@ export default function ClientPage() {
                 const id = Number(params.split('/')[2]);
                 router.push(`/clients/${id}/edit`);
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90"
             >
               Edit Client
             </button>
@@ -245,7 +245,7 @@ export default function ClientPage() {
                               const id = Number(params.split('/')[2]);
                               router.push(`/projects/${project.id}/edit`);
                             }}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="text-legal-gold hover:text-legal-gold/90 mr-4"
                           >
                             Edit
                           </button>
@@ -273,7 +273,7 @@ export default function ClientPage() {
   if (!client) return null;
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <Toaster position="top-right" />
       <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -284,7 +284,7 @@ export default function ClientPage() {
           <div className="flex gap-4 mt-4 md:mt-0">
             <button
               onClick={() => router.push(`/clients/${params.id}/edit`)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90"
             >
               Edit Client
             </button>
@@ -365,7 +365,7 @@ export default function ClientPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => router.push(`/projects/${project.id}/edit`)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="text-legal-gold hover:text-legal-gold/90 mr-4"
                           >
                             Edit
                           </button>
@@ -396,7 +396,7 @@ export default function ClientPage() {
           <div className="flex gap-4 mt-4 md:mt-0">
             <button
               onClick={() => router.push(`/clients/${params.id}/edit`)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90"
             >
               Edit Client
             </button>
@@ -477,7 +477,7 @@ export default function ClientPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => router.push(`/projects/${project.id}/edit`)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="text-legal-gold hover:text-legal-gold/90 mr-4"
                           >
                             Edit
                           </button>
@@ -500,7 +500,7 @@ export default function ClientPage() {
     </div>
         <button
           onClick={() => router.push('/dashboard/clients')}
-          className="text-blue-600 underline text-sm"
+          className="text-legal-gold underline text-sm"
         >
           ← Back
         </button>
@@ -508,7 +508,7 @@ export default function ClientPage() {
         <div className="flex gap-4">
           <button
             onClick={() => router.push(`/clients/${params.id}/edit`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90"
           >
             Edit
           </button>

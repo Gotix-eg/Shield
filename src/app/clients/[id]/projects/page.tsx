@@ -48,18 +48,18 @@ export default function ClientProjectsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => router.push(`/clients/${params.id}`)}
-          className="text-blue-600 underline text-sm"
+          className="text-legal-gold underline text-sm"
         >
           ← Back to Client
         </button>
         <div className="flex gap-4">
           <button
             onClick={() => router.push(`/clients/${params.id}/projects/new`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90"
           >
             New Project
           </button>
@@ -103,7 +103,7 @@ export default function ClientProjectsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => router.push(`/clients/${params.id}/projects/${project.id}/edit`)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-legal-gold hover:text-legal-gold/90 mr-4"
                       >
                         Edit
                       </button>

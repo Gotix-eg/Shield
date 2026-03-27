@@ -23,7 +23,7 @@ export default function ClientPageImpl() {
   if (!client) return null;
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="dashboard-container p-6">
       <Toaster position="top-right" />
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -31,7 +31,7 @@ export default function ClientPageImpl() {
           <p className="text-sm text-gray-600">Manage client information and projects</p>
         </div>
         <div className="flex gap-4">
-          <button onClick={handleEditClient} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button onClick={handleEditClient} className="px-4 py-2 bg-legal-gold text-white rounded hover:bg-legal-gold/90">
             Edit Client
           </button>
           <button onClick={handleDeleteClient} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
@@ -55,7 +55,7 @@ export default function ClientPageImpl() {
 function Loading() {
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-legal-gold" />
     </div>
   );
 }

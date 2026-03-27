@@ -47,7 +47,7 @@ export default function OfficeExpensesPage() {
   return (
     <div className="p-8 space-y-6">
       <h1 className="text-2xl font-bold">Office Expenses</h1>
-      <Link href="/accounts" className="text-blue-600 underline">&larr; Back to Accounts</Link>
+      <Link href="/accounts" className="text-legal-gold underline">&larr; Back to Accounts</Link>
 
       {expenses.length > 0 && (
         <table className="text-sm border min-w-full">
@@ -84,7 +84,7 @@ export default function OfficeExpensesPage() {
           {['EGP','USD','EUR','SAR','GBP'].map(c=>(<option key={c}>{c}</option>))}
         </select>
         <input value={notes} onChange={(e)=>setNotes(e.target.value)} placeholder="Notes" className="border px-2 py-1" />
-        <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded">Add Expense</button>
+        <button type="submit" className="bg-legal-gold text-white px-3 py-1 rounded">Add Expense</button>
       </form>
     </div>
   );
