@@ -15,10 +15,27 @@ const createPrismaClient = () => {
     log: ["error"],
   });
 
+  // Models that have a companyId field for multi-tenant isolation
+  const MODELS_WITH_COMPANY = [
+    "User",
+    "Client",
+    "Project",
+    "Invoice",
+    "BankAccount",
+    "OfficeExpense",
+    "IncomeCashLedger",
+    "ExpenseCashLedger",
+    "Account",
+    "PayrollBatch",
+    "BankTransaction",
+  ];
+
   // Multi-tenant isolation middleware: scope every query by companyId stored in AsyncLocalStorage
   client.$use(async (params, next) => {
     const companyId = getCompanyId();
-    if (!companyId) {
+    
+    // Skip if no company context or if model doesn't support companyId
+    if (!companyId || !params.model || !MODELS_WITH_COMPANY.includes(params.model)) {
       return next(params);
     }
 
@@ -28,9 +45,6 @@ const createPrismaClient = () => {
       params.args.where = { ...(params.args.where ?? {}), companyId };
     }
     
-    // findUnique is tricky - it only accepts unique fields. 
-    // If we want to enforce companyId on findUnique, we'd need compound unique keys in schema.
-    // For now, let's convert findUnique to findFirst if companyId is present
     if (params.action === "findUnique") {
       params.action = "findFirst";
       params.args = params.args || {};

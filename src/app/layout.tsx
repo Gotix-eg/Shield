@@ -2,12 +2,21 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import NavBar from "@/components/NavBar";
-import { i18nInstance } from "@/lib/i18n";
-import { useTranslation } from "react-i18next";
+import { Inter, Playfair_Display } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
 
 export const metadata: Metadata = {
-  title: "ProLaw",
-  description: "Legal Management System",
+  title: "ProLaw | Legal Management System",
+  description: "Advanced legal practice management for modern law firms.",
 };
 
 export default function RootLayout({
@@ -16,10 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased" style={{ backgroundColor: "#12355b" }}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="antialiased min-h-screen bg-background text-foreground selection:bg-accent/30">
         <NavBar />
-        {children}
+        <main className="max-w-[1440px] mx-auto min-h-[calc(100vh-64px)]">
+          {children}
+        </main>
         <Toaster position="top-right" />
       </body>
     </html>

@@ -44,48 +44,99 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-start justify-center pt-16 px-4 bg-gray-900/80 bg-cover bg-top bg-no-repeat"
-      style={{ backgroundImage: "url('/prolaw-bg.jpg')" }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 bg-white/95 backdrop-blur-sm p-6 rounded shadow-lg"
-      >
-        <h1 className="text-xl font-semibold text-center">Sign in</h1>
-        {error && (
-          <div className="rounded bg-red-100 text-red-700 p-2 text-sm">
-            {error}
-          </div>
-        )}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-legal-900">
+      {/* Visual Side */}
+      <div className="hidden lg:flex relative overflow-hidden items-center justify-center p-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-legal-900 via-legal-800 to-black opacity-90"></div>
+        <div 
+          className="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-overlay scale-110"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2070&auto=format&fit=crop')" }}
+        ></div>
+        
+        <div className="relative z-10 max-w-lg">
+          <span className="text-legal-gold text-[10px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-left-8 duration-1000">EST. 2026</span>
+          <h2 className="text-6xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-left-12 duration-1000 delay-200">
+            Precision in <br /> 
+            <span className="italic text-legal-gold">Practice.</span>
+          </h2>
+          <div className="h-px w-24 bg-legal-gold/50 mb-8"></div>
+          <p className="text-slate-400 font-light leading-relaxed text-lg animate-in fade-in slide-in-from-left-16 duration-1000 delay-500">
+            Welcome to the future of legal management. A space where excellence meets innovation, designed for the world's leading firms.
+          </p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+        
+        {/* Subtle Decorative Elements */}
+        <div className="absolute bottom-12 left-12 flex gap-4 opacity-20">
+          <div className="w-12 h-[1px] bg-white"></div>
+          <div className="w-4 h-[1px] bg-white"></div>
         </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-      </form>
+      </div>
+
+      {/* Form Side */}
+      <div className="flex items-center justify-center p-8 bg-background relative overflow-hidden">
+        {/* Decorative background shape */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
+        
+        <div className="w-full max-w-md relative z-10">
+          <header className="mb-12">
+            <h1 className="text-3xl font-serif text-legal-900 mb-2">Member Login</h1>
+            <p className="text-slate-500 font-light">Please enter your credentials to proceed.</p>
+          </header>
+
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {error && (
+              <div className="p-4 bg-red-50 border-l-2 border-red-500 animate-in fade-in zoom-in duration-300">
+                <p className="text-sm text-red-800 font-medium">{error}</p>
+              </div>
+            )}
+            
+            <div className="space-y-6">
+              <div className="group">
+                <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 group-focus-within:text-legal-gold transition-colors">Corporate Email</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white border-b border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none"
+                  placeholder="name@firm.com"
+                />
+              </div>
+              
+              <div className="group">
+                <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 group-focus-within:text-legal-gold transition-colors">Security Password</label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white border-b border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-legal-900 text-white py-4 rounded-none font-serif tracking-widest hover:bg-legal-gold transition-all duration-500 disabled:opacity-50 relative overflow-hidden group"
+              >
+                <span className="relative z-10">{loading ? "VERIFYING..." : "AUTHENTICATE"}</span>
+                <div className="absolute inset-0 bg-legal-gold translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+              </button>
+            </div>
+            
+            <footer className="text-center pt-8 border-t border-slate-100">
+              <p className="text-xs text-slate-400 font-light">
+                Secure access for authorized personnel only. 
+                <br />
+                <span className="mt-2 block">© 2026 PROLAW GLOBAL</span>
+              </p>
+            </footer>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
