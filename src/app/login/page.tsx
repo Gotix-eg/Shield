@@ -44,102 +44,100 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-legal-900">
-      {/* Visual Side */}
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#0a0f1a]">
+      {/* Visual Side (Left) */}
       <div className="hidden lg:flex relative overflow-hidden items-center justify-center p-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-legal-900 via-legal-800 to-black opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0f1a] via-[#111827] to-black opacity-95"></div>
         <div 
-          className="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-overlay scale-110"
+          className="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay scale-110"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2070&auto=format&fit=crop')" }}
         ></div>
         
-        <div className="relative z-10 max-w-lg">
-          <span className="text-legal-gold text-[10px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-left-8 duration-1000">INTELLIGENT LEGAL MANAGEMENT</span>
-          <h2 className="text-6xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-left-12 duration-1000 delay-200">
-            Elevate Your <br /> 
-            <span className="italic text-legal-gold">Legal Practice.</span>
+        <div className="relative z-10 max-w-lg text-right">
+          <span className="text-legal-gold text-[12px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-right-8 duration-1000">نظام الإدارة القانونية المتكامل</span>
+          <h2 className="text-7xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-right-12 duration-1000 delay-200">
+            PRO LAW <br /> 
+            <span className="italic text-legal-gold text-5xl">للتميز المهني.</span>
           </h2>
-          <div className="h-px w-24 bg-legal-gold/50 mb-8"></div>
-          <p className="text-slate-400 font-light leading-relaxed text-lg animate-in fade-in slide-in-from-left-16 duration-1000 delay-500">
-            Pro Law is a comprehensive ecosystem built for the modern law firm. Manage cases, track billable hours, automate complex accounting, and handle HR operations—all within a single, secure, and intuitive interface designed for professional excellence.
+          <div className="h-px w-24 bg-legal-gold/50 mb-8 ml-auto"></div>
+          <p className="text-slate-400 font-light leading-relaxed text-xl animate-in fade-in slide-in-from-right-16 duration-1000 delay-500">
+            نظام متطور مصمم خصيصاً لمكاتب المحاماة العصرية. يتيح لك إدارة القضايا، تتبع ساعات العمل، أتمتة العمليات المحاسبية المعقدة، وإدارة الموارد البشرية—كل ذلك في منصة واحدة آمنة وسهلة الاستخدام.
           </p>
-        </div>
-        
-        {/* Subtle Decorative Elements */}
-        <div className="absolute bottom-12 left-12 flex gap-4 opacity-20">
-          <div className="w-12 h-[1px] bg-white"></div>
-          <div className="w-4 h-[1px] bg-white"></div>
         </div>
       </div>
 
-      {/* Form Side */}
-      <div className="flex items-center justify-center p-8 bg-legal-900 lg:bg-transparent relative overflow-hidden">
+      {/* Form Side (Right) */}
+      <div className="flex items-center justify-center p-8 bg-[#0a0f1a] lg:bg-transparent relative overflow-hidden">
         {/* Decorative background shape */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
         
-        <div className="w-full max-w-md relative z-10">
+        <div className="w-full max-w-md relative z-10 text-right">
           <header className="mb-12">
-            <h1 className="text-5xl font-serif text-legal-gold mb-4 tracking-tighter">PRO LAW</h1>
-            <p className="text-slate-400 font-light leading-relaxed mb-8">
-              The ultimate legal practice management solution. Streamline your firm's operations, automate billing, and manage client relationships with unmatched precision and security.
+            <h1 className="text-6xl font-serif text-legal-gold mb-4 tracking-tighter">PRO LAW</h1>
+            <p className="text-slate-400 font-light leading-relaxed mb-8 text-lg">
+              الحل الأمثل لإدارة ممارستك القانونية. قم بتبسيط عمليات مكتبك، وأتمتة الفواتير، وإدارة علاقات العملاء بدقة وأمان لا مثيل لهما.
             </p>
-            <div className="h-[1px] w-full bg-gradient-to-r from-legal-gold/50 to-transparent mb-8"></div>
-            <h2 className="text-xl font-serif text-legal-900 lg:text-legal-900 text-white mb-2">Member Login</h2>
-            <p className="text-slate-500 font-light text-sm text-slate-400">Please enter your secure credentials.</p>
+            <div className="h-[1px] w-full bg-gradient-to-l from-legal-gold/50 to-transparent mb-12"></div>
+            <h2 className="text-2xl font-serif text-white mb-2">تسجيل الدخول</h2>
+            <p className="text-slate-500 font-light text-sm">الرجاء إدخال بيانات الاعتماد الخاصة بك.</p>
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {error && (
-              <div className="p-4 bg-red-500/10 border-l-2 border-red-500 animate-in fade-in zoom-in duration-300">
-                <p className="text-sm text-red-400 font-medium">{error}</p>
+              <div className="p-4 bg-red-500/10 border-r-4 border-red-500 animate-in fade-in zoom-in duration-300">
+                <p className="text-sm text-red-400 font-medium text-right">{error}</p>
               </div>
             )}
             
             <div className="space-y-6">
               <div className="group">
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">Corporate Email</label>
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold mr-1 text-right">البريد الإلكتروني</label>
                 <input
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-transparent border-b border-slate-700 lg:border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none text-white lg:text-legal-900 placeholder:text-slate-600"
+                  className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-white focus:outline-none focus:border-legal-gold/50 focus:bg-white/[0.07] transition-all duration-300 text-right"
                   placeholder="name@firm.com"
+                  required
                 />
               </div>
-              
+
               <div className="group">
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">Security Password</label>
+                <div className="flex justify-between items-center mb-2 px-1">
+                  <a href="#" className="text-[10px] uppercase tracking-widest text-slate-600 hover:text-legal-gold transition-colors">نسيت كلمة السر؟</a>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 group-focus-within:text-legal-gold transition-colors font-bold text-right">كلمة المرور</label>
+                </div>
                 <input
                   type="password"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent border-b border-slate-700 lg:border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none text-white lg:text-legal-900 placeholder:text-slate-600"
+                  className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl text-white focus:outline-none focus:border-legal-gold/50 focus:bg-white/[0.07] transition-all duration-300 text-right"
                   placeholder="••••••••"
+                  required
                 />
               </div>
             </div>
 
-            <div className="pt-6">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-legal-gold text-legal-900 py-4 rounded-sm font-serif font-bold tracking-[0.2em] hover:bg-white hover:text-legal-900 transition-all duration-500 disabled:opacity-50 shadow-xl shadow-legal-gold/10 group flex items-center justify-center gap-3"
-              >
-                <span>{loading ? "VERIFYING..." : "AUTHENTICATE"}</span>
-                {!loading && <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>}
-              </button>
-            </div>
-            
-            <footer className="text-center pt-12">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold">
-                Authorized Personnel Only
-                <br />
-                <span className="mt-4 block opacity-50 italic font-serif normal-case tracking-normal text-xs">"Justice through precision."</span>
-              </p>
-            </footer>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-legal py-5 rounded-xl text-lg relative overflow-hidden group shadow-2xl"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-legal-900/30 border-t-legal-900 rounded-full animate-spin"></div>
+                ) : (
+                  <>دخول المنصة <span className="text-xl">→</span></>
+                )}
+              </span>
+            </button>
           </form>
+
+          <footer className="mt-12 pt-8 border-t border-white/5 text-center">
+            <p className="text-slate-600 text-xs font-light tracking-widest uppercase">
+              &copy; {new Date().getFullYear()} PRO LAW SYSTEMS. ALL RIGHTS RESERVED.
+            </p>
+          </footer>
         </div>
       </div>
     </div>

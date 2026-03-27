@@ -22,22 +22,20 @@ const ROLE_PAGES: Record<string,string[]> = {
   ADMIN_REPORTS:["clients","projects","time","expenses","invoices","reports","settings","leaves","notifications"],
 };
 
-const links:NavLink[] = [
-  { href: "/clients",   label: "Clients", key:"clients" },
-  { href: "/projects", label: "Projects", key:"projects" },
-  { href: "/admin/tasks", label: "Tasks", key:"tasks" },
-  { href: "/time", label: "Time Entries", key:"time" },
-  { href: "/expenses", label: "Expenses", key:"expenses" },
-  { href: "/leaves", label: "Leaves", key:"leaves" },
-  { href: "/invoices",  label: "Invoices", key:"invoices" },
-  { href: "/admin/reports", label: "Reports", key:"reports" },
-  { href: "/admin/time", label: "Admin Time", key:"admin_time" },
-  { href: "/accounts", label: "Accounts", key:"accounts" },
-  { href: "/admin/payroll", label: "Payroll", key:"payroll" },
-  { href: "/admin", label: "Admin", key:"settings" },
-  { href: "/admin/hr", label: "HR", key:"hr" },
-
-
+  const links:NavLink[] = [
+  { href: "/clients",   label: "العملاء", key:"clients" },
+  { href: "/projects", label: "المشاريع", key:"projects" },
+  { href: "/admin/tasks", label: "المهام", key:"tasks" },
+  { href: "/time", label: "الوقت", key:"time" },
+  { href: "/expenses", label: "المصاريف", key:"expenses" },
+  { href: "/leaves", label: "الإجازات", key:"leaves" },
+  { href: "/invoices",  label: "الفواتير", key:"invoices" },
+  { href: "/admin/reports", label: "التقارير", key:"reports" },
+  { href: "/admin/time", label: "إدارة الوقت", key:"admin_time" },
+  { href: "/accounts", label: "الحسابات", key:"accounts" },
+  { href: "/admin/payroll", label: "الرواتب", key:"payroll" },
+  { href: "/admin", label: "الإدارة", key:"settings" },
+  { href: "/admin/hr", label: "الموارد البشرية", key:"hr" },
   ];
 
 function decodeRole(token?:string):UserRole|null{
@@ -49,12 +47,21 @@ function decodeRole(token?:string):UserRole|null{
 }
 
 import { useEffect, useState } from "react";
+import { LogOut, Bell, ChevronDown } from "lucide-react";
 
 export default function NavBar() {
   const [role,setRole]=useState<UserRole|null>(null);
   const [unread,setUnread]=useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   useEffect(()=>{
     const token=getAuth()||undefined;
     const payload=token?JSON.parse(atob(token.split('.')[1])):null;
@@ -62,31 +69,49 @@ export default function NavBar() {
     // fetch unread notifications
     fetch('/api/notifications?unread=true',{headers: token?{Authorization:`Bearer ${token}`}:{}}).then(r=>r.json()).then((list:any)=>setUnread(list.length)).catch(()=>{});
   },[]);
+
   // Hide navbar on login, register or when not authenticated
   const tokenRaw = getAuth();
   if (!tokenRaw || pathname === "/" || pathname.includes("login") || pathname.includes("register")) return null;
 
   const allowedPages = ROLE_PAGES[role as string] || [];
 
+  const handleLogout = () => {
+    clearAuth();
+    window.location.href = "/login";
+  };
+
   return (
-    <nav className="mb-8 bg-legal-900 border-b border-legal-800 sticky top-0 z-50">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-8 py-4">
-        <div className="flex items-center gap-8">
-          <Link href="/dashboard" className="text-xl font-serif font-bold text-legal-gold tracking-tight">
-            PROLAW
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
+      isScrolled ? "bg-legal-900/90 backdrop-blur-2xl border-b border-white/10 py-2 shadow-2xl" : "bg-transparent py-4"
+    }`}>
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-8">
+        <div className="flex items-center gap-12">
+          <Link href="/dashboard" className="group flex flex-col items-center">
+            <span className="text-3xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform">PRO LAW</span>
+            <span className="text-[7px] uppercase tracking-[0.6em] text-slate-400 font-bold mt-1 group-hover:text-legal-gold transition-colors">Elite Firm Management</span>
           </Link>
-          <div className="flex gap-6 text-sm font-medium">
+          
+          <div className="hidden lg:flex items-center gap-2">
             {links.filter(l => allowedPages.includes(l.key)).map(({ href, label }) => {
-              const active = pathname.startsWith(href);
+              const active = pathname === href || pathname.startsWith(href + "/");
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`transition-all duration-300 hover:text-legal-gold ${
-                    active ? "text-legal-gold border-b-2 border-legal-gold pb-1" : "text-slate-300"
+                  className={`px-4 py-2 rounded-full text-[12px] font-medium tracking-wide transition-all duration-500 relative group overflow-hidden ${
+                    active 
+                      ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  {label}
+                  <span className="relative z-10">{label}</span>
+                  {active && (
+                    <span className="absolute inset-0 bg-gradient-to-r from-legal-gold/20 to-transparent opacity-50"></span>
+                  )}
+                  <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-legal-gold transition-all duration-500 ${
+                    active ? "opacity-100 scale-100" : "opacity-0 scale-0 group-hover:opacity-50 group-hover:scale-100"
+                  }`}></span>
                 </Link>
               );
             })}
@@ -94,23 +119,23 @@ export default function NavBar() {
         </div>
 
         <div className="flex items-center gap-6">
-          <Link href="/notifications" className="relative group p-2 rounded-full hover:bg-legal-800 transition-all">
-            <span className="sr-only">Notifications</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-300 group-hover:text-legal-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            {unread > 0 && (
-              <span className="absolute top-1 right-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-legal-copper text-[10px] font-bold text-white ring-2 ring-legal-900">
-                {unread}
-              </span>
-            )}
+          <Link href="/notifications" className="relative group">
+            <div className="p-2.5 rounded-full bg-white/5 border border-white/5 group-hover:bg-white/10 group-hover:border-white/20 transition-all duration-300">
+              <Bell className="w-5 h-5 text-slate-400 group-hover:text-legal-gold transition-colors" />
+              {unread > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-[10px] font-bold text-white rounded-full flex items-center justify-center border-2 border-legal-900 animate-bounce">
+                  {unread}
+                </span>
+              )}
+            </div>
           </Link>
-          <div className="h-6 w-px bg-legal-800"></div>
+
           <button 
-            onClick={() => { clearAuth(); location.href = '/login'; }} 
-            className="text-sm font-semibold text-slate-300 hover:text-legal-gold transition-colors px-4 py-2 rounded-md hover:bg-legal-800"
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 group transition-all duration-500 shadow-lg"
           >
-            Sign Out
+            <span className="text-xs font-bold tracking-widest text-slate-300 group-hover:text-red-400">SIGN OUT</span>
+            <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-400 transition-colors" />
           </button>
         </div>
       </div>

@@ -113,146 +113,104 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Invoices</h1>
-      
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-2">
-          <Link
-            href="/dashboard/clients"
-            className="text-blue-600 hover:text-blue-800"
-          >
-            Clients
-          </Link>
+    <div className="px-8 py-12 min-h-screen">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div>
+          <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">الفواتير</h1>
+          <p className="text-slate-400 font-light max-w-xl">إدارة المطالبات المالية والتحصيل بكفاءة عالية.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={() => router.push('/dashboard/invoices/new') }
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="btn-legal"
           >
-            New Invoice
+            <span className="text-xl">+</span> فاتورة جديدة
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('headers.number')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('headers.client')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Project
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('headers.issueDate')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('headers.status')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('headers.total')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('headers.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {invoices.map((invoice) => (
-              <tr key={invoice.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {invoice.invoiceNumber}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {invoice.client?.name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {invoice.project?.name || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {formatDate(invoice.issueDate, invoice.language)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editingId === invoice.id ? (
-                    <select
-                      value={tempStatus}
-                      onChange={(e) => setTempStatus(e.target.value)}
-                      className="border rounded px-2 py-1 text-sm"
-                    >
-                      <option value="DRAFT">DRAFT</option>
-                      <option value="SENT">SENT</option>
-                      <option value="PAID">PAID</option>
-                    </select>
-                  ) : (
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      invoice.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-800' :
-                      invoice.status === 'SENT' ? 'bg-orange-100 text-orange-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {invoice.status}
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{invoice.bank?.name || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {formatMoney(invoice.total, invoice.currency, invoice.language)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
-                  {editingId === invoice.id ? (
-                    <>
-                      <button
-                        onClick={() => saveEdit(invoice.id as string)}
-                        className="text-green-600 hover:text-green-800"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        className="text-gray-600 hover:text-gray-800"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => router.push(`/invoices/${invoice.invoiceNumber}`)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => router.push(`/invoices/${invoice.invoiceNumber}/edit`)}
-                        className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-                      >
-                        Edit
-                      </button>
-                      {(invoice.status as any) === 'PENDING_APPROVAL' && (
-                        <button
-                          onClick={() => approveInvoice(invoice.id as string)}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          Approve
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(invoice.id as string)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </td>
+      <div className="legal-card overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+        <div className="overflow-x-auto">
+          <table className="w-full text-right border-collapse">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/5">
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">رقم الفاتورة</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">العميل</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">المشروع</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">التاريخ</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">الحالة</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">البنك</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold">الإجمالي</th>
+                <th className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-legal-gold text-center">الإجراءات</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <Toaster position="top-right" />
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-8 py-16 text-center text-slate-500 font-light italic">
+                    لا توجد فواتير حالياً.
+                  </td>
+                </tr>
+              ) : (
+                invoices.map((invoice) => (
+                  <tr key={invoice.id} className="group hover:bg-white/5 transition-colors">
+                    <td className="px-8 py-6 text-slate-400 font-mono text-xs">{invoice.invoiceNumber}</td>
+                    <td className="px-8 py-6">
+                      <span className="text-slate-200 font-medium group-hover:text-legal-gold transition-colors">
+                        {invoice.client?.name}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-slate-400 text-sm font-light">{invoice.project?.name || '-'}</td>
+                    <td className="px-8 py-6 text-slate-400 text-sm font-light">
+                      {formatDate(invoice.issueDate, invoice.language)}
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider ${
+                        invoice.status === 'PAID' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                        invoice.status === 'SENT' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                        'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                      }`}>
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-slate-400 text-sm font-light">{invoice.bank?.name || '-'}</td>
+                    <td className="px-8 py-6 text-legal-gold font-bold">
+                      {formatMoney(invoice.total, invoice.currency, invoice.language)}
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => router.push(`/invoices/${invoice.invoiceNumber}`)}
+                          className="text-slate-400 hover:text-legal-gold transition-colors p-1"
+                          title="عرض"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </button>
+                        {(invoice.status as any) === 'PENDING_APPROVAL' && (
+                          <button
+                            onClick={() => approveInvoice(invoice.id as string)}
+                            className="text-emerald-400 hover:text-emerald-300 transition-colors p-1"
+                            title="اعتماد"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 13l4 4L19 7" /></svg>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(invoice.id as string)}
+                          className="text-slate-400 hover:text-red-400 transition-colors p-1"
+                          title="حذف"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+          <Toaster position="top-right" />
+        </div>
       </div>
     </div>
   );
