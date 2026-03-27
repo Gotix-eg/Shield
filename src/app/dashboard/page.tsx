@@ -15,7 +15,13 @@ interface Company {
 export default function DashboardHome() {
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<{ projects: number; pendingTasks: number; unpaidInvoices: number }>({
+    projects: 0,
+    pendingTasks: 0,
+    unpaidInvoices: 0,
+  });
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -36,8 +42,44 @@ export default function DashboardHome() {
       }
     };
 
+    const fetchStats = async () => {
+      try {
+        const [projectsRes, tasksRes, invoicesRes] = await Promise.all([
+          fetchAuth('/api/projects'),
+          fetchAuth('/api/tasks'),
+          fetchAuth('/api/invoices'),
+        ]);
+
+        const [projects, tasks, invoices] = await Promise.all([
+          projectsRes.ok ? projectsRes.json() : [],
+          tasksRes.ok ? tasksRes.json() : [],
+          invoicesRes.ok ? invoicesRes.json() : [],
+        ]);
+
+        const pendingTasks = Array.isArray(tasks)
+          ? tasks.filter((t: any) => t?.status && String(t.status).toUpperCase() !== 'DONE').length
+          : 0;
+        const unpaidInvoices = Array.isArray(invoices)
+          ? invoices.filter((inv: any) => inv?.status && String(inv.status).toUpperCase() !== 'PAID').length
+          : 0;
+
+        setStats({
+          projects: Array.isArray(projects) ? projects.length : 0,
+          pendingTasks,
+          unpaidInvoices,
+        });
+      } catch {
+        setStats({ projects: 0, pendingTasks: 0, unpaidInvoices: 0 });
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
     fetchCompany();
+    fetchStats();
   }, []);
+
+  const fmt2 = (n: number) => String(Math.max(0, n)).padStart(2, '0');
 
   return (
     <div className="dashboard-container">
@@ -125,15 +167,15 @@ export default function DashboardHome() {
               <div className="space-y-8">
                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
                   <span className="text-white/60 text-sm font-light">Recent Projects</span>
-                  <span className="text-3xl font-serif text-white">12</span>
+                  <span className="text-3xl font-serif text-white">{statsLoading ? '—' : fmt2(stats.projects)}</span>
                 </div>
                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
                   <span className="text-white/60 text-sm font-light">Pending Tasks</span>
-                  <span className="text-3xl font-serif text-white">08</span>
+                  <span className="text-3xl font-serif text-white">{statsLoading ? '—' : fmt2(stats.pendingTasks)}</span>
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-white/60 text-sm font-light">Unpaid Invoices</span>
-                  <span className="text-3xl font-serif text-legal-gold">04</span>
+                  <span className="text-3xl font-serif text-legal-gold">{statsLoading ? '—' : fmt2(stats.unpaidInvoices)}</span>
                 </div>
               </div>
             </div>
