@@ -83,9 +83,9 @@ export default function NavBar() {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
-      isScrolled ? "bg-legal-900/90 backdrop-blur-2xl border-b border-white/10 py-2 shadow-2xl" : "bg-transparent py-4"
+      isScrolled ? "bg-legal-900/95 backdrop-blur-2xl border-b border-white/10 py-2 shadow-2xl" : "bg-transparent py-4"
     }`}>
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-8">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-10">
         <div className="flex items-center gap-12">
           <Link href="/dashboard" className="group flex flex-col items-center">
             <span className="text-3xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform">PRO LAW</span>

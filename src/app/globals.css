@@ -11,6 +11,25 @@
   --border: rgba(255, 255, 255, 0.05);
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
+  --header-height: 100px;
+  --nav-height: 80px;
+  --golden-ratio: 1.618;
+  --space-unit: 1rem;
+  --space-xs: calc(var(--space-unit) / var(--golden-ratio));
+  --space-sm: var(--space-unit);
+  --space-md: calc(var(--space-unit) * var(--golden-ratio));
+  --space-lg: calc(var(--space-md) * var(--golden-ratio));
+  --space-xl: calc(var(--space-lg) * var(--golden-ratio));
+}
+
+.dashboard-container {
+  padding-top: var(--header-height);
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
 }
 
 body {

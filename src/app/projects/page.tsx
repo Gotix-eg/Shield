@@ -178,8 +178,7 @@ export default function ProjectsPage() {
   });
 
   return (
-    <div className="px-8 py-12 min-h-screen">
-      <Toaster />
+    <div className="dashboard-container">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div>
           <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Projects</h1>

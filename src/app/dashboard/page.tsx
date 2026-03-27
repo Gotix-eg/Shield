@@ -40,7 +40,7 @@ export default function DashboardHome() {
   }, []);
 
   return (
-    <div className="px-8 py-12 min-h-screen">
+    <div className="dashboard-container">
       <div className="max-w-6xl mx-auto">
         <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <h1 className="text-5xl font-serif mb-4 text-white tracking-tight">
