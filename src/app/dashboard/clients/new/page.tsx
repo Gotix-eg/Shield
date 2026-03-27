@@ -41,115 +41,131 @@ export default function NewClientPage() {
   };
 
   return (
-    <main className="dashboard-container p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">Add New Client</h1>
-        <button
-          onClick={() => router.push("/clients")}
-          className="text-gray-300 hover:text-white"
-        >
-          Back
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-        <div className="space-y-4">
+    <div className="dashboard-container">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
           <div>
-            <label className="block text-sm font-medium text-white">
-              Name
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
+            <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">Add New Client</h1>
+            <p className="text-slate-400 font-light max-w-xl">Register a new client entity to the firm directory.</p>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white">
-              Email
-            </label>
-            <input
-              type="email"
-              value={formData.contactEmail}
-              onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white">
-              Phone
-            </label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white">
-              Address
-            </label>
-            <input
-              type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white">
-              City
-            </label>
-            <input
-              type="text"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white">
-              VAT Number
-            </label>
-            <input
-              type="text"
-              value={formData.vatCode}
-              onChange={(e) => setFormData({ ...formData, vatCode: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white">
-              Country
-            </label>
-            <input
-              type="text"
-              value={formData.country}
-              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            onClick={() => router.push("/clients")}
+            className="btn-legal-outline px-6"
           >
-            {loading ? "Creating..." : "Create Client"}
+            Back to Directory
           </button>
         </div>
-      </form>
-    </main>
+      </header>
+
+      <div className="legal-card p-10 max-w-2xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Client Name
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
+                placeholder="Full Name / Company Name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Contact Email
+              </label>
+              <input
+                type="email"
+                value={formData.contactEmail}
+                onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
+                placeholder="client@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                required
+                placeholder="+00 000 000 000"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                VAT Number
+              </label>
+              <input
+                type="text"
+                value={formData.vatCode}
+                onChange={(e) => setFormData({ ...formData, vatCode: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                placeholder="VAT / Tax ID"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Country
+              </label>
+              <input
+                type="text"
+                value={formData.country}
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                placeholder="e.g. United Kingdom"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                City
+              </label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
+                placeholder="City Name"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+              Full Address
+            </label>
+            <textarea
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors h-24 resize-none"
+              placeholder="Full mailing address..."
+            />
+          </div>
+
+          <div className="pt-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-legal w-full py-4 text-sm disabled:opacity-50"
+            >
+              {loading ? "Registering Client..." : "Create Client"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
+}
 }

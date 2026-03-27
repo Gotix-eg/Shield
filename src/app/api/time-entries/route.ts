@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-function getUserId(request: NextRequest): number | null {
-  const auth = request.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    const sub = payload.sub ?? payload.id;
-    return sub ? Number(sub) : null;
-  } catch {
-    return null;
-  }
-}
+import { withCompany } from "@/lib/with-company";
 
 // GET list entries
-export async function GET(request: NextRequest) {
-  const userId = getUserId(request);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const entries = await prisma.timeEntry.findMany({
-    where: { userId },
+    where: { 
+      userId,
+      project: { companyId }
+    },
     include: {
       project: {
         include: { client: true },
@@ -28,24 +19,27 @@ export async function GET(request: NextRequest) {
     orderBy: { startTs: "desc" },
   });
   return NextResponse.json(entries);
-}
+});
 
 // POST create new entry
-export async function POST(request: NextRequest) {
-  const userId = getUserId(request);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = withCompany(async (request: NextRequest, { companyId, userId }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { projectId, startTs, endTs, notes, billable = true } = await request.json();
   if (!projectId || !startTs)
     return NextResponse.json({ error: "projectId and startTs required" }, { status: 400 });
 
-  // verify assignment exists and allows logging
+  // verify assignment exists and project belongs to company
   const assignment = await prisma.projectAssignment.findFirst({
-    where: { projectId, userId, canLogTime: true },
+    where: { 
+      projectId, 
+      userId, 
+      canLogTime: true,
+      project: { companyId }
+    },
     include: { project: true }
   });
-  if (!assignment) return NextResponse.json({ error: "Not assigned to project or logging disabled" }, { status: 403 });
-  const project = assignment.project;
+  if (!assignment) return NextResponse.json({ error: "Not assigned to project or access denied" }, { status: 403 });
 
   const startDate = new Date(startTs);
   const endDate = endTs ? new Date(endTs) : null;
@@ -64,4 +58,4 @@ export async function POST(request: NextRequest) {
   });
   await import('@/lib/notify').then(m=>m.notifyRole('ACCOUNTANT_MASTER',`وقت جديد بإنتظار الموافقة للمشروع #${projectId}`,'TIME_PENDING'));
   return NextResponse.json(entry, { status: 201 });
-}
+});

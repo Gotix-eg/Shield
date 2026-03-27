@@ -64,9 +64,9 @@ export const POST = withCompany(async (request: NextRequest, { companyId, userId
 
     // generate unique code C0001, C0002 etc.
     // determine next sequence based on existing client codes OR AR accounts
-    const lastClient = await prisma.client.findFirst({ orderBy: { id: 'desc' }, select: { code: true } });
+    const lastClient = await prisma.client.findFirst({ where: { companyId }, orderBy: { id: 'desc' }, select: { code: true } });
     const lastAccount = await prisma.account.findFirst({
-      where: { code: { startsWith: 'AR-C' } },
+      where: { companyId, code: { startsWith: 'AR-C' } },
       orderBy: { id: 'desc' },
       select: { code: true },
     });

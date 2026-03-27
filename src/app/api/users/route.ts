@@ -1,41 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import jwt from 'jsonwebtoken';
+import prisma from '@/lib/prisma';
+import { withCompany } from '@/lib/with-company';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-function auth(req: NextRequest) {
-  let hdr = req.headers.get('authorization') || '';
-  if(!hdr){
-    const cookie = req.cookies.get('token');
-    hdr = cookie?.value ? `Bearer ${cookie.value}` : '';
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
-  if (!token) return null;
-  try {
-    const p = jwt.verify(token, JWT_SECRET) as any;
-    return { id: Number(p.sub ?? p.id), role: p.role ?? 'STAFF' };
-  } catch {
-    return null;
-  }
-}
 
-export async function GET(req: NextRequest) {
+  // Staff shouldn't be able to list all users generally
+  if (role === 'STAFF') {
+    return NextResponse.json([]);
+  }
+
   const projectIdParam = req.nextUrl.searchParams.get('projectId');
   const projectId = projectIdParam ? Number(projectIdParam) : undefined;
-  const user = auth(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (user.role === 'STAFF') return NextResponse.json([], { status: 200 });
-  // fetch requester companyId
-  const current = await prisma.user.findUnique({ where: { id: user.id }, select: { companyId: true } });
-  const whereClause:any = { companyId: current?.companyId ?? undefined };
-  if(projectId){
-    whereClause.assignments = { some: { projectId } } as any;
+
+  const whereClause: any = { companyId };
+  if (projectId) {
+    whereClause.assignments = { some: { projectId } };
   }
+
   const list = await prisma.user.findMany({
-    select: { id: true, name: true, email: true },
     where: whereClause,
+    select: { id: true, name: true, email: true },
     orderBy: { name: 'asc' },
   });
+
   return NextResponse.json(list);
-}
+});

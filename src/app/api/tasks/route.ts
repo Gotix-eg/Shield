@@ -57,6 +57,10 @@ export const POST = withCompany(async (req: NextRequest, { companyId, userId, ro
     if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
+  // Verify assignee belongs to company
+  const assignee = await prisma.user.findFirst({ where: { id: Number(assigneeId), companyId } });
+  if (!assignee) return NextResponse.json({ error: 'Assignee not found in this company' }, { status: 404 });
+
   const task = await prisma.task.create({
     data: {
       title,

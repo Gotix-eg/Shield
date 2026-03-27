@@ -51,7 +51,16 @@ export const POST = withCompany(async (request: NextRequest, { companyId, userId
     if (!data.clientId)
       return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
 
-    const last = await prisma.invoice.findFirst({ orderBy: { id: "desc" } });
+    // Verify client belongs to company
+    const client = await prisma.client.findFirst({ where: { id: data.clientId, companyId } });
+    if (!client) return NextResponse.json({ error: "Client not found or access denied" }, { status: 404 });
+
+    if (data.projectId) {
+      const project = await prisma.project.findFirst({ where: { id: data.projectId, companyId } });
+      if (!project) return NextResponse.json({ error: "Project not found or access denied" }, { status: 404 });
+    }
+
+    const last = await prisma.invoice.findFirst({ where: { companyId }, orderBy: { id: "desc" } });
     const invoiceNumber = `INV-${((last?.id || 0) + 1).toString().padStart(5, "0")}`;
 
     // calculate totals
@@ -95,8 +104,24 @@ export const POST = withCompany(async (request: NextRequest, { companyId, userId
     // if paying from trust
     if (trustAmount > 0) {
       // locate trust accounts: project-specific first then client-level
-      const projectAccts = await prisma.trustAccount.findMany({ where: { clientId: invoice.clientId, projectId: invoice.projectId ?? undefined, currency: invoice.currency }, orderBy: { id: 'asc' } });
-      const otherAccts = await prisma.trustAccount.findMany({ where: { clientId: invoice.clientId, currency: invoice.currency, NOT: { id: { in: projectAccts.map(p=>p.id) } } }, orderBy: { id: 'asc' } });
+      const projectAccts = await prisma.trustAccount.findMany({ 
+        where: { 
+          clientId: invoice.clientId, 
+          projectId: invoice.projectId ?? undefined, 
+          currency: invoice.currency,
+          client: { companyId }
+        }, 
+        orderBy: { id: 'asc' } 
+      });
+      const otherAccts = await prisma.trustAccount.findMany({ 
+        where: { 
+          clientId: invoice.clientId, 
+          currency: invoice.currency, 
+          client: { companyId },
+          NOT: { id: { in: projectAccts.map(p=>p.id) } } 
+        }, 
+        orderBy: { id: 'asc' } 
+      });
       const accounts = [...projectAccts, ...otherAccts];
       const totalBal = accounts.reduce((sum,a)=> sum + parseFloat(a.balance.toString()),0);
       if (totalBal < trustAmount) {
