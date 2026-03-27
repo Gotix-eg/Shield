@@ -73,65 +73,70 @@ export default function LoginPage() {
       </div>
 
       {/* Form Side */}
-      <div className="flex items-center justify-center p-8 bg-background relative overflow-hidden">
+      <div className="flex items-center justify-center p-8 bg-legal-900 lg:bg-background relative overflow-hidden">
         {/* Decorative background shape */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-legal-gold/5 rounded-full blur-3xl"></div>
         
         <div className="w-full max-w-md relative z-10">
           <header className="mb-12">
-            <h1 className="text-3xl font-serif text-legal-900 mb-2">Member Login</h1>
-            <p className="text-slate-500 font-light">Please enter your credentials to proceed.</p>
+            <h1 className="text-5xl font-serif text-legal-gold mb-4 tracking-tighter">PRO LAW</h1>
+            <p className="text-slate-400 font-light leading-relaxed mb-8">
+              The ultimate legal practice management solution. Streamline your firm's operations, automate billing, and manage client relationships with unmatched precision and security.
+            </p>
+            <div className="h-[1px] w-full bg-gradient-to-r from-legal-gold/50 to-transparent mb-8"></div>
+            <h2 className="text-xl font-serif text-legal-900 lg:text-legal-900 text-white mb-2">Member Login</h2>
+            <p className="text-slate-500 font-light text-sm text-slate-400">Please enter your secure credentials.</p>
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {error && (
-              <div className="p-4 bg-red-50 border-l-2 border-red-500 animate-in fade-in zoom-in duration-300">
-                <p className="text-sm text-red-800 font-medium">{error}</p>
+              <div className="p-4 bg-red-500/10 border-l-2 border-red-500 animate-in fade-in zoom-in duration-300">
+                <p className="text-sm text-red-400 font-medium">{error}</p>
               </div>
             )}
             
             <div className="space-y-6">
               <div className="group">
-                <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 group-focus-within:text-legal-gold transition-colors">Corporate Email</label>
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">Corporate Email</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white border-b border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none"
+                  className="w-full bg-transparent border-b border-slate-700 lg:border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none text-white lg:text-legal-900 placeholder:text-slate-600"
                   placeholder="name@firm.com"
                 />
               </div>
               
               <div className="group">
-                <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-2 group-focus-within:text-legal-gold transition-colors">Security Password</label>
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">Security Password</label>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border-b border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none"
+                  className="w-full bg-transparent border-b border-slate-700 lg:border-slate-200 py-3 px-0 rounded-none focus:border-legal-gold transition-all outline-none text-white lg:text-legal-900 placeholder:text-slate-600"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-6">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-legal-900 text-white py-4 rounded-none font-serif tracking-widest hover:bg-legal-gold transition-all duration-500 disabled:opacity-50 relative overflow-hidden group"
+                className="w-full bg-legal-gold text-legal-900 py-4 rounded-sm font-serif font-bold tracking-[0.2em] hover:bg-white hover:text-legal-900 transition-all duration-500 disabled:opacity-50 shadow-xl shadow-legal-gold/10 group flex items-center justify-center gap-3"
               >
-                <span className="relative z-10">{loading ? "VERIFYING..." : "AUTHENTICATE"}</span>
-                <div className="absolute inset-0 bg-legal-gold translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                <span>{loading ? "VERIFYING..." : "AUTHENTICATE"}</span>
+                {!loading && <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>}
               </button>
             </div>
             
-            <footer className="text-center pt-8 border-t border-slate-100">
-              <p className="text-xs text-slate-400 font-light">
-                Secure access for authorized personnel only. 
+            <footer className="text-center pt-12">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold">
+                Authorized Personnel Only
                 <br />
-                <span className="mt-2 block">© 2026 PROLAW GLOBAL</span>
+                <span className="mt-4 block opacity-50 italic font-serif normal-case tracking-normal text-xs">"Justice through precision."</span>
               </p>
             </footer>
           </form>
