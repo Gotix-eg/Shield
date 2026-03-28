@@ -46,30 +46,57 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
   // Decode role
   try {
     const payload = jwt.verify(token, secret) as { role?: string };
     const role = payload.role ?? "STAFF";
-    const adminRoles = [
-      "OWNER",
-      "ADMIN",
-      "MANAGING_PARTNER",
-      "ACCOUNTANT_MASTER",
-      "ACCOUNTANT_ASSISTANT",
-      "HR_MANAGER",
-      "HR",
-      "LAWYER_PARTNER",
-      "LAWYER_MANAGER",
-    ];
-    const invoiceRoles = ["OWNER", "ADMIN", "MANAGING_PARTNER", "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT"];
+    const SUPER = ["OWNER", "MANAGING_PARTNER"];
+    const ACCOUNTING_ALL = [...SUPER, "ACCOUNTANT_MASTER"];
+    const ACCOUNTING_ASSIST = [...ACCOUNTING_ALL, "ACCOUNTANT_ASSISTANT"];
+    const HR_ALL = [...SUPER, "HR_MANAGER", "HR"];
+    const REPORTS_ROLES = [...SUPER, "ACCOUNTANT_MASTER", "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER"];
+    const INVOICE_ROLES = [...SUPER, "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT", "LAWYER_PARTNER"];
 
-    if (pathname.startsWith("/admin") && !adminRoles.includes(role)) {
-      const dashUrl = new URL("/dashboard", request.url);
-      return NextResponse.redirect(dashUrl);
+    const deny = () => NextResponse.redirect(new URL("/dashboard", request.url));
+
+    if (pathname.startsWith("/accounts") && !ACCOUNTING_ASSIST.includes(role)) return deny();
+    if (pathname.startsWith("/invoices") && !INVOICE_ROLES.includes(role)) return deny();
+
+    if (pathname.startsWith("/clients")) {
+      const allowClients = [...ACCOUNTING_ASSIST, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER"];
+      if (!allowClients.includes(role)) return deny();
     }
-    if (pathname.startsWith("/invoices") && !invoiceRoles.includes(role)) {
-      const dashUrl = new URL("/dashboard", request.url);
-      return NextResponse.redirect(dashUrl);
+
+    if (pathname.startsWith("/projects")) {
+      const allowProjects = [...ACCOUNTING_ASSIST, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER"];
+      if (!allowProjects.includes(role)) return deny();
+    }
+
+    if (pathname.startsWith("/admin/reports") && !REPORTS_ROLES.includes(role)) return deny();
+    if (pathname.startsWith("/admin/tasks")) {
+      const allowTasks = [...SUPER, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER", "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT"];
+      if (!allowTasks.includes(role)) return deny();
+    }
+    if (pathname.startsWith("/admin/time")) {
+      const allowAdminTime = [...SUPER, "ADMIN", "HR_MANAGER", "ACCOUNTANT_MASTER", "LAWYER_MANAGER"];
+      if (!allowAdminTime.includes(role)) return deny();
+    }
+    if (pathname.startsWith("/admin/payroll")) {
+      const allowPayroll = [...SUPER, "ACCOUNTANT_MASTER", "HR_MANAGER"];
+      if (!allowPayroll.includes(role)) return deny();
+    }
+    if (pathname.startsWith("/admin/hr") && !HR_ALL.includes(role)) return deny();
+    if (pathname.startsWith("/admin/employees") || pathname.startsWith("/admin/positions") || pathname.startsWith("/admin/penalties")) {
+      const allowHrAdmin = [...SUPER, "HR_MANAGER", "HR"];
+      if (!allowHrAdmin.includes(role)) return deny();
+    }
+    if (pathname === "/admin" || pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/company") || pathname.startsWith("/admin/permissions")) {
+      const allowSettings = [...SUPER, "ADMIN"];
+      if (!allowSettings.includes(role)) return deny();
     }
   } catch {
     // invalid token => redirect to login

@@ -5,8 +5,10 @@ import { withCompany } from '@/lib/with-company';
 
 import { Decimal } from '@prisma/client/runtime/library';
 
-export const GET = withCompany(async (request: NextRequest, { companyId }) => {
-  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
+  if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const allowedRoles = ["OWNER","MANAGING_PARTNER","ACCOUNTANT_MASTER","ACCOUNTANT_ASSISTANT","ADMIN","LAWYER_PARTNER","LAWYER_MANAGER"];
+  if (!allowedRoles.includes(role as any)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get('clientId');
@@ -18,6 +20,16 @@ export const GET = withCompany(async (request: NextRequest, { companyId }) => {
   if (start) dateFilter.gte = new Date(start);
   if (end) dateFilter.lte = new Date(end);
 
+  let scopedProjectIds: number[] | null = null;
+  if (role === "LAWYER_MANAGER" || role === "LAWYER_PARTNER") {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    const allowedUsers = role === "LAWYER_PARTNER" ? [userId, ...ids] : ids;
+    if (!allowedUsers.length) return NextResponse.json({ rows: [], totals: {} });
+    const assigns = await prisma.projectAssignment.findMany({ where: { userId: { in: allowedUsers } }, select: { projectId: true } });
+    scopedProjectIds = [...new Set(assigns.map(a => a.projectId))];
+  }
+
   // fetch projects based on filters
   // @ts-ignore prisma type widening for dynamic include
   const projects = await prisma.project.findMany({
@@ -25,6 +37,7 @@ export const GET = withCompany(async (request: NextRequest, { companyId }) => {
       ...(companyId ? { companyId } : {}),
       ...(clientId ? { clientId: Number(clientId) } : {}),
       ...(projectId ? { id: Number(projectId) } : {}),
+      ...(scopedProjectIds ? { id: { in: scopedProjectIds.length ? scopedProjectIds : [-1] } } : {}),
     },
     include: {
       client: { select: { name: true } },

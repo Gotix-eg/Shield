@@ -2,16 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withCompany } from "@/lib/with-company";
 
-export const GET = withCompany(async (request: NextRequest, { companyId, userId }) => {
+export const GET = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
   try {
     if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // fetch allowed scope for invoices page
+    const SUPER = role === "OWNER" || role === "MANAGING_PARTNER";
+    const allowed =
+      SUPER ||
+      role === "ACCOUNTANT_MASTER" ||
+      role === "ACCOUNTANT_ASSISTANT" ||
+      role === "LAWYER_PARTNER";
+    if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
     const up = await prisma.userPermission.findFirst({
-      where: { userId, permission: { code: 'invoices' }, allowed: true },
-      select: { clientIds: true, projectIds: true, lawyerIds: true }
+      where: { userId, permission: { code: "invoices" }, allowed: true },
+      select: { clientIds: true, projectIds: true, lawyerIds: true },
     });
-    
+
     const where: any = { companyId };
     
     if (up) {
@@ -21,6 +28,15 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId 
       if (up.clientIds && Array.isArray(up.clientIds) && up.clientIds.length) {
         where.clientId = { in: up.clientIds.map(Number) };
       }
+    }
+
+    if (!up && role === "LAWYER_PARTNER") {
+      const projects = await prisma.projectAssignment.findMany({
+        where: { userId },
+        select: { projectId: true },
+      });
+      const projectIds = [...new Set(projects.map((p) => p.projectId))];
+      where.projectId = { in: projectIds.length ? projectIds : [-1] };
     }
     
     const invoices = await prisma.invoice.findMany({
@@ -43,9 +59,12 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId 
   }
 });
 
-export const POST = withCompany(async (request: NextRequest, { companyId, userId }) => {
+export const POST = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
   try {
     if (!companyId || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const SUPER = role === "OWNER" || role === "MANAGING_PARTNER";
+    const allowed = SUPER || role === "ACCOUNTANT_MASTER" || role === "ACCOUNTANT_ASSISTANT";
+    if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const data = await request.json();
 
     if (!data.clientId)

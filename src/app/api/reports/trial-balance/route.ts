@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/trial-balance?start=YYYY-MM-DD&end=YYYY-MM-DD
-export async function GET(req: NextRequest) {
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const allowed = role === 'OWNER' || role === 'MANAGING_PARTNER' || role === 'ACCOUNTANT_MASTER';
+  if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   const { searchParams } = new URL(req.url);
   const start = searchParams.get('start') ? new Date(searchParams.get('start')!) : undefined;
   const end = searchParams.get('end') ? new Date(searchParams.get('end')!) : undefined;
 
   // fetch all accounts with aggregates
-  const accounts = await prisma.account.findMany({ orderBy: { code: 'asc' } });
+  const accounts = await prisma.account.findMany({ where: { companyId }, orderBy: { code: 'asc' } });
 
   const rows = [] as Array<{ code: string; name: string; debit: number; credit: number; balance: number }>;
   let totalDebit = 0;
@@ -33,4 +38,4 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ rows, totalDebit, totalCredit });
-}
+});

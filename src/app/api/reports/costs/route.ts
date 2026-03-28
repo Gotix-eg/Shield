@@ -23,6 +23,21 @@ function getAuth(request: NextRequest): AuthInfo {
 export async function GET(request: NextRequest) {
   const { id, role, companyId } = getAuth(request);
   if (!id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const allowedRoles = [
+    "OWNER",
+    "MANAGING_PARTNER",
+    "ACCOUNTANT_MASTER",
+    "ACCOUNTANT_ASSISTANT",
+    "ADMIN",
+    "LAWYER_PARTNER",
+    "LAWYER_MANAGER",
+    "STAFF",
+  ];
+  if (!allowedRoles.includes(role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // Optional query: clientId, projectId, lawyerId, from, to
   const { searchParams } = new URL(request.url);
@@ -38,7 +53,7 @@ export async function GET(request: NextRequest) {
   if (from) where.startTs.gte = new Date(from);
   if (to) where.startTs.lte = new Date(to);
   if (projectId) where.projectId = Number(projectId);
-  if (companyId) where.project = { ...where.project, companyId };
+  where.project = { ...where.project, companyId };
   if (userIdFilter) where.userId = Number(userIdFilter);
 
   // STAFF can only see their own entries
@@ -50,7 +65,23 @@ export async function GET(request: NextRequest) {
     const managed = await prisma.managerLawyer.findMany({ where: { managerId: id }, select: { lawyerId: true } });
     const ids = managed.map(m => m.lawyerId);
     if (!ids.length) return NextResponse.json({ rows: [], totals: {} });
-    where.userId = { in: ids };
+    where.userId = userIdFilter ? Number(userIdFilter) : { in: ids };
+    if (userIdFilter && !ids.includes(Number(userIdFilter))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  if (role === "LAWYER_PARTNER") {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: id }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    const allowedUsers = [id, ...ids];
+    if (userIdFilter && !allowedUsers.includes(Number(userIdFilter))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const proj = await prisma.projectAssignment.findMany({ where: { userId: { in: allowedUsers } }, select: { projectId: true } });
+    const projIds = [...new Set(proj.map(p => p.projectId))];
+    where.projectId = projectId ? Number(projectId) : { in: projIds.length ? projIds : [-1] };
+    if (userIdFilter) where.userId = Number(userIdFilter);
   }
 
   // If client filter: need project of client
@@ -119,6 +150,31 @@ export async function GET(request: NextRequest) {
   if (userIdFilter) expenseWhere.userId = Number(userIdFilter);
   if (role === "STAFF") {
     expenseWhere.userId = id;
+  }
+  if (role === "LAWYER_MANAGER") {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: id }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    if (!ids.length) return NextResponse.json({ rows: [], totals: {} });
+    if (userIdFilter) {
+      if (!ids.includes(Number(userIdFilter))) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      expenseWhere.userId = Number(userIdFilter);
+    } else {
+      expenseWhere.userId = { in: ids };
+    }
+  }
+  if (role === "LAWYER_PARTNER") {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: id }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    const allowedUsers = [id, ...ids];
+    if (userIdFilter && !allowedUsers.includes(Number(userIdFilter))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const proj = await prisma.projectAssignment.findMany({ where: { userId: { in: allowedUsers } }, select: { projectId: true } });
+    const projIds = [...new Set(proj.map(p => p.projectId))];
+    expenseWhere.projectId = projectId ? Number(projectId) : { in: projIds.length ? projIds : [-1] };
+    if (userIdFilter) expenseWhere.userId = Number(userIdFilter);
   }
   if (clientId) {
     expenseWhere.project = { ...(expenseWhere.project||{}), clientId: Number(clientId) };

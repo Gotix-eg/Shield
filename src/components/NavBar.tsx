@@ -7,19 +7,17 @@ import { getAuth, clearAuth } from "@/lib/auth";
 
 type UserRole = string; // roles now dynamic
 interface NavLink { href:string; label:string; key:string }
-const ADMIN_ROLES = ["ADMIN","MANAGING_PARTNER","ACCOUNTANT_MASTER","ACCOUNTANT_ASSISTANT","LAWYER_PARTNER","LAWYER_MANAGER"];
 const ROLE_PAGES: Record<string,string[]> = {
-  OWNER:["clients","projects","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  MANAGING_PARTNER:["clients","projects","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  ADMIN:["clients","projects","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  ACCOUNTANT_MASTER:["invoices","reports","accounts","trust","leaves","payroll","notifications"],
-  ACCOUNTANT_ASSISTANT:["invoices","accounts","leaves","notifications"],
-  LAWYER_PARTNER:["clients","projects","time","reports","leaves","settings"],
-  HR_MANAGER:["hr","employees","payroll","leaves","positions","notifications","admin_time"],
-  LAWYER_MANAGER:["time","expenses","reports","leaves","notifications","settings","admin_time","tasks"],
-  HR:["hr","payroll","leaves","notifications"],
-  LAWYER:["projects","time","expenses","leaves","notifications","tasks"],
-  ADMIN_REPORTS:["clients","projects","time","expenses","invoices","reports","settings","leaves","notifications"],
+  OWNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","accounts","payroll","settings","hr"],
+  MANAGING_PARTNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","accounts","payroll","settings","hr"],
+  ACCOUNTANT_MASTER:["clients","projects","expenses","leaves","invoices","reports","accounts","payroll"],
+  ACCOUNTANT_ASSISTANT:["clients","projects","expenses","leaves","invoices","accounts"],
+  ADMIN:["clients","projects","tasks","time","reports","admin_time"],
+  LAWYER_PARTNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports"],
+  LAWYER_MANAGER:["clients","projects","tasks","time","expenses","leaves","reports"],
+  LAWYER:["projects","tasks","time","expenses","leaves"],
+  HR_MANAGER:["hr","payroll","leaves","admin_time"],
+  HR:["hr","leaves"],
 };
 
   const links:NavLink[] = [

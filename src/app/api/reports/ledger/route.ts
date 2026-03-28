@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/ledger?accountId=1&start=2025-01-01&end=2025-12-31
-export async function GET(req: NextRequest) {
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
+  if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const allowed = role === 'OWNER' || role === 'MANAGING_PARTNER' || role === 'ACCOUNTANT_MASTER';
+  if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   const { searchParams } = new URL(req.url);
   const accountId = Number(searchParams.get('accountId'));
   if (!accountId) return NextResponse.json({ error: 'accountId required' }, { status: 400 });
   const start = searchParams.get('start') ? new Date(searchParams.get('start')!) : undefined;
   const end = searchParams.get('end') ? new Date(searchParams.get('end')!) : undefined;
+
+  const acct = await prisma.account.findFirst({ where: { id: accountId, companyId }, select: { id: true } });
+  if (!acct) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   // Opening balance = sum of lines before start (debit - credit)
   const openingAgg = await prisma.transactionLine.aggregate({
@@ -49,4 +57,4 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({ opening, rows });
-}
+});

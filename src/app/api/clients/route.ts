@@ -13,13 +13,21 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId,
     }
     const clientId = searchParams.get("id");
     const isLawyer = role === 'LAWYER';
+    const isLawyerPartner = role === 'LAWYER_PARTNER';
+    const isLawyerManager = role === 'LAWYER_MANAGER';
 
     if (clientId) {
       // single client
       const parsedId = parseInt(clientId);
       const where: any = { id: parsedId, companyId };
-      if (isLawyer) {
-        where.projects = { some: { assignments: { some: { userId, canLogTime: true } } } };
+      if (isLawyer || isLawyerPartner || isLawyerManager) {
+        if (isLawyerManager || isLawyerPartner) {
+          const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
+          const ids = managed.map(m => m.lawyerId);
+          where.projects = { some: { assignments: { some: { userId: { in: [userId, ...ids] } } } } };
+        } else {
+          where.projects = { some: { assignments: { some: { userId, canLogTime: true } } } };
+        }
       }
       const client = await prisma.client.findFirst({ where });
       if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
@@ -27,8 +35,10 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId,
     } else {
       // all clients for this company
       const clients = await prisma.client.findMany({
-        where: isLawyer
-          ? { companyId, projects: { some: { assignments: { some: { userId, canLogTime: true } } } } }
+        where: (isLawyer || isLawyerPartner || isLawyerManager)
+          ? (isLawyerManager || isLawyerPartner
+              ? { companyId, projects: { some: { assignments: { some: { userId: { in: [userId, ...(await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } })).map(m => m.lawyerId)] } } } } } }
+              : { companyId, projects: { some: { assignments: { some: { userId, canLogTime: true } } } } })
           : { companyId },
         select: {
           id: true,
@@ -57,11 +67,13 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId,
 });
 
 // POST create client
-export const POST = withCompany(async (request: NextRequest, { companyId, userId }) => {
+export const POST = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
   try {
     if (!companyId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const allowed = role === 'OWNER' || role === 'MANAGING_PARTNER' || role === 'ADMIN' || role === 'ACCOUNTANT_MASTER';
+    if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     
     const data = await request.json();
 

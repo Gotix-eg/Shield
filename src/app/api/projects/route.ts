@@ -9,11 +9,19 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId,
   let whereClause: any = { companyId };
   
   if (role === 'LAWYER_MANAGER') {
-    // projects where any assignment belongs to managed lawyers
     const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
     const ids = managed.map(m => m.lawyerId);
-    if (ids.length === 0) return NextResponse.json([]);
-    whereClause.assignments = { some: { userId: { in: ids } } };
+    whereClause.OR = [
+      { assignments: { some: { userId } } },
+      ...(ids.length ? [{ assignments: { some: { userId: { in: ids } } } }] : []),
+    ];
+  } else if (role === 'LAWYER_PARTNER') {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    whereClause.OR = [
+      { assignments: { some: { userId } } },
+      ...(ids.length ? [{ assignments: { some: { userId: { in: ids } } } }] : []),
+    ];
   } else if (role === 'LAWYER') {
     // lawyers only see projects they are assigned to
     whereClause.assignments = { some: { userId, canLogTime: true } };
