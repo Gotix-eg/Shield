@@ -14,6 +14,9 @@ export const GET = withCompany(async (request: NextRequest, { companyId, userId,
     const ids = managed.map(m => m.lawyerId);
     if (ids.length === 0) return NextResponse.json([]);
     whereClause.assignments = { some: { userId: { in: ids } } };
+  } else if (role === 'LAWYER') {
+    // lawyers only see projects they are assigned to
+    whereClause.assignments = { some: { userId, canLogTime: true } };
   } else if (role === 'STAFF') {
     whereClause.ownerId = userId;
   }

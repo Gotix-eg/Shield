@@ -50,8 +50,24 @@ export function middleware(request: NextRequest) {
   try {
     const payload = jwt.verify(token, secret) as { role?: string };
     const role = payload.role ?? "STAFF";
-    const adminPaths = ["/admin", "/invoices"];
-    if (role !== "ADMIN" && adminPaths.some(p=> pathname.startsWith(p))) {
+    const adminRoles = [
+      "OWNER",
+      "ADMIN",
+      "MANAGING_PARTNER",
+      "ACCOUNTANT_MASTER",
+      "ACCOUNTANT_ASSISTANT",
+      "HR_MANAGER",
+      "HR",
+      "LAWYER_PARTNER",
+      "LAWYER_MANAGER",
+    ];
+    const invoiceRoles = ["OWNER", "ADMIN", "MANAGING_PARTNER", "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT"];
+
+    if (pathname.startsWith("/admin") && !adminRoles.includes(role)) {
+      const dashUrl = new URL("/dashboard", request.url);
+      return NextResponse.redirect(dashUrl);
+    }
+    if (pathname.startsWith("/invoices") && !invoiceRoles.includes(role)) {
       const dashUrl = new URL("/dashboard", request.url);
       return NextResponse.redirect(dashUrl);
     }
@@ -71,4 +87,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
-

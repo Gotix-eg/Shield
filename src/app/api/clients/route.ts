@@ -5,24 +5,31 @@ import jwt from "jsonwebtoken";
 import { withCompany } from '@/lib/with-company';
 
 // GET all clients with company isolation
-export const GET = withCompany(async (request: NextRequest, { companyId }) => {
+export const GET = withCompany(async (request: NextRequest, { companyId, userId, role }) => {
   try {
     const searchParams = request.nextUrl.searchParams;
-    if (!companyId) {
+    if (!companyId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const clientId = searchParams.get("id");
+    const isLawyer = role === 'LAWYER';
 
     if (clientId) {
       // single client
       const parsedId = parseInt(clientId);
-      const client = await prisma.client.findFirst({ where: { id: parsedId, companyId } });
+      const where: any = { id: parsedId, companyId };
+      if (isLawyer) {
+        where.projects = { some: { assignments: { some: { userId, canLogTime: true } } } };
+      }
+      const client = await prisma.client.findFirst({ where });
       if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
       return NextResponse.json(client);
     } else {
       // all clients for this company
       const clients = await prisma.client.findMany({
-        where: { companyId },
+        where: isLawyer
+          ? { companyId, projects: { some: { assignments: { some: { userId, canLogTime: true } } } } }
+          : { companyId },
         select: {
           id: true,
           name: true,
