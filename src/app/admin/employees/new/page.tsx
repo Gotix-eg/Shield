@@ -219,12 +219,14 @@ export default function NewEmployeePage() {
         {(form.role === 'LAWYER_MANAGER' || form.role === 'LAWYER_PARTNER') && (
           <>
             <div>
-              <label className="block font-medium">Managed Projects</label>
-              <details className="rounded border p-2 bg-white mb-2">
-                <summary className="cursor-pointer select-none">{form.projectIds.length ? `${form.projectIds.length} selected` : 'Choose projects'}</summary>
-                <div className="max-h-40 overflow-y-auto mt-2 space-y-1 text-sm">
+              <label className="block font-medium text-white">Managed Projects</label>
+              <details className="rounded-lg border border-white/10 bg-white/5 p-3 mb-2">
+                <summary className="cursor-pointer select-none text-sm text-slate-300">
+                  {form.projectIds.length ? `${form.projectIds.length} selected` : 'Choose projects'}
+                </summary>
+                <div className="max-h-40 overflow-y-auto mt-3 space-y-2 text-sm custom-scrollbar pr-2">
                   {projects.map(p => (
-                    <label key={p.id} className="flex items-center gap-1">
+                    <label key={p.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-white/5 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={form.projectIds.includes(p.id)}
@@ -232,20 +234,23 @@ export default function NewEmployeePage() {
                           const next = e.target.checked ? [...form.projectIds, p.id] : form.projectIds.filter(id => id !== p.id);
                           setForm(prev => ({ ...prev, projectIds: next }));
                         }}
+                        className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-legal-gold checked:border-legal-gold transition-all"
                       />
-                      {p.name}
+                      <span className="text-slate-200">{p.name}</span>
                     </label>
                   ))}
                 </div>
               </details>
             </div>
             <div>
-              <label className="block font-medium">Managed Lawyers</label>
-              <details className="rounded border p-2 bg-white">
-                <summary className="cursor-pointer select-none">{form.lawyerIds.length ? `${form.lawyerIds.length} selected` : 'Choose lawyers'}</summary>
-                <div className="max-h-40 overflow-y-auto mt-2 space-y-1 text-sm">
+              <label className="block font-medium text-white">Managed Lawyers</label>
+              <details className="rounded-lg border border-white/10 bg-white/5 p-3">
+                <summary className="cursor-pointer select-none text-sm text-slate-300">
+                  {form.lawyerIds.length ? `${form.lawyerIds.length} selected` : 'Choose lawyers'}
+                </summary>
+                <div className="max-h-40 overflow-y-auto mt-3 space-y-2 text-sm custom-scrollbar pr-2">
                   {lawyers.map(l => (
-                    <label key={l.id} className="flex items-center gap-1">
+                    <label key={l.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-white/5 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={form.lawyerIds.includes(l.id)}
@@ -253,8 +258,9 @@ export default function NewEmployeePage() {
                           const next = e.target.checked ? [...form.lawyerIds, l.id] : form.lawyerIds.filter(id => id !== l.id);
                           setForm(prev => ({ ...prev, lawyerIds: next }));
                         }}
+                        className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-legal-gold checked:border-legal-gold transition-all"
                       />
-                      {l.name}
+                      <span className="text-slate-200">{l.name}</span>
                     </label>
                   ))}
                 </div>
