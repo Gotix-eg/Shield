@@ -6,7 +6,7 @@ const LAWYER_ROLES = [
   'LAWYER', 'LAWYER_MANAGER', 'LAWYER_PARTNER', 'MANAGING_PARTNER'
 ];
 
-export const GET = withCompany(async (req: NextRequest, { companyId }) => {
+export const GET = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
   if (!companyId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -15,6 +15,14 @@ export const GET = withCompany(async (req: NextRequest, { companyId }) => {
     role: { in: LAWYER_ROLES },
     companyId: companyId
   };
+
+  if (role === 'LAWYER_MANAGER' || role === 'LAWYER_PARTNER') {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: Number(userId) }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    baseWhere.id = { in: ids.length ? ids : [-1] };
+  } else if (role === 'LAWYER') {
+    baseWhere.id = Number(userId);
+  }
 
   let lawyers = await prisma.user.findMany({
     where: baseWhere,
