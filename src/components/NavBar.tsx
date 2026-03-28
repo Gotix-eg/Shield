@@ -41,7 +41,11 @@ const ROLE_PAGES: Record<string,string[]> = {
 function decodeRole(token?:string):UserRole|null{
   if(!token) return null;
   try{
-    const payload=JSON.parse(atob(token.split('.')[1]));
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const payload=JSON.parse(atob(padded));
     return (payload.role??"STAFF") as any;
   }catch{ return null; }
 }
@@ -51,7 +55,7 @@ import { useEffect, useState } from "react";
 import { LogOut, Bell, ChevronDown, LayoutDashboard, Users, FolderKanban, CheckSquare, Clock, CreditCard, Calendar, FileText, BarChart3, Settings, Users2, Banknote, Briefcase } from "lucide-react";
 
 export default function NavBar() {
-  const [role,setRole]=useState<UserRole|null>(null);
+  const [role,setRole]=useState<UserRole|null>(() => decodeRole(getAuth() || undefined));
   const [unread,setUnread]=useState(0);
   
   const pathname = usePathname();
@@ -59,8 +63,7 @@ export default function NavBar() {
 
   useEffect(()=>{
     const token=getAuth()||undefined;
-    const payload=token?JSON.parse(atob(token.split('.')[1])):null;
-    setRole(payload?.role||null);
+    setRole(decodeRole(token));
     // fetch unread notifications
     fetch('/api/notifications?unread=true',{headers: token?{Authorization:`Bearer ${token}`}:{}}).then(r=>r.json()).then((list:any)=>setUnread(list.length)).catch(()=>{});
   },[]);
@@ -69,7 +72,8 @@ export default function NavBar() {
   const tokenRaw = getAuth();
   if (!tokenRaw || pathname === "/" || pathname.includes("login") || pathname.includes("register")) return null;
 
-  const allowedPages = ROLE_PAGES[role as string] || [];
+  const resolvedRole = role ?? decodeRole(tokenRaw || undefined);
+  const allowedPages = ROLE_PAGES[resolvedRole as string] || [];
 
   const handleLogout = () => {
     clearAuth();
