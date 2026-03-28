@@ -153,6 +153,47 @@ td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
+@media screen {
+  table,
+  table.bg-white {
+    background: transparent !important;
+  }
+
+  table thead,
+  table thead.bg-gray-50,
+  table thead.bg-gray-100 {
+    background: transparent !important;
+  }
+
+  table thead tr,
+  table thead tr.bg-white,
+  table thead tr.bg-gray-50,
+  table thead tr.bg-gray-100 {
+    background: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  table tbody,
+  table tbody.bg-white {
+    background: transparent !important;
+  }
+
+  table tbody tr,
+  table tbody tr.bg-white,
+  table tbody tr.bg-gray-50 {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+
+  table tbody tr:hover,
+  table tbody tr.hover\:bg-gray-50:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  table tfoot tr,
+  table tfoot tr.bg-gray-100 {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+}
+
 /* Input Overrides for Dark Theme */
 input, select, textarea {
   background: rgba(255, 255, 255, 0.03) !important;
