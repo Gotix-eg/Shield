@@ -8,6 +8,19 @@ import { getAuth } from "@/lib/auth";
 
 interface Perm { code:string; allowed:boolean }
 
+function decodeJwtPayload(token?: string): any | null {
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
 export default function AdminSettingsPage() {
   const [perms,setPerms]=useState<Record<string,boolean>>({});
   const [mounted,setMounted]=useState(false);
@@ -15,8 +28,9 @@ export default function AdminSettingsPage() {
     setMounted(true);
     const token=getAuth();
     if(!token) return;
-    const payload=JSON.parse(atob(token.split('.')[1]));
+    const payload=decodeJwtPayload(token);
     const uid=payload?.id??payload?.sub;
+    if(!uid) return;
     fetch(`/api/users/${uid}/permissions`,{headers:{Authorization:`Bearer ${token}`}})
       .then(r=>r.ok?r.json():[] as Perm[])
       .then(list=>{
@@ -66,7 +80,7 @@ export default function AdminSettingsPage() {
   // detect role from token
   const token=getAuth();
   let role:string|undefined;
-  try{ if(token){ role=JSON.parse(atob(token.split('.')[1])).role; }}catch{}
+  try{ if(token){ role=decodeJwtPayload(token)?.role; }}catch{}
   let tiles: typeof tilesAll;
   if(role==='ACCOUNTANT_MASTER'){
     tiles=[
@@ -104,7 +118,7 @@ export default function AdminSettingsPage() {
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {tiles.filter(t=>{
-            if(Object.keys(perms).length===0) return true; // no perms defined => show all
+            if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
             return !t.perm || perms[t.perm] || perms["admin_all"];
           },).map((tile: any) => (
           <Link

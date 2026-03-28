@@ -104,12 +104,19 @@ export default function CostsReportPage() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="dashboard-container max-w-5xl p-8">
-      <h1 className="mb-6 text-3xl font-bold">{t('title')}</h1>
+    <div className="dashboard-container max-w-5xl">
+      <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl font-serif text-white mb-2 tracking-tight">
+          {t('title', { defaultValue: 'Costs Report' })}
+        </h1>
+        <p className="text-slate-400 font-light max-w-xl">
+          {t('subtitle', { defaultValue: 'Analyze costs by project, lawyer, and period.' })}
+        </p>
+      </header>
 
       {/* filters */}
       <form
-        className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5"
+        className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7"
         onSubmit={(e) => {
           e.preventDefault();
           fetchData();
@@ -117,16 +124,16 @@ export default function CostsReportPage() {
       >
         {/* client */}
         <select
-          className="w-full rounded border px-2 py-1"
+          className="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
           value={clientFilter}
           onChange={(e) => {
             setClientFilter(e.target.value);
             setProjectFilter('');
           }}
         >
-          <option value="">{t('filters.allClients')}</option>
+          <option value="" className="bg-slate-900">{t('filters.allClients', { defaultValue: 'All Clients' })}</option>
           {clients.map((c: any) => (
-            <option key={c.id} value={c.id}>
+            <option key={c.id} value={c.id} className="bg-slate-900">
               {c.name}
             </option>
           ))}
@@ -134,15 +141,15 @@ export default function CostsReportPage() {
 
         {/* project */}
         <select
-          className="w-full rounded border px-2 py-1"
+          className="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
           value={projectFilter}
           onChange={(e) => setProjectFilter(e.target.value)}
         >
-          <option value="">{t('filters.allProjects')}</option>
+          <option value="" className="bg-slate-900">{t('filters.allProjects', { defaultValue: 'All Projects' })}</option>
           {projects
             .filter((p: any) => !clientFilter || p.clientId === Number(clientFilter))
             .map((p: any) => (
-              <option key={p.id} value={p.id}>
+              <option key={p.id} value={p.id} className="bg-slate-900">
                 {p.name}
               </option>
             ))}
@@ -150,13 +157,13 @@ export default function CostsReportPage() {
 
         {/* lawyer */}
         <select
-          className="w-full rounded border px-2 py-1"
+          className="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
           value={lawyerFilter}
           onChange={(e) => setLawyerFilter(e.target.value)}
         >
-          <option value="">{t('filters.allLawyers')}</option>
+          <option value="" className="bg-slate-900">{t('filters.allLawyers', { defaultValue: 'All Lawyers' })}</option>
           {lawyers.map((l: any) => (
-            <option key={l.id} value={l.id}>
+            <option key={l.id} value={l.id} className="bg-slate-900">
               {l.name}
             </option>
           ))}
@@ -165,13 +172,13 @@ export default function CostsReportPage() {
         {/* date range */}
         <input
           type="date"
-          className="w-full rounded border px-2 py-1"
+          className="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
         />
         <input
           type="date"
-          className="w-full rounded border px-2 py-1"
+          className="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:border-legal-gold/50 transition-colors"
           value={to}
           onChange={(e) => setTo(e.target.value)}
         />
@@ -179,13 +186,13 @@ export default function CostsReportPage() {
         {/* buttons */}
         <button
           type="submit"
-          className="rounded bg-legal-gold px-4 py-2 font-semibold text-white hover:bg-legal-gold/90 sm:col-span-2 lg:col-span-1"
+          className="btn-legal w-full min-w-0 sm:col-span-1 xl:col-span-1"
         >
-          {t('buttons.applyFilters')}
+          {t('buttons.applyFilters', { defaultValue: 'Apply Filters' })}
         </button>
         <button
           type="button"
-          className="rounded bg-gray-300 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-400 sm:col-span-2 lg:col-span-1"
+          className="btn-legal-outline w-full min-w-0 sm:col-span-1 xl:col-span-1"
           onClick={() => {
             setClientFilter('');
             setProjectFilter('');
@@ -195,26 +202,27 @@ export default function CostsReportPage() {
             fetchData();
           }}
         >
-          {t('buttons.reset')}
+          {t('buttons.reset', { defaultValue: 'Reset' })}
         </button>
       </form>
 
       {/* table */}
       {loading ? (
-        <p>Loading…</p>
+        <p className="text-slate-500 italic font-light">Loading…</p>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <p className="text-red-400">{error}</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border-collapse text-sm">
+        <div className="legal-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto border-collapse text-sm">
             <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-3 py-2 text-left">{t('headers.project')}</th>
-                <th className="border px-3 py-2 text-left">{t('headers.lawyer')}</th>
-                <th className="border px-3 py-2 text-right">{t('headers.hours')}</th>
-                <th className="border px-3 py-2 text-right">{t('headers.rate')}</th>
-                <th className="border px-3 py-2 text-right">{t('headers.total')}</th>
-                <th className="border px-3 py-2 text-right">{t('headers.ready')}</th>
+              <tr className="bg-white/5 border-b border-white/5">
+                <th className="border-0 px-3 py-2 text-left">{t('headers.project', { defaultValue: 'Project' })}</th>
+                <th className="border-0 px-3 py-2 text-left">{t('headers.lawyer', { defaultValue: 'Lawyer' })}</th>
+                <th className="border-0 px-3 py-2 text-right">{t('headers.hours', { defaultValue: 'Hours' })}</th>
+                <th className="border-0 px-3 py-2 text-right">{t('headers.rate', { defaultValue: 'Rate' })}</th>
+                <th className="border-0 px-3 py-2 text-right">{t('headers.total', { defaultValue: 'Total' })}</th>
+                <th className="border-0 px-3 py-2 text-center">{t('headers.ready', { defaultValue: 'Ready' })}</th>
               </tr>
             </thead>
             <tbody>
@@ -233,14 +241,14 @@ export default function CostsReportPage() {
                         <React.Fragment key={key}>
                           {/* project subtotal */}
                           <tr className="bg-legal-gold/10 font-semibold">
-                            <td className="border px-3 py-2">{projectName}</td>
-                            <td className="border px-3 py-2" />
-                            <td className="border px-3 py-2 text-right">{projectHours.toFixed(2)}</td>
-                            <td className="border px-3 py-2 text-right" />
-                            <td className="border px-3 py-2 text-right">
+                            <td className="border-0 px-3 py-2">{projectName}</td>
+                            <td className="border-0 px-3 py-2" />
+                            <td className="border-0 px-3 py-2 text-right">{projectHours.toFixed(2)}</td>
+                            <td className="border-0 px-3 py-2 text-right" />
+                            <td className="border-0 px-3 py-2 text-right">
                               {currency} {projectTotal.toFixed(2)}
                             </td>
-                            <td className="border px-3 py-2" />
+                            <td className="border-0 px-3 py-2" />
                           </tr>
 
                           {/* lawyer rows */}
@@ -250,17 +258,17 @@ export default function CostsReportPage() {
                             const total = Number(r.rate || 0) * r.hours;
 
                             return (
-                              <tr key={`${r.projectId}-${r.lawyerId}`} className="odd:bg-white even:bg-gray-50">
-                                <td className="border px-3 py-2" />
-                                <td className="border px-3 py-2">{r.lawyerName}</td>
-                                <td className="border px-3 py-2 text-right">{r.hours.toFixed(2)}</td>
-                                <td className="border px-3 py-2 text-right">
+                              <tr key={`${r.projectId}-${r.lawyerId}`} className="hover:bg-white/5 transition-colors">
+                                <td className="border-0 px-3 py-2" />
+                                <td className="border-0 px-3 py-2">{r.lawyerName}</td>
+                                <td className="border-0 px-3 py-2 text-right">{r.hours.toFixed(2)}</td>
+                                <td className="border-0 px-3 py-2 text-right">
                                   {r.currency} {(Number(r.rate) || 0).toFixed(2)}
                                 </td>
-                                <td className="border px-3 py-2 text-right">
+                                <td className="border-0 px-3 py-2 text-right">
                                   {r.currency} {total.toFixed(2)}
                                 </td>
-                                <td className="border px-3 py-2 text-center">
+                                <td className="border-0 px-3 py-2 text-center">
                                   <input
                                     type="checkbox"
                                     checked={ready}
@@ -293,9 +301,9 @@ export default function CostsReportPage() {
                     {Object.entries(currencyTotals)
                       .filter(([, tot]) => tot > 0)
                       .map(([cur, tot]) => (
-                        <tr key={cur} className="bg-gray-200 font-bold">
+                        <tr key={cur} className="bg-white/5 font-bold border-t border-white/5">
                           <td colSpan={4} />
-                          <td className="border px-3 py-2 text-right">
+                          <td className="border-0 px-3 py-2 text-right text-legal-gold">
                             {cur} {tot.toFixed(2)}
                           </td>
                           <td />
@@ -305,7 +313,8 @@ export default function CostsReportPage() {
                 );
               })()}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
     </div>
