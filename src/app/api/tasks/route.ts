@@ -16,8 +16,15 @@ export const GET = withCompany(async (req: NextRequest, { companyId, userId, rol
     ],
   };
 
-  // user-level filter (non-managers see only tasks assigned to them)
-  const userFilter = isManager ? {} : { assigneeId: userId };
+  let userFilter: any = { assigneeId: userId };
+  if (isManager) userFilter = {};
+
+  if (role === 'LAWYER_MANAGER' || role === 'LAWYER_PARTNER') {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    const allowedAssignees = role === 'LAWYER_PARTNER' ? [userId, ...ids] : ids;
+    userFilter = { assigneeId: { in: allowedAssignees.length ? allowedAssignees : [userId] } };
+  }
 
   const tasks = await prisma.task.findMany({
     where: { ...companyFilter, ...userFilter },
@@ -37,7 +44,7 @@ export const GET = withCompany(async (req: NextRequest, { companyId, userId, rol
 export const POST = withCompany(async (req: NextRequest, { companyId, userId, role }) => {
   if (!companyId || !userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   
-  if (!role || !['LAWYER_PARTNER','MANAGING_PARTNER','LAWYER_MANAGER','OWNER','ADMIN'].includes(role)) {
+  if (!role || !['LAWYER_PARTNER','MANAGING_PARTNER','LAWYER_MANAGER','OWNER','ADMIN','LAWYER'].includes(role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   
@@ -60,6 +67,21 @@ export const POST = withCompany(async (req: NextRequest, { companyId, userId, ro
   // Verify assignee belongs to company
   const assignee = await prisma.user.findFirst({ where: { id: Number(assigneeId), companyId } });
   if (!assignee) return NextResponse.json({ error: 'Assignee not found in this company' }, { status: 404 });
+
+  if (role === 'LAWYER') {
+    if (!projectId) return NextResponse.json({ error: 'projectId required' }, { status: 400 });
+    const assigned = await prisma.projectAssignment.findFirst({ where: { userId, projectId: Number(projectId) } });
+    if (!assigned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (role === 'LAWYER_MANAGER' || role === 'LAWYER_PARTNER') {
+    const managed = await prisma.managerLawyer.findMany({ where: { managerId: userId }, select: { lawyerId: true } });
+    const ids = managed.map(m => m.lawyerId);
+    const allowedAssignees = role === 'LAWYER_PARTNER' ? [userId, ...ids] : ids;
+    if (!allowedAssignees.includes(Number(assigneeId))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
 
   const task = await prisma.task.create({
     data: {
