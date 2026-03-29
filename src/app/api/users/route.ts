@@ -8,7 +8,9 @@ export const GET = withCompany(async (req: NextRequest, { companyId, role }) => 
   }
 
   // Staff shouldn't be able to list all users generally
-  if (role === 'STAFF') {
+  // But OWNER, ADMIN, and ACCOUNTANT_MASTER can
+  const restrictedRoles = ['STAFF', 'LAWYER', 'LAWYER_MANAGER', 'LAWYER_PARTNER', 'HR_MANAGER'];
+  if (restrictedRoles.includes(role as string)) {
     return NextResponse.json([]);
   }
 

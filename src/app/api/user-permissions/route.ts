@@ -26,8 +26,9 @@ export async function GET(req: NextRequest) {
     if (!userIdParam) return NextResponse.json({ error: 'userId required' }, { status: 400 });
     const targetUserId = Number(userIdParam);
 
-    // only OWNER or ADMIN can read others
-    if (user.id !== targetUserId && user.role === 'STAFF') {
+    // Allow OWNER, ADMIN, and ACCOUNTANT_MASTER to read others permissions
+    const allowedRoles = ['OWNER', 'ADMIN', 'ACCOUNTANT_MASTER'];
+    if (user.id !== targetUserId && !allowedRoles.includes(user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -56,7 +57,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await auth(req);
-    if (!user || user.role === 'STAFF') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
+    // Allow OWNER, ADMIN, and ACCOUNTANT_MASTER to manage permissions
+    const allowedRoles = ['OWNER', 'ADMIN', 'ACCOUNTANT_MASTER'];
+    if (!allowedRoles.includes(user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const data = await req.json();
     const { userId, permissions } = data as {
