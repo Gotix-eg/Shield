@@ -28,9 +28,8 @@ function getUser(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // TEMP disable role gate for debugging
-  // // if (!(user.role === 'ADMIN' || (user.role && user.role.includes('ACCOUNTANT'))))
-    // return NextResponse.json({ error: 'Forbidden', role: user.role }, { status: 403 });
+  if (!(user.role === 'ADMIN' || (user.role && user.role.includes('ACCOUNTANT'))))
+    return NextResponse.json({ error: 'Forbidden', role: user.role }, { status: 403 });
   try {
     const baseWhere: any = { managerApproved: true, accountantApproved: false };
     if (user.companyId) baseWhere.project = { companyId: user.companyId };
@@ -53,9 +52,8 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const user = getUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // TEMP disable role gate for debugging
-  // // if (!(user.role === 'ADMIN' || (user.role && user.role.includes('ACCOUNTANT'))))
-    // return NextResponse.json({ error: 'Forbidden', role: user.role }, { status: 403 });
+  if (!(user.role === 'ADMIN' || (user.role && user.role.includes('ACCOUNTANT'))))
+    return NextResponse.json({ error: 'Forbidden', role: user.role }, { status: 403 });
   const idParam = req.nextUrl.searchParams.get('id');
   const body = await req.json().catch(() => ({} as any));
   const selCurrency = (body?.currency as string | undefined)?.toUpperCase?.();

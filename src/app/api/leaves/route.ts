@@ -41,7 +41,8 @@ function isHR(role: string | null) {
     role === 'HR_MANAGER' ||
     role === 'OWNER' ||
     role === 'ADMIN_REPORTS' ||
-    role === 'ACCOUNTANT_MASTER'
+    role === 'ACCOUNTANT_MASTER' ||
+    role === 'ACCOUNTANT_ASSISTANT'
   );
 }
 

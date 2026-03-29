@@ -4,7 +4,7 @@ import { withCompany } from '@/lib/with-company';
 
 function canCreateBatch(role: string | undefined) {
   if (!role) return false;
-  return role === 'ADMIN' || role === 'OWNER' || role.startsWith('HR');
+  return role === 'ADMIN' || role === 'OWNER' || role.startsWith('HR') || role.startsWith('ACCOUNTANT');
 }
 
 // GET list batches

@@ -6,7 +6,7 @@ function isHR(role: string | undefined) {
   if(!role) return false;
   const r = role.toUpperCase();
   if (r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER') return true;
-  if (r === 'ADMIN_REPORTS' || r === 'ACCOUNTANT_MASTER') return true;
+  if (r === 'ADMIN_REPORTS' || r === 'ACCOUNTANT_MASTER' || r === 'ACCOUNTANT_ASSISTANT') return true;
   return r === 'HR' || r.startsWith('HR_') || r === 'HRMANAGER' || r.startsWith('HR');
 }
 

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { withCompany } from '@/lib/with-company';
 
 function isHR(role: string | undefined) {
-  return role === 'ADMIN' || role === 'HR_MANAGER' || role === 'OWNER';
+  return role === 'ADMIN' || role === 'HR_MANAGER' || role === 'OWNER' || role === 'ADMIN_REPORTS' || role === 'ACCOUNTANT_MASTER' || role === 'ACCOUNTANT_ASSISTANT';
 }
 
 // GET /api/attendance?from=&to=&employeeId=
