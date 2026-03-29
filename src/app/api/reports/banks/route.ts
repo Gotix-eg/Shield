@@ -4,13 +4,18 @@ import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/banks?from=YYYY-MM-DD&to=YYYY-MM-DD
 // Returns [{ bank:{id,name,currency}, balance, transactions:[...] }]
-export const GET = withCompany(async (req: NextRequest, { companyId }) => {
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
   const from = req.nextUrl.searchParams.get('from');
   const to = req.nextUrl.searchParams.get('to');
 
   // لو الشركة مش معروفة (null/undefined) رجّع تقرير فاضي لحماية البيانات
   if (!companyId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const allowed = ['OWNER', 'MANAGING_PARTNER', 'ACCOUNTANT_MASTER', 'ACCOUNTANT_ASSISTANT', 'ADMIN', 'LAWYER_PARTNER', 'LAWYER_MANAGER'];
+  if (!allowed.includes(role as string)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // اعرض فقط البنوك الخاصة بهذه الشركة

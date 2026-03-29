@@ -68,6 +68,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [], totalsByCurrency: {}, grandUSD: { hours: 0, billable: 0, cost: 0 } });
   }
 
+  // Check permissions - only managers and above can see lawyers report
+  let userRole: string | null = null;
+  try {
+    const auth = request.headers.get('authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (token) {
+      const payload: any = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret-change-me');
+      userRole = payload?.role || null;
+    }
+  } catch {
+    userRole = null;
+  }
+
+  const allowed = ['OWNER', 'MANAGING_PARTNER', 'ACCOUNTANT_MASTER', 'ACCOUNTANT_ASSISTANT', 'ADMIN', 'LAWYER_PARTNER', 'LAWYER_MANAGER'];
+  if (!userRole || !allowed.includes(userRole)) {
+    return NextResponse.json({ results: [], totalsByCurrency: {}, grandUSD: { hours: 0, billable: 0, cost: 0 } });
+  }
+
   // Build base where clause
   let where: any = {
     ...(startParam || endParam ? { startTs: dateFilter } : {}),

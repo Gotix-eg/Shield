@@ -3,9 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { withCompany } from '@/lib/with-company';
 
 // GET /api/reports/office-expenses?from=YYYY-MM-DD&to=YYYY-MM-DD
-export const GET = withCompany(async (req: NextRequest, { companyId }) => {
+export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
   if (!companyId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const allowed = ['OWNER', 'MANAGING_PARTNER', 'ACCOUNTANT_MASTER', 'ACCOUNTANT_ASSISTANT', 'ADMIN', 'LAWYER_PARTNER', 'LAWYER_MANAGER'];
+  if (!allowed.includes(role as string)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const from = req.nextUrl.searchParams.get('from');
