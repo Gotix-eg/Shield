@@ -5,7 +5,7 @@ import { withCompany } from '@/lib/with-company';
 // GET /api/reports/trial-balance?start=YYYY-MM-DD&end=YYYY-MM-DD
 export const GET = withCompany(async (req: NextRequest, { companyId, role }) => {
   if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const allowed = role === 'OWNER' || role === 'MANAGING_PARTNER' || role === 'ACCOUNTANT_MASTER';
+  const allowed = role === 'OWNER' || role === 'MANAGING_PARTNER' || role === 'ACCOUNTANT_MASTER' || role === 'LAWYER_PARTNER' || role === 'LAWYER_MANAGER';
   if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
