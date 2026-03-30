@@ -28,19 +28,19 @@ export default function AdminSettingsPage() {
     setMounted(true);
   },[]);
 
-  // HARDCODED: Always show ACCOUNTANT_MASTER tiles
+  // ORIGINAL: Show only the core pages that were working
   const tiles = [
-    { href: '/admin/permissions', title: 'User Permissions', perm: '', description: 'Manage user permissions and access rights.' },
-    { href: '/admin/employees', title: 'Employees', perm: 'employees', description: 'Manage employees and user accounts.' },
-    { href: '/admin/positions', title: 'Positions', perm: 'positions', description: 'Define job positions and rates.' },
-    { href: '/admin/assignments', title: 'Project Assignments', perm: 'assign_projects', description: 'Assign lawyers to projects.' },
-    { href: '/admin/groups', title: 'Groups', perm: 'manage_groups', description: 'Create and manage lawyer groups.' },
-    { href: '/admin/company', title: 'Company Info', perm: 'admin_all', description: 'Edit company details and logo.' },
-    { href: '/accounts', title: 'Accounts', perm: '', description: 'Access accounting dashboards and tools.' },
-    { href: '/admin/expenses/pending', title: 'Pending Expenses', perm: '', description: 'Approve submitted expenses.' },
-    { href: '/accountant/time/pending', title: 'Pending Time (Accountant)', perm: '', description: 'Final approval for time entries.' },
-    { href: '/admin/office-expenses', title: 'Office Expenses', perm: '', description: 'Review office operating expenses.' },
-    { href: '/admin/settings', title: 'Settings', perm: '', description: 'System settings and configuration.' },
+    { href: '/admin/permissions', title: 'User Permissions', description: 'Manage user permissions and access rights.' },
+    { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+    { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+    { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
+    { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
+    { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
+    { href: '/accounts', title: 'Accounts', description: 'Access accounting dashboards and tools.' },
+    { href: '/admin/expenses/pending', title: 'Pending Expenses', description: 'Approve submitted expenses.' },
+    { href: '/accountant/time/pending', title: 'Pending Time', description: 'Final approval for time entries.' },
+    { href: '/admin/office-expenses', title: 'Office Expenses', description: 'Review office operating expenses.' },
+    { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
   ];
 
   if(!mounted) return null;
