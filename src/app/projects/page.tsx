@@ -55,6 +55,12 @@ export default function ProjectsPage() {
   const [expNotes, setExpNotes]       = useState("");
   const [expBankId, setExpBankId]     = useState<number | "">("");
 
+  // files modal
+  const [filesModal, setFilesModal]   = useState<number | null>(null);
+  const [projectDocs, setProjectDocs] = useState<any[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+
   const router = useRouter();
   const token  = getAuth();
 
@@ -176,6 +182,66 @@ export default function ProjectsPage() {
     } catch { toast.error("Deletion failed"); }
   };
 
+  // ── Files Modal ────────────────────────────────────────────
+  const openFiles = async (projectId: number) => {
+    setFilesModal(projectId);
+    setDocsLoading(true);
+    try {
+      const res = await fetch(`/api/upload/document?projectId=${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProjectDocs(res.ok ? await res.json() : []);
+    } catch { setProjectDocs([]); }
+    finally { setDocsLoading(false); }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!filesModal || !e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    setUploadingFiles(true);
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('projectId', String(filesModal));
+      try {
+        const res = await fetch('/api/upload/document', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+        if (!res.ok) { toast.error(`Failed: ${file.name}`); }
+      } catch { toast.error(`Error uploading ${file.name}`); }
+    }
+    setUploadingFiles(false);
+    e.target.value = '';
+    // refresh list
+    const res = await fetch(`/api/upload/document?projectId=${filesModal}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setProjectDocs(res.ok ? await res.json() : []);
+    toast.success(`${files.length} file(s) uploaded`);
+  };
+
+  const deleteDoc = async (docId: number) => {
+    if (!confirm('Remove this file?')) return;
+    const res = await fetch(`/api/upload/document?id=${docId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setProjectDocs(prev => prev.filter((d: any) => d.id !== docId));
+      toast.success('File removed');
+    } else { toast.error('Delete failed'); }
+  };
+
+  const fileIcon = (mime: string) => {
+    if (mime === 'application/pdf') return '📄';
+    if (mime?.includes('word')) return '📝';
+    if (mime?.includes('excel') || mime?.includes('spreadsheet')) return '📊';
+    return '📎';
+  };
+
+
   const visible = projects.filter(p =>
     (!filterCode || p.code.toLowerCase().includes(filterCode.toLowerCase())) &&
     (!filterName || p.name.toLowerCase().includes(filterName.toLowerCase()))
@@ -293,6 +359,10 @@ export default function ProjectsPage() {
                           <button onClick={() => openAdv(p.id)}
                             className="px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider text-slate-300 border border-white/10 hover:border-white/20 transition-all">
                             Advances
+                          </button>
+                          <button onClick={() => openFiles(p.id)}
+                            className="px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider text-sky-400 border border-sky-500/20 hover:bg-sky-500/10 transition-all">
+                            Files
                           </button>
                           <button onClick={() => deleteProject(p.id)}
                             className="px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/25 transition-all">
@@ -414,6 +484,65 @@ export default function ProjectsPage() {
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* ═══════════ Files Modal ═══════════ */}
+      {filesModal !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="legal-card w-full max-w-lg p-8 relative max-h-[85vh] overflow-y-auto">
+            <button onClick={() => { setFilesModal(null); setProjectDocs([]); }}
+              className="absolute top-4 right-4 text-slate-500 hover:text-white text-lg leading-none">✕</button>
+
+            <h2 className="text-2xl font-serif text-white mb-1">Project Files</h2>
+            <p className="text-slate-400 text-xs mb-6 uppercase tracking-widest">Project #{filesModal}</p>
+
+            {/* Upload zone */}
+            <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 mb-5 cursor-pointer transition-colors ${
+              uploadingFiles ? 'border-amber-500/40 opacity-60' : 'border-white/10 hover:border-sky-500/30'
+            }`}>
+              <span className="text-2xl">{uploadingFiles ? '⏳' : '📎'}</span>
+              <span className="text-sm text-slate-400">
+                {uploadingFiles ? 'Uploading…' : 'Click to upload files (PDF · Word · Excel)'}
+              </span>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+                disabled={uploadingFiles}
+                onChange={handleFileUpload}
+              />
+            </label>
+
+            {/* File list */}
+            {docsLoading ? (
+              <p className="text-slate-400 text-center py-4">Loading files…</p>
+            ) : projectDocs.length === 0 ? (
+              <p className="text-slate-500 text-sm text-center py-4 italic">No files attached yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {projectDocs.map((doc: any) => (
+                  <li key={doc.id} className="flex items-center justify-between rounded-lg px-4 py-3 bg-white/5 border border-white/5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-lg flex-shrink-0">{fileIcon(doc.mimeType)}</span>
+                      <div className="min-w-0">
+                        <a href={doc.storageKey} target="_blank" rel="noopener noreferrer"
+                          className="text-sm text-sky-400 hover:text-sky-300 transition-colors truncate block max-w-[260px]">
+                          {doc.filename}
+                        </a>
+                        <span className="text-[10px] text-slate-600">
+                          {(doc.sizeBytes / 1024).toFixed(0)} KB &nbsp;·&nbsp;
+                          {new Date(doc.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <button onClick={() => deleteDoc(doc.id)}
+                      className="text-slate-500 hover:text-red-400 transition-colors text-xs flex-shrink-0 ml-2">🗑</button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>
