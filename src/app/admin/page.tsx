@@ -77,9 +77,23 @@ export default function AdminSettingsPage() {
   // detect role from token
   const token=getAuth();
   let role:string|undefined;
-  try{ if(token){ role=decodeJwtPayload(token)?.role; }}catch{}
+  try{ 
+    if(token){ 
+      const payload=decodeJwtPayload(token);
+      role=payload?.role;
+      console.log('=== ADMIN DEBUG ===');
+      console.log('Token exists:', !!token);
+      console.log('Token payload:', payload);
+      console.log('Detected role:', role);
+      console.log('==================');
+    }
+  }catch(err){
+    console.error('Error decoding token:', err);
+  }
+  
   let tiles: typeof tilesAll;
   if(role==='ACCOUNTANT_MASTER'){
+    console.log('ACCOUNTANT_MASTER detected - showing all tiles');
     tiles=[
       { href: '/admin/permissions', title: 'User Permissions', perm: '', description: 'Manage user permissions and access rights.' },
       { href: '/admin/employees', title: 'Employees', perm: 'employees', description: 'Manage employees and user accounts.' },
@@ -124,13 +138,24 @@ export default function AdminSettingsPage() {
       </header>
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {tiles.filter(t=>{
+        {(() => {
+          console.log('=== RENDERING DEBUG ===');
+          console.log('Current role:', role);
+          console.log('Tiles count:', tiles.length);
+          console.log('Tiles:', tiles);
+          
+          const filteredTiles = tiles.filter(t=>{
             // CRITICAL FIX: ACCOUNTANT_MASTER bypasses all permission checks
             if(role==='ACCOUNTANT_MASTER') return true;
             
             if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
             return !t.perm || perms[t.perm] || perms["admin_all"];
-          }).map((tile: any) => (
+          });
+          
+          console.log('Filtered tiles count:', filteredTiles.length);
+          console.log('======================');
+          return filteredTiles;
+        })().map((tile: any) => (
           <Link
             key={tile.href}
             href={tile.href}
