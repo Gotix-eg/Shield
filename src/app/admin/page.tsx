@@ -91,6 +91,8 @@ export default function AdminSettingsPage() {
   console.log('Detected role:', role);
   let tiles: typeof tilesAll;
   if(role==='ACCOUNTANT_MASTER'){
+    // TEMPORARY: Show all tiles for ACCOUNTANT_MASTER without permission checks
+    console.log('ACCOUNTANT_MASTER detected - showing all tiles');
     tiles=[
       { href: '/admin/permissions', title: 'User Permissions', perm: '', description: 'Manage user permissions and access rights.' },
       { href: '/admin/employees', title: 'Employees', perm: 'employees', description: 'Manage employees and user accounts.' },
@@ -137,10 +139,19 @@ export default function AdminSettingsPage() {
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {(() => {
-          const filteredTiles = tiles.filter(t=>{
-            if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
-            return !t.perm || perms[t.perm] || perms["admin_all"];
-          });
+          let filteredTiles = tiles;
+          
+          // TEMPORARY: Bypass permission checks for ACCOUNTANT_MASTER
+          if(role === 'ACCOUNTANT_MASTER') {
+            console.log('ACCOUNTANT_MASTER - bypassing permission checks');
+            filteredTiles = tiles; // Show all tiles
+          } else {
+            filteredTiles = tiles.filter(t=>{
+              if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
+              return !t.perm || perms[t.perm] || perms["admin_all"];
+            });
+          }
+          
           console.log('All tiles:', tiles);
           console.log('Permissions:', perms);
           console.log('Filtered tiles:', filteredTiles);
