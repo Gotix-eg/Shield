@@ -47,6 +47,35 @@ export default function NewProjectPage() {
     fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.json())
   );
 
+  // Files to attach to the project
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, string>>({});
+
+  const addFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+    const valid = selected.filter(f => allowed.includes(f.type));
+    if (valid.length < selected.length) toast.error('Only PDF, Word, Excel files are allowed');
+    setPendingFiles(prev => [...prev, ...valid]);
+    e.target.value = '';
+  };
+
+  const removeFile = (idx: number) =>
+    setPendingFiles(prev => prev.filter((_, i) => i !== idx));
+
+  const fileIcon = (mime: string) => {
+    if (mime === 'application/pdf') return '📄';
+    if (mime.includes('word')) return '📝';
+    if (mime.includes('excel') || mime.includes('spreadsheet')) return '📊';
+    return '📎';
+  };
+
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -136,11 +165,31 @@ export default function NewProjectPage() {
         });
       }
 
-      toast.success("Project created successfully");
-      router.push("/projects");
+      // 4. Upload attached files
+      if (pendingFiles.length > 0) {
+        for (const file of pendingFiles) {
+          setUploadProgress(prev => ({ ...prev, [file.name]: 'uploading' }));
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('projectId', String(projectId));
+          const upRes = await fetch('/api/upload/document', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd,
+          });
+          if (upRes.ok) {
+            setUploadProgress(prev => ({ ...prev, [file.name]: 'done' }));
+          } else {
+            toast.error(`Failed to upload ${file.name}`);
+          }
+        }
+      }
+
+      toast.success('Project created successfully');
+      router.push('/projects');
     } catch (err) {
       console.error(err);
-      toast.error("Failed to create project");
+      toast.error('Failed to create project');
     }
   };
 
@@ -445,6 +494,53 @@ export default function NewProjectPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ─── Documents Card ─── */}
+          <div className="legal-card p-8 space-y-5">
+            <h2 className="text-[10px] uppercase tracking-[0.3em] text-legal-gold font-bold border-b border-white/5 pb-3">
+              Attachments (Optional)
+            </h2>
+            <p className="text-xs text-slate-500">Attach PDF, Word (.doc/.docx), or Excel (.xls/.xlsx) files — Agreement, data sheets, etc.</p>
+
+            {/* Drop zone / picker */}
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-white/10 rounded-lg py-8 cursor-pointer hover:border-legal-gold/30 transition-colors">
+              <span className="text-3xl">📎</span>
+              <span className="text-sm text-slate-400">Click to choose files</span>
+              <span className="text-[10px] text-slate-600 uppercase tracking-widest">PDF · Word · Excel</span>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+                onChange={addFiles}
+              />
+            </label>
+
+            {/* File list */}
+            {pendingFiles.length > 0 && (
+              <ul className="space-y-2">
+                {pendingFiles.map((f, i) => (
+                  <li key={i} className="flex items-center justify-between rounded px-4 py-2 bg-white/5 border border-white/5">
+                    <span className="flex items-center gap-2 text-sm text-slate-300">
+                      <span>{fileIcon(f.type)}</span>
+                      <span className="truncate max-w-xs">{f.name}</span>
+                      <span className="text-[10px] text-slate-600">{(f.size / 1024).toFixed(0)} KB</span>
+                    </span>
+                    {uploadProgress[f.name] === 'uploading' && (
+                      <span className="text-[10px] text-amber-400 animate-pulse">Uploading…</span>
+                    )}
+                    {uploadProgress[f.name] === 'done' && (
+                      <span className="text-[10px] text-emerald-400">✓ Done</span>
+                    )}
+                    {!uploadProgress[f.name] && (
+                      <button type="button" onClick={() => removeFile(i)}
+                        className="text-slate-500 hover:text-red-400 transition-colors text-sm leading-none">✕</button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Submit */}
