@@ -92,10 +92,25 @@ export async function POST(request: NextRequest) {
   });
 
 // -----------------------------------------------------------------
-  // Update Bank balance if bankId provided
+  // Update Bank balance AND create transaction record if bankId provided
   // -----------------------------------------------------------------
   if (bankId) {
-    await prisma.bankAccount.update({ where: { id: bankId }, data: { balance: { increment: amount } } });
+    const memo = `Advance payment – ${accountType === 'TRUST' ? 'Case (Trust)' : 'Expense'} – Project #${projectId}${notes ? ': ' + notes : ''}`;
+    await prisma.$transaction([
+      prisma.bankAccount.update({
+        where: { id: bankId },
+        data: { balance: { increment: amount } },
+      }),
+      prisma.bankTransaction.create({
+        data: {
+          bankId,
+          amount,
+          currency,
+          memo,
+          companyId: project.companyId,
+        },
+      }),
+    ]);
   }
 
   // سجل في IncomeCashLedger فقط إذا كانت الدفعة TRUST

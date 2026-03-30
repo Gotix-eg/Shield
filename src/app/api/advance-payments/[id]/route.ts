@@ -55,18 +55,80 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   return NextResponse.json({ ok: true });
 }
 
-// PUT to edit amount/currency/notes/paidOn
+// PUT to edit amount/currency/notes/bankId
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const userId = getUserId(request);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const id = Number(params.id);
   const body = await request.json();
-  const { amount, currency, notes, paidOn } = body;
+  const { amount, currency, notes, paidOn, bankId: rawBankId } = body;
+
+  // fetch the existing payment to know the old bankId + amount
+  const existing = await prisma.advancePayment.findUnique({
+    where: { id },
+    include: { project: true },
+  });
+  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const newBankId  = rawBankId !== undefined ? (rawBankId ? Number(rawBankId) : null) : existing.bankId;
+  const newAmount  = amount !== undefined ? Number(amount) : Number(existing.amount);
+  const newCurrency = currency || existing.currency;
+  const oldBankId  = existing.bankId;
+  const oldAmount  = Number(existing.amount);
+
+  // Build update data
   const data: any = {};
-  if (amount !== undefined) data.amount = amount;
-  if (currency) data.currency = currency;
-  if (notes !== undefined) data.notes = notes;
-  if (paidOn) data.paidOn = new Date(paidOn);
+  if (amount   !== undefined) data.amount   = newAmount;
+  if (currency)               data.currency = newCurrency;
+  if (notes    !== undefined) data.notes    = notes;
+  if (paidOn)                 data.paidOn   = new Date(paidOn);
+  if (rawBankId !== undefined) data.bankId  = newBankId;
+
   const payment = await prisma.advancePayment.update({ where: { id }, data });
+
+  // ── Update bank balances ──
+  const bankOps: any[] = [];
+
+  // Reverse old bank if it's changing or amount changed
+  if (oldBankId && (oldBankId !== newBankId || oldAmount !== newAmount)) {
+    bankOps.push(
+      prisma.bankAccount.update({
+        where: { id: oldBankId },
+        data: { balance: { decrement: oldAmount } },
+      })
+    );
+  }
+
+  // Apply new bank
+  if (newBankId) {
+    const isNewBank = newBankId !== oldBankId;
+    const amountToAdd = isNewBank ? newAmount : (newAmount - oldAmount);
+
+    if (isNewBank || oldAmount !== newAmount) {
+      const memo = `Advance payment update – Project #${existing.projectId}${notes ? ': ' + notes : ''}`;
+      bankOps.push(
+        prisma.bankAccount.update({
+          where: { id: newBankId },
+          data: { balance: { increment: isNewBank ? newAmount : amountToAdd } },
+        }),
+        prisma.bankTransaction.create({
+          data: {
+            bankId: newBankId,
+            amount: isNewBank ? newAmount : amountToAdd,
+            currency: newCurrency,
+            memo,
+            companyId: existing.project.companyId,
+          },
+        })
+      );
+    }
+  }
+
+  if (bankOps.length > 0) {
+    await prisma.$transaction(bankOps);
+  }
+
   return NextResponse.json(payment);
 }
+
