@@ -360,10 +360,6 @@ export default function ProjectsPage() {
                             className="px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider text-slate-300 border border-white/10 hover:border-white/20 transition-all">
                             Advances
                           </button>
-                          <button onClick={() => openFiles(p.id)}
-                            className="px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider text-sky-400 border border-sky-500/20 hover:bg-sky-500/10 transition-all">
-                            Files
-                          </button>
                           <button onClick={() => deleteProject(p.id)}
                             className="px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/25 transition-all">
                             Delete
