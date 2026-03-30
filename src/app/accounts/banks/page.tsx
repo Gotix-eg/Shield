@@ -48,6 +48,26 @@ export default function BanksPage() {
     }
   };
 
+  const resetAll = async () => {
+    if (!confirm('⚠️ This will DELETE all bank transactions and set all balances to 0. This cannot be undone. Proceed?')) return;
+    setRecalcLoading(true);
+    try {
+      const res = await fetch('/api/banks/reset', { method: 'POST', headers: getHeaders() });
+      const result = await res.json();
+      if (res.ok) {
+        toast.success(`Reset done — deleted ${result.deletedTransactions} transactions, zeroed ${result.resetBanks} banks`);
+        mutate('/api/banks');
+      } else {
+        toast.error('Reset failed');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setRecalcLoading(false);
+    }
+  };
+
+
   const addBank = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
@@ -67,14 +87,24 @@ export default function BanksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Banks</h1>
-        <button
-          onClick={recalculate}
-          disabled={recalcLoading}
-          className="text-xs px-3 py-1.5 rounded border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 transition-all disabled:opacity-50"
-        >
-          {recalcLoading ? 'Recalculating…' : '⟳ Recalculate Balances'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={resetAll}
+            disabled={recalcLoading}
+            className="text-xs px-3 py-1.5 rounded border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-50"
+          >
+            {recalcLoading ? '…' : '🗑 Reset All to Zero'}
+          </button>
+          <button
+            onClick={recalculate}
+            disabled={recalcLoading}
+            className="text-xs px-3 py-1.5 rounded border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 transition-all disabled:opacity-50"
+          >
+            {recalcLoading ? 'Recalculating…' : '⟳ Recalculate Balances'}
+          </button>
+        </div>
       </div>
+
 
       <div className="flex gap-4 text-sm">
         <Link href="/accounts/banks/transfer" className="text-blue-600 underline">Transfer Funds</Link>
