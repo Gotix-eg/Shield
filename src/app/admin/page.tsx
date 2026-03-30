@@ -130,6 +130,15 @@ export default function AdminSettingsPage() {
           { href: '/leaves', title: 'Leave Requests', description: 'Apply for leave.' },
         ];
       
+      case 'EHAFuqgZ8':
+        return [
+          { href: '/projects', title: 'Projects', description: 'View and manage assigned projects.' },
+          { href: '/admin/tasks', title: 'Tasks', description: 'Create and manage tasks.' },
+          { href: '/time', title: 'Time Entries', description: 'Log and track billable hours.' },
+          { href: '/expenses', title: 'Expenses', description: 'Submit project expenses.' },
+          { href: '/leaves', title: 'Leave Requests', description: 'Apply for leave.' },
+        ];
+      
       case 'HR_MANAGER':
         return [
           { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },

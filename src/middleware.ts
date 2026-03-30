@@ -60,6 +60,9 @@ export function middleware(request: NextRequest) {
     const HR_ALL = [...SUPER, "HR_MANAGER", "HR"];
     const REPORTS_ROLES = [...SUPER, "ACCOUNTANT_MASTER", "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER"];
     const INVOICE_ROLES = [...SUPER, "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT", "LAWYER_PARTNER"];
+    
+    // Add the specific lawyer role from the old demo
+    const LAWYER_ROLES = ["OWNER", "MANAGING_PARTNER", "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER", "EHAFuqgZ8"];
 
     const deny = () => NextResponse.redirect(new URL("/dashboard", request.url));
 
@@ -72,17 +75,17 @@ export function middleware(request: NextRequest) {
     }
 
     if (pathname.startsWith("/projects")) {
-      const allowProjects = [...ACCOUNTING_ASSIST, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER"];
+      const allowProjects = [...ACCOUNTING_ASSIST, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER", "EHAFuqgZ8"];
       if (!allowProjects.includes(role)) return deny();
     }
 
     if (pathname.startsWith("/admin/reports") && !REPORTS_ROLES.includes(role)) return deny();
     if (pathname.startsWith("/admin/tasks")) {
-      const allowTasks = [...SUPER, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER", "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT"];
+      const allowTasks = [...SUPER, "ADMIN", "LAWYER_PARTNER", "LAWYER_MANAGER", "LAWYER", "ACCOUNTANT_MASTER", "ACCOUNTANT_ASSISTANT", "EHAFuqgZ8"];
       if (!allowTasks.includes(role)) return deny();
     }
     if (pathname.startsWith("/admin/time")) {
-      const allowAdminTime = [...SUPER, "ADMIN", "HR_MANAGER", "ACCOUNTANT_MASTER", "LAWYER_MANAGER"];
+      const allowAdminTime = [...SUPER, "ADMIN", "HR_MANAGER", "ACCOUNTANT_MASTER", "LAWYER_MANAGER", "EHAFuqgZ8"];
       if (!allowAdminTime.includes(role)) return deny();
     }
     if (pathname.startsWith("/admin/payroll")) {
@@ -95,7 +98,7 @@ export function middleware(request: NextRequest) {
       if (!allowHrAdmin.includes(role)) return deny();
     }
     if (pathname === "/admin" || pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/company") || pathname.startsWith("/admin/permissions")) {
-      const allowSettings = [...SUPER, "ADMIN", "ACCOUNTANT_MASTER"];
+      const allowSettings = [...SUPER, "ADMIN", "ACCOUNTANT_MASTER", "EHAFuqgZ8"];
       if (!allowSettings.includes(role)) return deny();
     }
   } catch {
