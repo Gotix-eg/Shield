@@ -48,7 +48,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     prisma.expense.deleteMany({ where: { projectId: id } }),
     prisma.projectAssignment.deleteMany({ where: { projectId: id } }),
     prisma.document.deleteMany({ where: { projectId: id } }),
-    // first delete invoice items & payments linked to project invoices
+    // Cash ledgers (must be before invoices/project)
+    prisma.expenseCashLedger.deleteMany({ where: { projectId: id } }),
+    prisma.incomeCashLedger.deleteMany({ where: { projectId: id } }),
+    // invoice items & payments linked to project invoices
     prisma.invoiceItem.deleteMany({ where: { invoice: { projectId: id } } }),
     prisma.payment.deleteMany({ where: { invoice: { projectId: id } } }),
     prisma.trustTransaction.deleteMany({ where: { invoice: { projectId: id } } }),

@@ -6,9 +6,11 @@ import Link from "next/link";
 import { toast, Toaster } from "react-hot-toast";
 import { fetchAuth } from "@/lib/fetchAuth";
 import { getAuth } from "@/lib/auth";
+import useSWR from "swr";
 
 interface Client { id: number; name: string; }
-interface AdvPayment { id: number; amount: number; currency: string; accountType: "TRUST" | "EXPENSE"; notes?: string | null; }
+interface Bank { id: number; name: string; currency: string; }
+interface AdvPayment { id: number; amount: number; currency: string; accountType: "TRUST" | "EXPENSE"; notes?: string | null; bankId?: number | null; }
 interface Project {
   id: number;
   code: string;
@@ -40,19 +42,26 @@ export default function ProjectsPage() {
   const [advLoading, setAdvLoading]   = useState(false);
 
   // trust form
-  const [trustId, setTrustId]       = useState<number | null>(null);
-  const [trustAmt, setTrustAmt]     = useState("");
-  const [trustCur, setTrustCur]     = useState("USD");
-  const [trustNotes, setTrustNotes] = useState("");
+  const [trustId, setTrustId]         = useState<number | null>(null);
+  const [trustAmt, setTrustAmt]       = useState("");
+  const [trustCur, setTrustCur]       = useState("USD");
+  const [trustNotes, setTrustNotes]   = useState("");
+  const [trustBankId, setTrustBankId] = useState<number | "">("");
 
   // expense form
-  const [expId, setExpId]           = useState<number | null>(null);
-  const [expAmt, setExpAmt]         = useState("");
-  const [expCur, setExpCur]         = useState("USD");
-  const [expNotes, setExpNotes]     = useState("");
+  const [expId, setExpId]             = useState<number | null>(null);
+  const [expAmt, setExpAmt]           = useState("");
+  const [expCur, setExpCur]           = useState("USD");
+  const [expNotes, setExpNotes]       = useState("");
+  const [expBankId, setExpBankId]     = useState<number | "">("");
 
   const router = useRouter();
   const token  = getAuth();
+
+  // fetch banks for dropdown
+  const { data: banks = [] } = useSWR<Bank[]>("/api/banks", (url: string) =>
+    fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.json())
+  );
 
   /* ─── fetch projects ─── */
   const fetchProjects = async () => {
@@ -82,10 +91,12 @@ export default function ProjectsPage() {
       setTrustAmt(trust ? String(trust.amount) : "");
       setTrustCur(trust?.currency ?? "USD");
       setTrustNotes(trust?.notes ?? "");
+      setTrustBankId(trust?.bankId ?? "");
       setExpId(expense?.id ?? null);
       setExpAmt(expense ? String(expense.amount) : "");
       setExpCur(expense?.currency ?? "USD");
       setExpNotes(expense?.notes ?? "");
+      setExpBankId(expense?.bankId ?? "");
     } catch { toast.error("Failed to load advances"); }
     finally  { setAdvLoading(false); }
   };
@@ -93,10 +104,11 @@ export default function ProjectsPage() {
   /* ─── save advance payment (create or update) ─── */
   const saveAdvance = async (accountType: "TRUST" | "EXPENSE") => {
     const isTrust  = accountType === "TRUST";
-    const id       = isTrust ? trustId   : expId;
-    const amount   = isTrust ? trustAmt  : expAmt;
-    const currency = isTrust ? trustCur  : expCur;
-    const notes    = isTrust ? trustNotes: expNotes;
+    const id       = isTrust ? trustId    : expId;
+    const amount   = isTrust ? trustAmt   : expAmt;
+    const currency = isTrust ? trustCur   : expCur;
+    const notes    = isTrust ? trustNotes : expNotes;
+    const bankId   = isTrust ? trustBankId: expBankId;
 
     if (!amount || parseFloat(amount) <= 0) {
       toast.error("Enter a valid amount");
@@ -108,7 +120,7 @@ export default function ProjectsPage() {
         const res = await fetch(`/api/advance-payments/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ amount: parseFloat(amount), currency, notes: notes || null }),
+          body: JSON.stringify({ amount: parseFloat(amount), currency, notes: notes || null, bankId: bankId || null }),
         });
         if (!res.ok) throw new Error(await res.text());
       } else {
@@ -116,7 +128,7 @@ export default function ProjectsPage() {
         const res = await fetch("/api/advance-payments", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ projectId: advModal, amount: parseFloat(amount), currency, accountType, notes: notes || null }),
+          body: JSON.stringify({ projectId: advModal, amount: parseFloat(amount), currency, accountType, notes: notes || null, bankId: bankId || null }),
         });
         if (!res.ok) throw new Error(await res.text());
         const created: AdvPayment = await res.json();
@@ -325,7 +337,7 @@ export default function ProjectsPage() {
                     <p className="text-sm font-bold text-emerald-400 uppercase tracking-widest">Case Advance (Trust)</p>
                     {trustId && <span className="ml-auto text-[10px] text-slate-500 uppercase">Editing existing</span>}
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-1">Amount</label>
                       <input type="number" step="0.01" value={trustAmt} onChange={e => setTrustAmt(e.target.value)}
@@ -336,6 +348,16 @@ export default function ProjectsPage() {
                       <select value={trustCur} onChange={e => setTrustCur(e.target.value)}
                         className="w-full rounded px-3 py-2 text-sm focus:outline-none">
                         {CURRENCIES.map(c => <option key={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-1">Bank Account</label>
+                      <select value={trustBankId} onChange={e => setTrustBankId(e.target.value ? Number(e.target.value) : "")}
+                        className="w-full rounded px-3 py-2 text-sm focus:outline-none">
+                        <option value="">No bank (manual)</option>
+                        {Array.isArray(banks) && banks
+                          .filter((b: Bank) => !trustCur || b.currency === trustCur)
+                          .map((b: Bank) => <option key={b.id} value={b.id}>{b.name} ({b.currency})</option>)}
                       </select>
                     </div>
                     <div>
@@ -357,7 +379,7 @@ export default function ProjectsPage() {
                     <p className="text-sm font-bold text-amber-400 uppercase tracking-widest">Expense Advance</p>
                     {expId && <span className="ml-auto text-[10px] text-slate-500 uppercase">Editing existing</span>}
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-1">Amount</label>
                       <input type="number" step="0.01" value={expAmt} onChange={e => setExpAmt(e.target.value)}
@@ -368,6 +390,16 @@ export default function ProjectsPage() {
                       <select value={expCur} onChange={e => setExpCur(e.target.value)}
                         className="w-full rounded px-3 py-2 text-sm focus:outline-none">
                         {CURRENCIES.map(c => <option key={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-slate-400 mb-1">Bank Account</label>
+                      <select value={expBankId} onChange={e => setExpBankId(e.target.value ? Number(e.target.value) : "")}
+                        className="w-full rounded px-3 py-2 text-sm focus:outline-none">
+                        <option value="">No bank (manual)</option>
+                        {Array.isArray(banks) && banks
+                          .filter((b: Bank) => !expCur || b.currency === expCur)
+                          .map((b: Bank) => <option key={b.id} value={b.id}>{b.name} ({b.currency})</option>)}
                       </select>
                     </div>
                     <div>
