@@ -251,3 +251,117 @@ select option:checked {
   background-color: var(--accent) !important;
   color: #0a0f1a !important;
 }
+
+/* ================================================================
+   SITE-WIDE DARK THEME OVERRIDES
+   Force the midnight navy background across all pages regardless
+   of which Tailwind classes are used on individual page elements
+   ================================================================ */
+
+/* Override white/light backgrounds on containers and wrappers */
+.bg-white,
+div.bg-white,
+main.bg-white,
+section.bg-white,
+article.bg-white {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+}
+
+.bg-gray-50,
+div.bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+.bg-gray-100,
+div.bg-gray-100 {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.bg-gray-200,
+div.bg-gray-200 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Text color overrides for readability */
+.text-gray-900, .text-gray-800, .text-gray-700, .text-black {
+  color: #f1f5f9 !important;
+}
+
+.text-gray-600, .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+/* Border overrides */
+.border-gray-200,
+.border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ================================================================
+   BUTTON DESIGN (Global)
+   ================================================================ */
+
+button[type="submit"]:not(.btn-legal):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="text-red"]) {
+  background: var(--accent) !important;
+  color: #0a0f1a !important;
+  border: 1px solid var(--accent) !important;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover:not([class*="bg-red"]):not([class*="bg-green"]) {
+  background: transparent !important;
+  color: var(--accent) !important;
+  box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+}
+
+/* Outlined / secondary buttons */
+button[type="button"]:not([class*="bg-red"]):not([class*="bg-green"]):not([class*="text-red"]):not([class*="hover:text-red"]) {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  transition: all 0.3s ease;
+}
+
+/* ================================================================
+   DROPDOWN / SELECT MENU DESIGN
+   Styled glassmorphism dark dropdown panels
+   ================================================================ */
+
+/* Native select */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23c5a059' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 1.25rem !important;
+  padding-right: 2.5rem !important;
+  cursor: pointer;
+}
+
+/* Modal / Dialog background override */
+.modal, [role="dialog"], [aria-modal="true"] {
+  background-color: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Fix any shadow-md/lg that looks out of place on dark */
+.shadow-md {
+  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.5) !important;
+}
+
+.shadow-lg {
+  box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Rounded cards that have white bg */
+.rounded-lg.bg-white,
+.rounded-xl.bg-white,
+.rounded-md.bg-white {
+  background: rgba(17, 24, 39, 0.7) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
