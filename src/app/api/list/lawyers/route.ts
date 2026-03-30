@@ -1,31 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
 const LAWYER_ROLES = [
-  'LAWYER', 'LAWYER_MANAGER', 'LAWYER_PARTNER', 'MANAGING_PARTNER'
+  'LAWYER', 'LAWYER_MANAGER', 'LAWYER_PARTNER', 'MANAGING_PARTNER', 'ADMIN',
 ];
 
 export async function GET(req: NextRequest) {
+  // Read companyId from JWT bearer token
   let companyId: number | undefined;
   try {
-    const session = await getServerSession(authOptions as any);
-    companyId = session?.user?.companyId;
+    const auth = req.headers.get('authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (token) {
+      const dec: any = jwt.verify(token, JWT_SECRET);
+      if (dec.companyId) companyId = Number(dec.companyId);
+    }
   } catch {
-    companyId = undefined; // ignore auth when secret missing
+    companyId = undefined;
   }
-  const projectId = req.nextUrl.searchParams.get('projectId');
 
-  const baseWhere:any = { role: { in: LAWYER_ROLES } };
+  // Also accept companyId as query param (fallback)
+  const qCompany = req.nextUrl.searchParams.get('companyId');
+  if (!companyId && qCompany) companyId = Number(qCompany);
+
+  const baseWhere: any = { role: { in: LAWYER_ROLES } };
   if (companyId) baseWhere.companyId = companyId;
-  // NOTE: previously we restricted to lawyers already assigned to the project via ProjectAssignment.
-  // This caused the dropdown to be empty when no assignments existed yet.
-  // Now we simply return all lawyers in the same company; the assignment will be created when a task is added.
-  let lawyers = await prisma.user.findMany({
+
+  const lawyers = await prisma.user.findMany({
     where: baseWhere,
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
   });
+
   return NextResponse.json(lawyers);
 }

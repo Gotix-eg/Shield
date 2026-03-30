@@ -40,31 +40,28 @@ export default function TasksPage() {
   const [projects, setProjects] = useState<{ id: number; name: string; clientId: number }[]>([]);
   const [lawyers, setLawyers] = useState<{ id: number; name: string }[]>([]);
 
+  function buildAuth(): { [key: string]: string } {
+    const t = getAuth();
+    return t ? { Authorization: `Bearer ${t}` } : {};
+  }
+
+  // Load clients, projects AND lawyers on mount
   useEffect(() => {
     const cid = getCompanyId();
     const qs = cid ? `?companyId=${cid}` : "";
     Promise.all([
-      fetch(`/api/list/clients${qs}`, { headers: buildAuth() }).then(r=>r.json()),
-      fetch(`/api/list/projects${qs}`, { headers: buildAuth() }).then(r=>r.json()),
+      fetch(`/api/list/clients${qs}`, { headers: buildAuth() }).then(r => r.json()),
+      fetch(`/api/list/projects${qs}`, { headers: buildAuth() }).then(r => r.json()),
+      fetch(`/api/list/lawyers${qs}`, { headers: buildAuth() }).then(r => r.json()),
     ])
-      .then(([c, p]) => {
-        setClients(c);
-        setProjects(p);
-              })
+      .then(([c, p, l]) => {
+        setClients(Array.isArray(c) ? c : []);
+        setProjects(Array.isArray(p) ? p : []);
+        setLawyers(Array.isArray(l) ? l : []);
+      })
       .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Load lawyers when project is selected
-  useEffect(() => {
-    if (form.projectId) {
-      fetch(`/api/list/lawyers?projectId=${form.projectId}`, { headers: buildAuth() })
-        .then(r => r.json())
-        .then(setLawyers)
-        .catch(() => {}); // Removed setLawyers call here
-    } else {
-      setLawyers([]);
-    }
-  }, [form.projectId]);
 
   const load = () => {
     setLoading(true);
@@ -79,7 +76,7 @@ export default function TasksPage() {
 
   const addTask = async () => {
     try {
-            const res = await fetch("/api/tasks", {
+      const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...buildAuth() },
         body: JSON.stringify({
@@ -96,24 +93,12 @@ export default function TasksPage() {
       }
       toast.success("Task created");
       setShowModal(false);
-      setForm({
-        title: "",
-        assigneeId: "",
-        dueDate: "",
-        clientId: "",
-        projectId: "",
-        description: "",
-      });
+      setForm({ title: "", assigneeId: "", dueDate: "", clientId: "", projectId: "", description: "" });
       load();
     } catch (err:any) {
       toast.error(err.message || "Creation failed");
     }
   };
-
-  function buildAuth(): { [key: string]: string } {
-    const t = getAuth();
-    return t ? { Authorization: `Bearer ${t}` } : {};
-  }
 
   const reassign = async (task: Task)=>{
     if(!task.project?.id){toast.error('No project');return;}
@@ -130,7 +115,7 @@ export default function TasksPage() {
       load();
     }catch{toast.error('Failed');}
   };
-  
+
   const updateStatus = async (id: number, status: string) => {
     try {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -143,7 +128,6 @@ export default function TasksPage() {
         throw new Error(msg);
       }
       const updated = await res.json();
-      // optimistic update
       setTasks(prev => prev.map(t => t.id === id ? { ...t, status: updated.status } : t));
       toast.success('Updated');
     } catch (e:any) {
@@ -166,21 +150,8 @@ export default function TasksPage() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {[
-                  "Title",
-                  "Client",
-                  "Project",
-                  "Assignee",
-                  "Due Date",
-                  "Status",
-                  "Actions",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
+                {["Title","Client","Project","Assignee","Due Date","Status","Actions"].map((h) => (
+                  <th key={h} className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -191,12 +162,8 @@ export default function TasksPage() {
                   <td className="px-3 py-2">{t.client?.name || "-"}</td>
                   <td className="px-3 py-2">{t.project?.name || "-"}</td>
                   <td className="px-3 py-2">{t.assignee.name}</td>
-                  <td className="px-3 py-2">
-                    {new Date(t.dueDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-3 py-2 capitalize">
-                    {t.status.toLowerCase()}
-                  </td>
+                  <td className="px-3 py-2">{new Date(t.dueDate).toLocaleDateString()}</td>
+                  <td className="px-3 py-2 capitalize">{t.status.toLowerCase()}</td>
                   <td className="px-3 py-2 space-x-2">
                     {t.status === 'PENDING' && (
                       <button className="text-blue-600 hover:underline" onClick={() => updateStatus(t.id,'IN_PROGRESS')}>Start</button>
@@ -228,9 +195,7 @@ export default function TasksPage() {
                 className="w-full border p-2"
                 placeholder="Description"
                 value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
               ></textarea>
               <select
                 className="w-full border p-2"
@@ -253,6 +218,7 @@ export default function TasksPage() {
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
+              {/* Lawyer — always loaded, not dependent on project */}
               <select
                 className="w-full border p-2"
                 value={form.assigneeId}
@@ -271,12 +237,7 @@ export default function TasksPage() {
               />
             </div>
             <div className="mt-4 flex justify-end space-x-2">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 border rounded"
-              >
-                Cancel
-              </button>
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded">Cancel</button>
               <button
                 onClick={addTask}
                 disabled={!form.title.trim() || !form.assigneeId || !form.dueDate}
