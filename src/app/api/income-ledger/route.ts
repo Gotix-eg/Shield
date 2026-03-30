@@ -24,24 +24,25 @@ export async function GET(request: NextRequest) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const companyId = user.companyId;
   const { searchParams } = new URL(request.url);
-  const bankId = searchParams.get('bankId');
+  const bankId    = searchParams.get('bankId');
   const projectId = searchParams.get('projectId');
-  const start = searchParams.get('start');
-  const end = searchParams.get('end');
+  const start     = searchParams.get('start');
+  const end       = searchParams.get('end');
 
-  const where: any = { companyId };
-  if (bankId) where.bankId = Number(bankId);
-  if (projectId) where.projectId = Number(projectId);
-  if (start || end) where.createdAt = {};
+  // Build where clause — only filter by companyId if the user has one assigned
+  const where: any = {};
+  if (user.companyId) where.companyId = user.companyId;
+  if (bankId)         where.bankId    = Number(bankId);
+  if (projectId)      where.projectId = Number(projectId);
+  if (start || end)   where.createdAt = {};
   if (start) where.createdAt.gte = new Date(start!);
-  if (end) where.createdAt.lte = new Date(end!);
+  if (end)   where.createdAt.lte = new Date(end!);
 
   const entries = await prisma.incomeCashLedger.findMany({
     where,
     include: {
-      bank: { select: { id: true, name: true, currency: true } },
+      bank:    { select: { id: true, name: true, currency: true } },
       project: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -49,3 +50,4 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(entries);
 }
+
