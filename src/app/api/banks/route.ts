@@ -25,23 +25,13 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
   const rawBanks = await prisma.bankAccount.findMany({
     where: { companyId },
     orderBy: { name: 'asc' },
-    include: {
-      bankTransactions: { select: { amount: true } },
-      advancePayments: { select: { amount: true } },
-    },
   });
-  const banks = rawBanks.map((b) => {
-    const sumTxns = b.bankTransactions.reduce((acc, t) => acc + Number(t.amount), 0);
-    const sumAdv = b.advancePayments.reduce((acc, a) => acc + Number(a.amount), 0);
-    const derived = sumTxns + sumAdv;
-    return {
-      id: b.id,
-      name: b.name,
-      currency: b.currency,
-      balance: Number(b.balance),
-      derived,
-    };
-  });
+  const banks = rawBanks.map((b) => ({
+    id:       b.id,
+    name:     b.name,
+    currency: b.currency,
+    balance:  Number(b.balance),   // single source of truth from DB
+  }));
   return NextResponse.json(banks);
 });
 

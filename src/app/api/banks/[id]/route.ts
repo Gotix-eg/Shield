@@ -20,17 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   const userId = auth(request);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const id = Number(params.id);
-  const bank = await prisma.bankAccount.findUnique({
-    where: { id },
-    include: {
-      advancePayments: {
-        include: {
-          project: { select: { id: true, name: true } },
-        },
-        orderBy: { paidOn: 'desc' },
-      },
-    },
-  });
+  const bank = await prisma.bankAccount.findUnique({ where: { id } });
   if (!bank) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(bank);
 }
