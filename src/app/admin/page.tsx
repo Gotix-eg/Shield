@@ -23,25 +23,138 @@ function decodeJwtPayload(token?: string): any | null {
 
 export default function AdminSettingsPage() {
   const [mounted,setMounted]=useState(false);
-  
+  const [role, setRole]=useState<string>('');
+
   useEffect(()=>{
     setMounted(true);
+    const token=getAuth();
+    if(!token) return;
+    const payload=decodeJwtPayload(token);
+    const userRole=payload?.role;
+    if(!userRole) return;
+    setRole(userRole);
   },[]);
 
-  // ORIGINAL: Show only the core pages that were working
-  const tiles = [
-    { href: '/admin/permissions', title: 'User Permissions', description: 'Manage user permissions and access rights.' },
-    { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
-    { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
-    { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
-    { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
-    { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
-    { href: '/accounts', title: 'Accounts', description: 'Access accounting dashboards and tools.' },
-    { href: '/admin/expenses/pending', title: 'Pending Expenses', description: 'Approve submitted expenses.' },
-    { href: '/accountant/time/pending', title: 'Pending Time', description: 'Final approval for time entries.' },
-    { href: '/admin/office-expenses', title: 'Office Expenses', description: 'Review office operating expenses.' },
-    { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
-  ];
+  const getTilesForRole = (userRole: string) => {
+    switch(userRole) {
+      case 'OWNER':
+      case 'MANAGING_PARTNER':
+        return [
+          { href: '/admin/permissions', title: 'User Permissions', description: 'Manage user permissions and access rights.' },
+          { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+          { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+          { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
+          { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
+          { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
+          { href: '/admin/payroll', title: 'Payroll', description: 'Manage payroll and salaries.' },
+          { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },
+          { href: '/accounts', title: 'Accounts', description: 'Access accounting dashboards and tools.' },
+          { href: '/admin/reports', title: 'Reports', description: 'View financial and operational reports.' },
+          { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
+        ];
+      
+      case 'ADMIN':
+        return [
+          { href: '/admin/permissions', title: 'User Permissions', description: 'Manage user permissions and access rights.' },
+          { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+          { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+          { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
+          { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
+          { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
+          { href: '/admin/payroll', title: 'Payroll', description: 'Manage payroll and salaries.' },
+          { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },
+          { href: '/accounts', title: 'Accounts', description: 'Access accounting dashboards and tools.' },
+          { href: '/admin/reports', title: 'Reports', description: 'View financial and operational reports.' },
+          { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
+        ];
+      
+      case 'ACCOUNTANT_MASTER':
+        return [
+          { href: '/admin/permissions', title: 'User Permissions', description: 'Manage user permissions and access rights.' },
+          { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+          { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+          { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
+          { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
+          { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
+          { href: '/admin/payroll', title: 'Payroll', description: 'Manage payroll and salaries.' },
+          { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },
+          { href: '/accounts', title: 'Accounts', description: 'Access accounting dashboards and tools.' },
+          { href: '/admin/reports', title: 'Reports', description: 'View financial and operational reports.' },
+          { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
+        ];
+      
+      case 'ACCOUNTANT_ASSISTANT':
+        return [
+          { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+          { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+          { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
+          { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
+          { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
+          { href: '/admin/payroll', title: 'Payroll', description: 'Manage payroll and salaries.' },
+          { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },
+          { href: '/accounts', title: 'Accounts', description: 'Access accounting dashboards and tools.' },
+          { href: '/admin/reports', title: 'Reports', description: 'View financial and operational reports.' },
+          { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
+        ];
+      
+      case 'LAWYER_PARTNER':
+        return [
+          { href: '/clients', title: 'Clients', description: 'Manage client information and relationships.' },
+          { href: '/projects', title: 'Projects', description: 'View and manage assigned projects.' },
+          { href: '/admin/tasks', title: 'Tasks', description: 'Create and manage tasks for lawyers.' },
+          { href: '/time', title: 'Time Entries', description: 'Log and track billable hours.' },
+          { href: '/expenses', title: 'Expenses', description: 'Submit and track project expenses.' },
+          { href: '/leaves', title: 'Leave Requests', description: 'Apply for and view leave status.' },
+          { href: '/invoices', title: 'Invoices', description: 'Create and manage client invoices.' },
+          { href: '/admin/reports', title: 'Reports', description: 'View financial and operational reports.' },
+        ];
+      
+      case 'LAWYER_MANAGER':
+        return [
+          { href: '/clients', title: 'Clients', description: 'Manage client information and relationships.' },
+          { href: '/projects', title: 'Projects', description: 'View and manage assigned projects.' },
+          { href: '/admin/tasks', title: 'Tasks', description: 'Create and manage tasks for lawyers.' },
+          { href: '/time', title: 'Time Entries', description: 'Log and track billable hours.' },
+          { href: '/expenses', title: 'Expenses', description: 'Submit and track project expenses.' },
+          { href: '/leaves', title: 'Leave Requests', description: 'Apply for and view leave status.' },
+          { href: '/invoices', title: 'Invoices', description: 'Create and manage client invoices.' },
+          { href: '/admin/reports', title: 'Reports', description: 'View financial and operational reports.' },
+        ];
+      
+      case 'LAWYER':
+        return [
+          { href: '/projects', title: 'Projects', description: 'View and manage assigned projects.' },
+          { href: '/admin/tasks', title: 'Tasks', description: 'Create and manage tasks.' },
+          { href: '/time', title: 'Time Entries', description: 'Log and track billable hours.' },
+          { href: '/expenses', title: 'Expenses', description: 'Submit project expenses.' },
+          { href: '/leaves', title: 'Leave Requests', description: 'Apply for leave.' },
+        ];
+      
+      case 'HR_MANAGER':
+        return [
+          { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },
+          { href: '/admin/payroll', title: 'Payroll', description: 'Manage payroll and salaries.' },
+          { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+          { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+          { href: '/admin/assignments', title: 'Project Assignments', description: 'Assign lawyers to projects.' },
+          { href: '/admin/groups', title: 'Groups', description: 'Create and manage lawyer groups.' },
+          { href: '/admin/company', title: 'Company Info', description: 'Edit company details and logo.' },
+          { href: '/admin/settings', title: 'Settings', description: 'System settings and configuration.' },
+        ];
+      
+      case 'HR':
+        return [
+          { href: '/admin/hr', title: 'HR', description: 'Manage HR and leaves.' },
+          { href: '/admin/employees', title: 'Employees', description: 'Manage employees and user accounts.' },
+          { href: '/admin/positions', title: 'Positions', description: 'Define job positions and rates.' },
+        ];
+      
+      default:
+        return [];
+    }
+  };
+
+  const tiles = getTilesForRole(role);
 
   if(!mounted) return null;
 
