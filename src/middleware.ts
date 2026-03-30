@@ -95,7 +95,7 @@ export function middleware(request: NextRequest) {
       if (!allowHrAdmin.includes(role)) return deny();
     }
     if (pathname === "/admin" || pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/company") || pathname.startsWith("/admin/permissions")) {
-      const allowSettings = [...SUPER, "ADMIN"];
+      const allowSettings = [...SUPER, "ADMIN", "ACCOUNTANT_MASTER"];
       if (!allowSettings.includes(role)) return deny();
     }
   } catch {
