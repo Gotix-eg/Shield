@@ -365,3 +365,53 @@ select {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
+
+/* ================================================================
+   BLUE → GOLD OVERRIDE
+   Replace all Tailwind blue colors with the premium gold palette
+   ================================================================ */
+
+/* Blue background buttons → Gold */
+.bg-blue-600, .bg-blue-500, .bg-blue-700, .bg-blue-400,
+[class*="bg-blue-"] {
+  background-color: var(--accent) !important;
+  color: #0a0f1a !important;
+}
+
+/* Blue hover → Gold hover */
+.hover\:bg-blue-700:hover, .hover\:bg-blue-600:hover, .hover\:bg-blue-500:hover {
+  background-color: #b8903e !important;
+}
+
+/* Blue text links → Gold */
+.text-blue-600, .text-blue-500, .text-blue-400, .text-blue-700,
+.text-blue-300, .text-blue-200,
+[class*="text-blue-"] {
+  color: var(--accent) !important;
+}
+
+/* Blue text hover */
+.hover\:text-blue-500:hover, .hover\:text-blue-600:hover,
+.hover\:text-blue-400:hover, .hover\:text-blue-700:hover {
+  color: #e8c97a !important;
+}
+
+/* Blue borders → Gold */
+.border-blue-600, .border-blue-500, .border-blue-400,
+[class*="border-blue-"] {
+  border-color: rgba(197, 160, 89, 0.4) !important;
+}
+
+/* Blue ring/focus rings → Gold */
+.ring-blue-500, .ring-blue-600, .focus\:ring-blue-500:focus {
+  --tw-ring-color: rgba(197, 160, 89, 0.5) !important;
+}
+
+/* Blue indigo (used in buttons sometimes) */
+.bg-indigo-600, .bg-indigo-500 {
+  background-color: var(--accent) !important;
+  color: #0a0f1a !important;
+}
+.text-indigo-600, .text-indigo-500, .text-indigo-400 {
+  color: var(--accent) !important;
+}
