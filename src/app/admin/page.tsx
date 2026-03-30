@@ -24,15 +24,20 @@ function decodeJwtPayload(token?: string): any | null {
 export default function AdminSettingsPage() {
   const [perms,setPerms]=useState<Record<string,boolean>>({});
   const [mounted,setMounted]=useState(false);
+  const [role, setRole]=useState<string>('');
+  
   useEffect(()=>{
     setMounted(true);
     const token=getAuth();
     if(!token) return;
     const payload=decodeJwtPayload(token);
     const uid=payload?.id??payload?.sub;
-    const role=payload?.role;
+    const userRole=payload?.role;
     if(!uid) return;
-    console.log('Admin page - User ID:', uid, 'Role:', role);
+    
+    console.log('Admin page - User ID:', uid, 'Role:', userRole);
+    setRole(userRole || '');
+    
     fetch(`/api/users/${uid}/permissions`,{headers:{Authorization:`Bearer ${token}`}})
       .then(r=>r.ok?r.json():[] as Perm[])
       .then(list=>{
@@ -84,15 +89,14 @@ export default function AdminSettingsPage() {
   ];
 
   if(!mounted) return null;
-  // detect role from token
-  const token=getAuth();
-  let role:string|undefined;
-  try{ if(token){ role=decodeJwtPayload(token)?.role; }}catch{}
-  console.log('Detected role:', role);
+  
+  // CRITICAL FIX: Always show tiles for ACCOUNTANT_MASTER
+  console.log('ROLE STATE:', role);
+  console.log('MOUNTED:', mounted);
+  
   let tiles: typeof tilesAll;
   if(role==='ACCOUNTANT_MASTER'){
-    // TEMPORARY: Show all tiles for ACCOUNTANT_MASTER without permission checks
-    console.log('ACCOUNTANT_MASTER detected - showing all tiles');
+    console.log('ACCOUNTANT_MASTER - showing ALL tiles');
     tiles=[
       { href: '/admin/permissions', title: 'User Permissions', perm: '', description: 'Manage user permissions and access rights.' },
       { href: '/admin/employees', title: 'Employees', perm: 'employees', description: 'Manage employees and user accounts.' },
@@ -106,7 +110,6 @@ export default function AdminSettingsPage() {
       { href: '/admin/office-expenses', title: 'Office Expenses', perm: '', description: 'Review office operating expenses.' },
       { href: '/admin/settings', title: 'Settings', perm: '', description: 'System settings and configuration.' },
     ];
-    console.log('ACCOUNTANT_MASTER tiles:', tiles);
   }else if(role==='ACCOUNTANT_ASSISTANT'){
     tiles=[
       { href: '/accounts', title: 'Accounts', perm: '', description: 'Access accounting dashboards and tools.' },
@@ -138,39 +141,61 @@ export default function AdminSettingsPage() {
       </header>
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {(() => {
-          let filteredTiles = tiles;
-          
-          // TEMPORARY: Bypass permission checks for ACCOUNTANT_MASTER
-          if(role === 'ACCOUNTANT_MASTER') {
-            console.log('ACCOUNTANT_MASTER - bypassing permission checks');
-            filteredTiles = tiles; // Show all tiles
-          } else {
-            filteredTiles = tiles.filter(t=>{
-              if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
-              return !t.perm || perms[t.perm] || perms["admin_all"];
-            });
-          }
-          
-          console.log('All tiles:', tiles);
-          console.log('Permissions:', perms);
-          console.log('Filtered tiles:', filteredTiles);
-          return filteredTiles;
-        })().map((tile: any) => (
-          <Link
-            key={tile.href}
-            href={tile.href}
-            className="legal-card p-8 group hover:border-legal-gold/30 transition-all duration-500 flex flex-col justify-between h-full"
-          >
-            <div>
-              <h2 className="mb-4 text-2xl font-serif text-white group-hover:text-legal-gold transition-colors">{tile.title}</h2>
-              <p className="text-sm text-slate-500 font-light leading-relaxed">{tile.description}</p>
-            </div>
-            <div className="mt-8 flex items-center justify-end">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-legal-gold font-bold group-hover:translate-x-2 transition-transform">Configure →</span>
-            </div>
-          </Link>
-        ))}
+        {/* CRITICAL FIX: Simple rendering for ACCOUNTANT_MASTER */}
+        {role==='ACCOUNTANT_MASTER' ? (
+          <>
+            {console.log('RENDERING ACCOUNTANT_MASTER TILES:', tiles)}
+            {tiles.map((tile: any) => (
+              <Link
+                key={tile.href}
+                href={tile.href}
+                className="legal-card p-8 group hover:border-legal-gold/30 transition-all duration-500 flex flex-col justify-between h-full"
+              >
+                <div>
+                  <h2 className="mb-4 text-2xl font-serif text-white group-hover:text-legal-gold transition-colors">{tile.title}</h2>
+                  <p className="text-sm text-slate-500 font-light leading-relaxed">{tile.description}</p>
+                </div>
+                <div className="mt-8 flex items-center justify-end">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-legal-gold font-bold group-hover:translate-x-2 transition-transform">Configure →</span>
+                </div>
+              </Link>
+            ))}
+          </>
+        ) : (
+          (() => {
+            let filteredTiles = tiles;
+            
+            // TEMPORARY: Bypass permission checks for ACCOUNTANT_MASTER
+            if(role === 'ACCOUNTANT_MASTER') {
+              console.log('ACCOUNTANT_MASTER - bypassing permission checks');
+              filteredTiles = tiles; // Show all tiles
+            } else {
+              filteredTiles = tiles.filter(t=>{
+                if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
+                return !t.perm || perms[t.perm] || perms["admin_all"];
+              });
+            }
+            
+            console.log('All tiles:', tiles);
+            console.log('Permissions:', perms);
+            console.log('Filtered tiles:', filteredTiles);
+            return filteredTiles;
+          })().map((tile: any) => (
+            <Link
+              key={tile.href}
+              href={tile.href}
+              className="legal-card p-8 group hover:border-legal-gold/30 transition-all duration-500 flex flex-col justify-between h-full"
+            >
+              <div>
+                <h2 className="mb-4 text-2xl font-serif text-white group-hover:text-legal-gold transition-colors">{tile.title}</h2>
+                <p className="text-sm text-slate-500 font-light leading-relaxed">{tile.description}</p>
+              </div>
+              <div className="mt-8 flex items-center justify-end">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-legal-gold font-bold group-hover:translate-x-2 transition-transform">Configure →</span>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );
