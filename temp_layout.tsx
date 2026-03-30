@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import NavBar from "@/components/NavBar";
@@ -15,8 +15,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "ProLaw",
-  description: "Legal Management System",
+  title: "ProLaw | Legal Management System",
+  description: "Advanced legal practice management for modern law firms.",
 };
 
 export default function RootLayout({

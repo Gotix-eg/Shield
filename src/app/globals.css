@@ -2,17 +2,252 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --background: #0a0f1a; /* Deep Midnight Navy */
+  --foreground: #f8fafc;
+  --primary: #0f172a;
+  --accent: #c5a059; /* Muted Gold */
+  --surface: #111827; /* Slightly lighter navy for cards */
+  --border: rgba(255, 255, 255, 0.05);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --header-height: 0px; /* Header is now vertical sidebar */
+  --sidebar-width: 280px;
+  --nav-height: 80px;
+  --golden-ratio: 1.618;
+  --space-unit: 1rem;
+  --space-xs: calc(var(--space-unit) / var(--golden-ratio));
+  --space-sm: var(--space-unit);
+  --space-md: calc(var(--space-unit) * var(--golden-ratio));
+  --space-lg: calc(var(--space-unit) * var(--golden-ratio) * var(--golden-ratio));
+  --space-xl: calc(var(--space-lg) * var(--golden-ratio));
 }
 
-/* Make form text clearly visible on dark background */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 160, 89, 0.2);
+}
+
+.dashboard-container {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: var(--space-xl);
+  padding-top: var(--space-xl);
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--background);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(197, 160, 89, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.2) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Modern Card Style - Dark Theme */
+.legal-card {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  border-radius: 0.75rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.legal-card:hover {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+  transform: translateY(-4px);
+  border-color: rgba(197, 160, 89, 0.3);
+}
+
+/* Luxury Button Style */
+.btn-legal {
+  background: var(--accent);
+  color: #0a0f1a;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem; /* Smaller padding */
+  font-size: 0.75rem; /* Smaller font size */
+  border-radius: 0.375rem; /* Slightly more rounded */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn-legal:hover {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+}
+
+.btn-legal-outline {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 1rem; /* Smaller padding */
+  font-size: 0.75rem; /* Smaller font size */
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.btn-legal-outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-legal,
+.btn-legal-outline {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+p,
+span,
+td,
+th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 label,
-input,
-select,
-textarea,
-option {
-  color: #1e3a8a; /* dark-ish blue */
+a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Typography Overrides */
+h1, h2, h3 {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Table Enhancements */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+}
+
+tr {
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+th {
+  color: var(--accent) !important;
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  padding: 1rem 1.5rem !important;
+}
+
+td {
+  padding: 1.25rem 1.5rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+@media screen {
+  table,
+  table.bg-white {
+    background: transparent !important;
+  }
+
+  table thead,
+  table thead.bg-gray-50,
+  table thead.bg-gray-100 {
+    background: transparent !important;
+  }
+
+  table thead tr,
+  table thead tr.bg-white,
+  table thead tr.bg-gray-50,
+  table thead tr.bg-gray-100 {
+    background: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  table tbody,
+  table tbody.bg-white {
+    background: transparent !important;
+  }
+
+  table tbody tr,
+  table tbody tr.bg-white,
+  table tbody tr.bg-gray-50 {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+
+  table tbody tr:hover,
+  table tbody tr.hover\:bg-gray-50:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  table tfoot tr,
+  table tfoot tr.bg-gray-100 {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+}
+
+/* Input Overrides for Dark Theme */
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+input:focus {
+  border-color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+select:focus,
+textarea:focus {
+  border-color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+select option,
+select optgroup {
+  background-color: #0a0f1a !important;
+  color: #f8fafc !important;
+}
+
+select option:checked {
+  background-color: var(--accent) !important;
+  color: #0a0f1a !important;
 }
