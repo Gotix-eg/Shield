@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { getAuth } from "@/lib/auth";
+import useSWR from "swr";
 
-interface Client {
-  id: number;
-  name: string;
-}
+interface Client { id: number; name: string; }
+interface Bank   { id: number; name: string; currency: string; }
 
 const CURRENCIES = ["USD", "EUR", "GBP", "SAR", "EGP", "AED", "QAR", "KWD", "OMR", "JPY", "CNY", "INR"];
 
@@ -33,13 +32,20 @@ export default function NewProjectPage() {
   const [billingCurrency, setBillingCurrency] = useState("USD");
 
   // Advance payments (set at create time)
-  const [trustAmount, setTrustAmount] = useState("");
+  const [trustAmount,   setTrustAmount]   = useState("");
   const [trustCurrency, setTrustCurrency] = useState("USD");
-  const [trustNotes, setTrustNotes] = useState("");
+  const [trustNotes,    setTrustNotes]    = useState("");
+  const [trustBankId,   setTrustBankId]   = useState<number | "">("");
 
-  const [expenseAmount, setExpenseAmount] = useState("");
+  const [expenseAmount,   setExpenseAmount]   = useState("");
   const [expenseCurrency, setExpenseCurrency] = useState("USD");
-  const [expenseNotes, setExpenseNotes] = useState("");
+  const [expenseNotes,    setExpenseNotes]    = useState("");
+  const [expenseBankId,   setExpenseBankId]   = useState<number | "">("");
+
+  // fetch banks list
+  const { data: banks = [] } = useSWR<Bank[]>("/api/banks", (url: string) =>
+    fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.json())
+  );
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -106,6 +112,7 @@ export default function NewProjectPage() {
             currency: trustCurrency,
             accountType: "TRUST",
             notes: trustNotes.trim() || null,
+            bankId: trustBankId || null,
           }),
         });
       }
@@ -124,6 +131,7 @@ export default function NewProjectPage() {
             currency: expenseCurrency,
             accountType: "EXPENSE",
             notes: expenseNotes.trim() || null,
+            bankId: expenseBankId || null,
           }),
         });
       }
@@ -332,8 +340,8 @@ export default function NewProjectPage() {
               </div>
               <p className="text-xs text-slate-500">أدفنس القضية — يُضاف إلى حساب الأمانة للمشروع</p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <label className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">Amount</label>
                   <input
                     type="number"
@@ -352,6 +360,19 @@ export default function NewProjectPage() {
                     className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/50"
                   >
                     {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">Bank Account</label>
+                  <select
+                    value={trustBankId}
+                    onChange={(e) => setTrustBankId(e.target.value ? Number(e.target.value) : "")}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400/50"
+                  >
+                    <option value="">No bank (manual)</option>
+                    {Array.isArray(banks) && banks
+                      .filter((b: Bank) => !trustCurrency || b.currency === trustCurrency)
+                      .map((b: Bank) => <option key={b.id} value={b.id}>{b.name} ({b.currency})</option>)}
                   </select>
                 </div>
                 <div>
@@ -377,8 +398,8 @@ export default function NewProjectPage() {
               </div>
               <p className="text-xs text-slate-500">أدفنس المصاريف — يُضاف إلى حساب المصروفات للمشروع</p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <label className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">Amount</label>
                   <input
                     type="number"
@@ -397,6 +418,19 @@ export default function NewProjectPage() {
                     className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400/50"
                   >
                     {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">Bank Account</label>
+                  <select
+                    value={expenseBankId}
+                    onChange={(e) => setExpenseBankId(e.target.value ? Number(e.target.value) : "")}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400/50"
+                  >
+                    <option value="">No bank (manual)</option>
+                    {Array.isArray(banks) && banks
+                      .filter((b: Bank) => !expenseCurrency || b.currency === expenseCurrency)
+                      .map((b: Bank) => <option key={b.id} value={b.id}>{b.name} ({b.currency})</option>)}
                   </select>
                 </div>
                 <div>
