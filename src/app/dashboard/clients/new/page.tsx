@@ -8,7 +8,6 @@ import { createClient } from "@/lib/api";
 export default function NewClientPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     contactEmail: "",
@@ -18,170 +17,148 @@ export default function NewClientPage() {
     country: "",
   });
 
+  // التحقق من تسجيل الدخول
   useEffect(() => {
     const token = getAuth();
-    if (!token) router.push("/login");
+    if (!token) {
+      router.push("/login");
+    }
   }, [router]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+
     try {
       await createClient(formData);
       router.push("/clients");
-    } catch (err: any) {
-      console.error("Error creating client:", err);
-      setError("Failed to create client. Please try again.");
+    } catch (error) {
+      console.error("Error creating client:", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="dashboard-container">
+    <main className="dashboard-container min-h-screen py-10 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-serif text-white tracking-tight mb-1">Add New Client</h1>
-            <p className="text-slate-400 font-light text-sm">Fill in the client details below to create a new record.</p>
+            <h1 className="text-4xl font-serif text-white tracking-tight mb-2">Add New Client</h1>
+            <p className="text-slate-400 font-light">Enter the client details to onboard them into the system.</p>
           </div>
           <button
             onClick={() => router.push("/clients")}
-            className="text-slate-500 hover:text-legal-gold text-sm font-medium tracking-widest uppercase transition-colors"
+            className="text-slate-400 hover:text-legal-gold transition-colors text-sm uppercase tracking-widest font-bold"
           >
             ← Back
           </button>
         </div>
 
-        {error && (
-          <div className="legal-card p-4 border-red-500/20 bg-red-500/5 mb-6">
-            <p className="text-red-400 text-sm">{error}</p>
-          </div>
-        )}
-
-        <div className="legal-card p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-
-            {/* Name */}
-            <div className="group">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">
-                Client Name <span className="text-legal-gold">*</span>
+        <form onSubmit={handleSubmit} className="legal-card p-8">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                Client Name <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
-                name="name"
                 value={formData.name}
-                onChange={handleChange}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
                 placeholder="e.g. Norton Rose Fulbright"
                 required
-                className="w-full rounded-lg px-4 py-3"
               />
             </div>
 
-            {/* Email */}
-            <div className="group">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">
-                Contact Email
-              </label>
-              <input
-                type="email"
-                name="contactEmail"
-                value={formData.contactEmail}
-                onChange={handleChange}
-                placeholder="contact@company.com"
-                className="w-full rounded-lg px-4 py-3"
-              />
-            </div>
-
-            {/* Phone */}
-            <div className="group">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+20 10 1234 5678"
-                className="w-full rounded-lg px-4 py-3"
-              />
-            </div>
-
-            {/* VAT ID + City in a row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="group">
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">
-                  VAT ID / Tax Number
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                  Email
                 </label>
                 <input
-                  type="text"
-                  name="vatCode"
-                  value={formData.vatCode}
-                  onChange={handleChange}
-                  placeholder="e.g. EG123456789"
-                  className="w-full rounded-lg px-4 py-3"
+                  type="email"
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  placeholder="email@example.com"
                 />
               </div>
 
-              <div className="group">
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
                   City
                 </label>
                 <input
                   type="text"
-                  name="city"
                   value={formData.city}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
                   placeholder="e.g. Cairo"
-                  className="w-full rounded-lg px-4 py-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                  Country
+                </label>
+                <input
+                  type="text"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  placeholder="e.g. Egypt"
                 />
               </div>
             </div>
 
-            {/* Country */}
-            <div className="group">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2 group-focus-within:text-legal-gold transition-colors font-bold">
-                Country
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                VAT ID / Tax Code
               </label>
               <input
                 type="text"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                placeholder="e.g. Egypt"
-                className="w-full rounded-lg px-4 py-3"
+                value={formData.vatCode}
+                onChange={(e) => setFormData({ ...formData, vatCode: e.target.value })}
+                className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                placeholder="Tax Identification Number"
               />
             </div>
 
-            {/* Divider */}
-            <div className="h-px w-full bg-white/5 my-2"></div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-legal py-4 text-base rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-3">
-                  <span className="w-4 h-4 border-2 border-legal-900/30 border-t-legal-900 rounded-full animate-spin"></span>
-                  Creating…
-                </span>
-              ) : (
-                "Create Client →"
-              )}
-            </button>
-          </form>
-        </div>
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-legal w-full text-center py-3 text-sm tracking-wider flex justify-center items-center"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0a0f1a]"></span>
+                    Creating...
+                  </span>
+                ) : (
+                  "Create Client"
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-    </div>
+    </main>
   );
 }
