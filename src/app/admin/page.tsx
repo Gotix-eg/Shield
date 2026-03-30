@@ -22,113 +22,28 @@ function decodeJwtPayload(token?: string): any | null {
 }
 
 export default function AdminSettingsPage() {
-  const [perms,setPerms]=useState<Record<string,boolean>>({});
   const [mounted,setMounted]=useState(false);
+  
   useEffect(()=>{
     setMounted(true);
-    const token=getAuth();
-    if(!token) return;
-    const payload=decodeJwtPayload(token);
-    const uid=payload?.id??payload?.sub;
-    if(!uid) return;
-    fetch(`/api/users/${uid}/permissions`,{headers:{Authorization:`Bearer ${token}`}})
-      .then(r=>r.ok?r.json():[] as Perm[])
-      .then(list=>{
-        const obj:Record<string,boolean>={};
-        list.forEach((p:Perm)=>{ if(p.allowed) obj[p.code]=true; });
-        setPerms(obj);
-      });
   },[]);
 
-  const tilesAll = [
-  {
-    href: "/admin/company",
-    title: "Company Info",
-    perm: "admin_all",
-    description: "Edit company details and logo.",
-  },
-  {
-    href: "/admin/groups",
-    title: "Groups",
-    perm: "manage_groups",
-    description: "Create and manage lawyer groups.",
-  },
-    {
-      href: "/admin/positions",
-      title: "Positions",
-      perm: "positions",
-      description: "Define job positions and default hourly rates.",
-    },
-    {
-      href: "/admin/assignments",
-      title: "Project Assignments",
-      perm: "assign_projects",
-      description: "Assign lawyers to projects and set rates.",
-    },
-    {
-      href: "/manager/time/pending",
-      title: "Pending Time (Manager)",
-      perm: "approve_time",
-      description: "Manager approval for time entries.",
-    }
+  // HARDCODED: Always show ACCOUNTANT_MASTER tiles
+  const tiles = [
+    { href: '/admin/permissions', title: 'User Permissions', perm: '', description: 'Manage user permissions and access rights.' },
+    { href: '/admin/employees', title: 'Employees', perm: 'employees', description: 'Manage employees and user accounts.' },
+    { href: '/admin/positions', title: 'Positions', perm: 'positions', description: 'Define job positions and rates.' },
+    { href: '/admin/assignments', title: 'Project Assignments', perm: 'assign_projects', description: 'Assign lawyers to projects.' },
+    { href: '/admin/groups', title: 'Groups', perm: 'manage_groups', description: 'Create and manage lawyer groups.' },
+    { href: '/admin/company', title: 'Company Info', perm: 'admin_all', description: 'Edit company details and logo.' },
+    { href: '/accounts', title: 'Accounts', perm: '', description: 'Access accounting dashboards and tools.' },
+    { href: '/admin/expenses/pending', title: 'Pending Expenses', perm: '', description: 'Approve submitted expenses.' },
+    { href: '/accountant/time/pending', title: 'Pending Time (Accountant)', perm: '', description: 'Final approval for time entries.' },
+    { href: '/admin/office-expenses', title: 'Office Expenses', perm: '', description: 'Review office operating expenses.' },
+    { href: '/admin/settings', title: 'Settings', perm: '', description: 'System settings and configuration.' },
   ];
 
   if(!mounted) return null;
-  // detect role from token
-  const token=getAuth();
-  let role:string|undefined;
-  try{ 
-    if(token){ 
-      const payload=decodeJwtPayload(token);
-      role=payload?.role;
-      console.log('=== ADMIN DEBUG ===');
-      console.log('Token exists:', !!token);
-      console.log('Token payload:', payload);
-      console.log('Detected role:', role);
-      console.log('==================');
-    }
-  }catch(err){
-    console.error('Error decoding token:', err);
-  }
-  
-  let tiles: typeof tilesAll;
-  if(role==='ACCOUNTANT_MASTER'){
-    console.log('ACCOUNTANT_MASTER detected - showing all tiles');
-    tiles=[
-      { href: '/admin/permissions', title: 'User Permissions', perm: '', description: 'Manage user permissions and access rights.' },
-      { href: '/admin/employees', title: 'Employees', perm: 'employees', description: 'Manage employees and user accounts.' },
-      { href: '/admin/positions', title: 'Positions', perm: 'positions', description: 'Define job positions and rates.' },
-      { href: '/admin/assignments', title: 'Project Assignments', perm: 'assign_projects', description: 'Assign lawyers to projects.' },
-      { href: '/admin/groups', title: 'Groups', perm: 'manage_groups', description: 'Create and manage lawyer groups.' },
-      { href: '/admin/company', title: 'Company Info', perm: 'admin_all', description: 'Edit company details and logo.' },
-      { href: '/accounts', title: 'Accounts', perm: '', description: 'Access accounting dashboards and tools.' },
-      { href: '/admin/expenses/pending', title: 'Pending Expenses', perm: '', description: 'Approve submitted expenses.' },
-      { href: '/accountant/time/pending', title: 'Pending Time (Accountant)', perm: '', description: 'Final approval for time entries.' },
-      { href: '/admin/office-expenses', title: 'Office Expenses', perm: '', description: 'Review office operating expenses.' },
-      { href: '/admin/settings', title: 'Settings', perm: '', description: 'System settings and configuration.' },
-    ];
-  }else if(role==='ACCOUNTANT_ASSISTANT'){
-    tiles=[
-      { href: '/accounts', title: 'Accounts', perm: '', description: 'Access accounting dashboards and tools.' },
-      { href: '/admin/expenses/pending', title: 'Pending Expenses', perm: '', description: 'Approve submitted expenses.' },
-      { href: '/accountant/time/pending', title: 'Pending Time (Accountant)', perm: '', description: 'Final approval for time entries.' },
-      { href: '/admin/office-expenses', title: 'Office Expenses', perm: '', description: 'Review office operating expenses.' },
-    ];
-  }else if(role==='HR_MANAGER'){
-    tiles=[
-            {href:"/admin/employees",title:"Employees",perm:"employees",description:"Manage employees."}
-    ];
-  }else if(role==='LAWYER_MANAGER'){
-    tiles=[
-      {href:"/manager/time/pending",title:"Pending Time (Manager)",perm:"approve_time",description:"Approve submitted time entries."}
-    ];
-  }else if(role==='LAWYER_PARTNER'){
-    tiles=[
-      {href:"/manager/time/pending",title:"Pending Time (Manager)",perm:"approve_time",description:"Approve submitted time entries."}
-    ];
-  }else{
-    tiles=tilesAll;
-  }
 
   return (
     <div className="dashboard-container">
@@ -138,24 +53,7 @@ export default function AdminSettingsPage() {
       </header>
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {(() => {
-          console.log('=== RENDERING DEBUG ===');
-          console.log('Current role:', role);
-          console.log('Tiles count:', tiles.length);
-          console.log('Tiles:', tiles);
-          
-          const filteredTiles = tiles.filter(t=>{
-            // CRITICAL FIX: ACCOUNTANT_MASTER bypasses all permission checks
-            if(role==='ACCOUNTANT_MASTER') return true;
-            
-            if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
-            return !t.perm || perms[t.perm] || perms["admin_all"];
-          });
-          
-          console.log('Filtered tiles count:', filteredTiles.length);
-          console.log('======================');
-          return filteredTiles;
-        })().map((tile: any) => (
+        {tiles.map((tile: any) => (
           <Link
             key={tile.href}
             href={tile.href}
