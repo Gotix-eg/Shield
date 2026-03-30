@@ -30,13 +30,20 @@ export default function AdminSettingsPage() {
     if(!token) return;
     const payload=decodeJwtPayload(token);
     const uid=payload?.id??payload?.sub;
+    const role=payload?.role;
     if(!uid) return;
+    console.log('Admin page - User ID:', uid, 'Role:', role);
     fetch(`/api/users/${uid}/permissions`,{headers:{Authorization:`Bearer ${token}`}})
       .then(r=>r.ok?r.json():[] as Perm[])
       .then(list=>{
+        console.log('Permissions fetched:', list);
         const obj:Record<string,boolean>={};
         list.forEach((p:Perm)=>{ if(p.allowed) obj[p.code]=true; });
+        console.log('Permissions object:', obj);
         setPerms(obj);
+      })
+      .catch(err=>{
+        console.error('Error fetching permissions:', err);
       });
   },[]);
 
@@ -81,6 +88,7 @@ export default function AdminSettingsPage() {
   const token=getAuth();
   let role:string|undefined;
   try{ if(token){ role=decodeJwtPayload(token)?.role; }}catch{}
+  console.log('Detected role:', role);
   let tiles: typeof tilesAll;
   if(role==='ACCOUNTANT_MASTER'){
     tiles=[
@@ -96,6 +104,7 @@ export default function AdminSettingsPage() {
       { href: '/admin/office-expenses', title: 'Office Expenses', perm: '', description: 'Review office operating expenses.' },
       { href: '/admin/settings', title: 'Settings', perm: '', description: 'System settings and configuration.' },
     ];
+    console.log('ACCOUNTANT_MASTER tiles:', tiles);
   }else if(role==='ACCOUNTANT_ASSISTANT'){
     tiles=[
       { href: '/accounts', title: 'Accounts', perm: '', description: 'Access accounting dashboards and tools.' },
@@ -127,10 +136,16 @@ export default function AdminSettingsPage() {
       </header>
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {tiles.filter(t=>{
+        {(() => {
+          const filteredTiles = tiles.filter(t=>{
             if(Object.keys(perms).length===0) return !t.perm; // no perms loaded => show only non-protected tiles
             return !t.perm || perms[t.perm] || perms["admin_all"];
-          },).map((tile: any) => (
+          });
+          console.log('All tiles:', tiles);
+          console.log('Permissions:', perms);
+          console.log('Filtered tiles:', filteredTiles);
+          return filteredTiles;
+        })().map((tile: any) => (
           <Link
             key={tile.href}
             href={tile.href}
