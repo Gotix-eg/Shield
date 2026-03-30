@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } | Prom
     if (!target) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const isSelf = targetUserId === requesterId;
-    const isSuper = role === 'OWNER' || role === 'ADMIN';
+    const isSuper = role === 'OWNER' || role === 'ADMIN' || role === 'ACCOUNTANT_MASTER';
     if (!isSelf && !isSuper) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, ctx: { params: { id: string } | Prom
     const target = await prisma.user.findFirst({ where: { id: targetUserId, companyId }, select: { id: true } });
     if (!target) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const isSuper = role === 'OWNER' || role === 'ADMIN';
+    const isSuper = role === 'OWNER' || role === 'ADMIN' || role === 'ACCOUNTANT_MASTER';
     let hasManage = false;
     if (!isSuper) {
       const perm = await prisma.userPermission.findFirst({
