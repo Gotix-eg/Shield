@@ -41,6 +41,7 @@ export default function ProjectDetailPage() {
   const [attType, setAttType] = useState<
     "POWER_OF_ATTORNEY" | "CONTRACT" | "OTHER"
   >("OTHER");
+  const [attLabel, setAttLabel] = useState("");
   const [attFiles, setAttFiles] = useState<FileList | null>(null);
 
   const [amount, setAmount] = useState("");
@@ -87,6 +88,7 @@ export default function ProjectDetailPage() {
     const fd = new FormData();
     Array.from(attFiles).forEach((f) => fd.append("files", f));
     fd.append("type", attType);
+    if (attLabel.trim()) fd.append("label", attLabel.trim());
     const res = await fetch(
       `/api/projects/${projectId}/attachments`,
       {
@@ -98,9 +100,11 @@ export default function ProjectDetailPage() {
     if (res.ok) {
       toast.success("Uploaded");
       setAttFiles(null);
+      setAttLabel("");
       fetchAttachments();
     } else toast.error("Upload failed");
   };
+
 
   const submitPayment = async () => {
     if (!amount) return;
@@ -235,7 +239,7 @@ export default function ProjectDetailPage() {
 
       {/* Attachments */}
       <div className="bg-gray-50 p-4 rounded border mb-8">
-        <h2 className="font-semibold mb-2">Project Attachments</h2>
+        <h2 className="font-semibold mb-3">Project Attachments</h2>
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <select
             value={attType}
@@ -246,6 +250,13 @@ export default function ProjectDetailPage() {
             <option value="CONTRACT">Contract</option>
             <option value="OTHER">Other</option>
           </select>
+          <input
+            type="text"
+            value={attLabel}
+            onChange={(e) => setAttLabel(e.target.value)}
+            placeholder="File name / label (optional)"
+            className="border px-2 py-1 rounded flex-1 min-w-[180px]"
+          />
           <input
             type="file"
             multiple
@@ -267,7 +278,7 @@ export default function ProjectDetailPage() {
           <table className="text-sm border min-w-full">
             <thead className="bg-gray-100">
               <tr>
-                {["Type", "Uploaded", "File", " "].map((h) => (
+                {["Type / Label", "Uploaded", "File", " "].map((h) => (
                   <th key={h} className="border px-2 py-1">
                     {h}
                   </th>
@@ -277,7 +288,9 @@ export default function ProjectDetailPage() {
             <tbody>
               {attachments.map((a) => (
                 <tr key={a.id}>
-                  <td className="border px-2 py-1">{a.type}</td>
+                  <td className="border px-2 py-1">
+                    {(a as any).label || a.type.replace(/_/g, ' ')}
+                  </td>
                   <td className="border px-2 py-1">
                     {new Date(a.createdAt).toLocaleDateString()}
                   </td>

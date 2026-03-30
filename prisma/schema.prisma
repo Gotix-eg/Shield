@@ -6,9 +6,6 @@ datasource db {
   provider  = "postgresql"
   url       = env("PRISMA_DATABASE_URL")
   directUrl = env("POSTGRES_URL")
-  // Temporarily disable shadow database locally to avoid
-  // "shadow database appears to be the same as the main database" error
-  // shadowDatabaseUrl = env("SHADOW_DB_URL")
 }
 
 model Company {
@@ -58,12 +55,12 @@ model User {
   projectAttachments    ProjectAttachment[]
   ReportAccess          ReportAccess[]
   createdDeductions     SalaryDeduction[]    @relation("UserCreatedDeductions")
+  tasksAssigned         Task[]               @relation("taskAssignee")
+  tasksCreated          Task[]               @relation("taskAssigner")
   accountantApprovals   TimeEntry[]          @relation("accountantApproval")
   managerApprovals      TimeEntry[]          @relation("managerApproval")
   timeEntries           TimeEntry[]
   transactionsCreated   Transaction[]        @relation("UserTransactions")
-  tasksAssigned         Task[]               @relation("taskAssignee")
-  tasksCreated          Task[]               @relation("taskAssigner")
   company               Company?             @relation(fields: [companyId], references: [id])
   position              Position?            @relation(fields: [positionId], references: [id])
   permissions           UserPermission[]
@@ -99,9 +96,6 @@ model Client {
   contactEmail       String?
   phone              String?
   address            String?
-  city               String?
-  vatCode            String?
-  country            String?
   notes              String?
   createdAt          DateTime            @default(now())
   /// Default AR account for this client
@@ -109,6 +103,9 @@ model Client {
   /// Unique shorthand code (e.g. C0001)
   code               String?             @unique
   companyId          Int
+  city               String?
+  vatCode            String?
+  country            String?
   approvalScopes     ApprovalScope[]
   account            Account?            @relation("ClientAccount", fields: [accountId], references: [id])
   company            Company             @relation(fields: [companyId], references: [id])
@@ -118,8 +115,8 @@ model Client {
   invoices           Invoice[]
   projects           Project[]
   reportAccesses     ReportAccess[]
-  trustAccounts      TrustAccount[]
   tasks              Task[]              @relation("ClientTasks")
+  trustAccounts      TrustAccount[]
 }
 
 model Project {
@@ -142,6 +139,9 @@ model Project {
   fixedFee           Decimal?
   rateSource         RateSource?
   billingCurrency    CurrencyCode?
+  budget             Decimal?
+  endDate            DateTime?
+  startDate          DateTime?
   advancePayments    AdvancePayment[]
   approvalScopes     ApprovalScope[]
   documents          Document[]
@@ -158,10 +158,10 @@ model Project {
   assignments        ProjectAssignment[]
   attachments        ProjectAttachment[]
   reportAccesses     ReportAccess[]
+  tasks              Task[]              @relation("ProjectTasks")
   timeEntries        TimeEntry[]
   trustAccounts      TrustAccount[]
   trustTransactions  TrustTransaction[]
-  tasks              Task[]              @relation("ProjectTasks")
 
   @@unique([companyId, code])
 }
@@ -343,6 +343,7 @@ model ProjectAttachment {
   id           Int            @id @default(autoincrement())
   projectId    Int
   type         AttachmentType @default(OTHER)
+  label        String?
   url          String
   uploadedById Int?
   createdAt    DateTime       @default(now())
@@ -687,6 +688,25 @@ model PayrollItem {
   salaryDeductions SalaryDeduction[] @relation("ItemDeductions")
 }
 
+model Task {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  clientId    Int?
+  projectId   Int?
+  assignerId  Int
+  assigneeId  Int
+  dueDate     DateTime
+  status      TaskStatus @default(PENDING)
+  createdAt   DateTime   @default(now())
+  assignee    User       @relation("taskAssignee", fields: [assigneeId], references: [id])
+  assigner    User       @relation("taskAssigner", fields: [assignerId], references: [id])
+  client      Client?    @relation("ClientTasks", fields: [clientId], references: [id])
+  project     Project?   @relation("ProjectTasks", fields: [projectId], references: [id])
+
+  @@index([assigneeId, dueDate])
+}
+
 enum Role {
   ADMIN
   ACCOUNTANT_MASTER
@@ -808,24 +828,4 @@ enum TaskStatus {
   IN_PROGRESS
   DONE
   REJECTED
-}
-
-model Task {
-  id          Int        @id @default(autoincrement())
-  title       String
-  description String?
-  clientId    Int?
-  projectId   Int?
-  assignerId  Int
-  assigneeId  Int
-  dueDate     DateTime
-  status      TaskStatus @default(PENDING)
-  createdAt   DateTime   @default(now())
-
-  client   Client?  @relation("ClientTasks", fields: [clientId], references: [id])
-  project  Project? @relation("ProjectTasks", fields: [projectId], references: [id])
-  assigner User     @relation("taskAssigner", fields: [assignerId], references: [id])
-  assignee User     @relation("taskAssignee", fields: [assigneeId], references: [id])
-
-  @@index([assigneeId, dueDate])
 }

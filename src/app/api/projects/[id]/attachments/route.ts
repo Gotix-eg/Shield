@@ -51,6 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (files.length === 0) return NextResponse.json({ error: 'No files' }, { status: 400 });
     const typeStr = (form.get('type') as string) || 'OTHER';
     const type = ['POWER_OF_ATTORNEY', 'CONTRACT', 'OTHER'].includes(typeStr) ? typeStr : 'OTHER';
+    const label = (form.get('label') as string)?.trim() || null;
 
     const saved: any[] = [];
 
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       const arrayBuffer = await file.arrayBuffer();
       // upload to Vercel Blob (public)
       const { url } = await put(`attachments/${projectId}/${filename}`, arrayBuffer as ArrayBuffer, { access:'public', addRandomSuffix:false });
-      const record = await prisma.projectAttachment.create({ data: { projectId, type: type as any, url, uploadedById: user.id } });
+      const record = await prisma.projectAttachment.create({ data: { projectId, type: type as any, label, url, uploadedById: user.id } });
       saved.push(record);
     }
     return NextResponse.json(saved, { status: 201 });
