@@ -57,23 +57,16 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
         };
       }
       if (adv.accountType === 'EXPENSE') {
-        // only count the actually consumed portion as an expense
-        resultsMap[key].expenses += Number(adv.consumed || 0);
-        // any un-consumed balance stays in advance
-        const remaining = Number(adv.amount) - Number(adv.consumed || 0);
-        if (remaining > 0) {
-          resultsMap[key].advance += remaining;
-        }
-      } else {
-        // TRUST/RETAINER advance: show remaining (amount – consumed) as advance
-        const remaining = Number(adv.amount) - Number(adv.consumed || 0);
-        if (remaining > 0) {
-          resultsMap[key].advance += remaining;
-        }
-        // If some of the advance has been consumed, add to expenses
-        if (adv.consumed && Number(adv.consumed) > 0) {
-          resultsMap[key].expenses += Number(adv.consumed);
-        }
+        continue;
+      }
+
+      // TRUST/RETAINER advance
+      const remaining = Number(adv.amount) - Number(adv.consumed || 0);
+      if (remaining > 0) {
+        resultsMap[key].advance += remaining;
+      }
+      if (adv.consumed && Number(adv.consumed) > 0) {
+        resultsMap[key].expenses += Number(adv.consumed);
       }
     }
 
