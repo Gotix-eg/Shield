@@ -35,3 +35,26 @@ export async function PATCH(
   const updated = await prisma.company.update({ where: { id }, data });
   return NextResponse.json(updated);
 }
+
+// DELETE /api/super-admin/companies/[id]
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  if (!isSuperAdmin(req)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+  const id = Number(params.id);
+  if (isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+
+  try {
+    // Cascading delete will wipe all related models automatically (Users, Clients, Projects, etc)
+    await prisma.company.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Delete firm error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete firm. Ensure no foreign-key conflicts.' },
+      { status: 500 }
+    );
+  }
+}

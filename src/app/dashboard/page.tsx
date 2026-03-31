@@ -9,6 +9,10 @@ interface Company {
   address?: string;
   email?: string;
   phone?: string;
+  status: "DEMO" | "ACTIVE" | "SUSPENDED";
+  maxSeats: number;
+  subscriptionEnds: string | null;
+  _count?: { users: number };
 }
 
 export default function DashboardHome() {
@@ -123,6 +127,37 @@ export default function DashboardHome() {
                       <p className="text-lg text-white font-medium leading-snug">{company.address}</p>
                     </div>
                   )}
+
+                  {/* ────────────────── Subscription Details ────────────────── */}
+                  <div className="md:col-span-2 border-t border-white/10 my-2"></div>
+                  
+                  <div className="group">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 group-hover:text-legal-gold transition-colors">Subscription Details</p>
+                    <div className="flex items-center gap-3">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        company.status === "ACTIVE" ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" :
+                        company.status === "DEMO" ? "text-amber-400 bg-amber-400/10 border-amber-400/20" :
+                        "text-red-400 bg-red-400/10 border-red-400/20"
+                      }`}>
+                        {company.status}
+                      </span>
+                      <span className="text-sm text-slate-400">
+                        {company.subscriptionEnds 
+                          ? `Renews on ${new Date(company.subscriptionEnds).toLocaleDateString()}` 
+                          : "No Expiry Date"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 group-hover:text-legal-gold transition-colors">System Users (Seats)</p>
+                    <p className={`text-lg font-mono font-medium ${
+                      (company._count?.users || 0) >= company.maxSeats ? "text-red-400" : "text-white"
+                    }`}>
+                      {company._count?.users || 0} / {company.maxSeats} {" "}
+                      <span className="text-sm text-slate-500 font-sans tracking-normal">Active</span>
+                    </p>
+                  </div>
                 </div>
               </section>
             ) : (

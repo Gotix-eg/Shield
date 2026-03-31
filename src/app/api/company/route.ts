@@ -19,10 +19,15 @@ export async function GET(req: NextRequest){
   const user=getUser(req);
   let company;
   if(user?.companyId){
-    company = await prisma.company.findUnique({where:{id:Number(user.companyId)}});
+    company = await prisma.company.findUnique({
+      where:{id:Number(user.companyId)},
+      include: { _count: { select: { users: true } } }
+    });
   }
   if(!company){
-    company = await prisma.company.findFirst();
+    company = await prisma.company.findFirst({
+      include: { _count: { select: { users: true } } }
+    });
   }
   if(!company) return NextResponse.json({ error:'No company record' },{status:404});
   return NextResponse.json(company);

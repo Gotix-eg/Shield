@@ -67,7 +67,7 @@ model User {
   managerApprovals      TimeEntry[]          @relation("managerApproval")
   timeEntries           TimeEntry[]
   transactionsCreated   Transaction[]        @relation("UserTransactions")
-  company               Company?             @relation(fields: [companyId], references: [id])
+  company               Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   position              Position?            @relation(fields: [positionId], references: [id])
   permissions           UserPermission[]
   documentPermissions   DocumentPermission[] @relation("userPermissions")
@@ -114,7 +114,7 @@ model Client {
   country            String?
   approvalScopes     ApprovalScope[]
   account            Account?            @relation("ClientAccount", fields: [accountId], references: [id])
-  company            Company             @relation(fields: [companyId], references: [id])
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   owner              User                @relation(fields: [ownerId], references: [id])
   documents          Document[]
   expenseCashLedgers ExpenseCashLedger[]
@@ -159,7 +159,7 @@ model Project {
   officeExpenses     OfficeExpense[]
   account            Account?            @relation("ProjectAccount", fields: [accountId], references: [id])
   client             Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company            Company             @relation(fields: [companyId], references: [id])
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   owner              User                @relation(fields: [ownerId], references: [id])
   assignments        ProjectAssignment[]
   attachments        ProjectAttachment[]
@@ -238,7 +238,7 @@ model Invoice {
   expenses          Expense[]
   bank              BankAccount?       @relation(fields: [bankId], references: [id])
   client            Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company           Company            @relation(fields: [companyId], references: [id])
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   project           Project?           @relation(fields: [projectId], references: [id])
   items             InvoiceItem[]
   payments          Payment[]
@@ -338,7 +338,7 @@ model BankAccount {
   currency          CurrencyCode       @default(USD)
   createdAt         DateTime           @default(now())
   advancePayments   AdvancePayment[]
-  company           Company            @relation(fields: [companyId], references: [id])
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   bankTransactions  BankTransaction[]
   incomeCashLedgers IncomeCashLedger[]
   invoices          Invoice[]
@@ -617,7 +617,7 @@ model Account {
   name      String
   type      AccountType
   companyId Int
-  company   Company           @relation(fields: [companyId], references: [id])
+  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   clients   Client[]          @relation("ClientAccount")
   projects  Project[]         @relation("ProjectAccount")
   lines     TransactionLine[]
@@ -675,7 +675,7 @@ model PayrollBatch {
   hrApprovedAt  DateTime?
   accApprovedAt DateTime?
   createdById   Int
-  company       Company       @relation(fields: [companyId], references: [id])
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   creator       User          @relation("payrollBatchesCreated", fields: [createdById], references: [id])
   items         PayrollItem[]
 

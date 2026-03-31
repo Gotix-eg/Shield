@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { getAuth } from "@/lib/auth";
 import toast, { Toaster } from "react-hot-toast";
-import { Building2, Users, CheckCircle, XCircle, Clock, Edit2, Shield } from "lucide-react";
+import { Building2, Users, CheckCircle, XCircle, Clock, Edit2, Shield, Trash2 } from "lucide-react";
 
 interface Company {
   id: number;
@@ -70,6 +70,29 @@ export default function SuperAdminPage() {
       load();
     } catch { toast.error("Failed to save"); }
     finally { setSaving(false); }
+  };
+
+  const handleDelete = async (c: Company) => {
+    if (c.registeredEmail === "info@pro-law.net") {
+      toast.error("Cannot delete the master admin firm");
+      return;
+    }
+    const confirmed = window.confirm(`DANGER: Are you sure you want to permanently delete '${c.name}' and ALL its associated data? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/super-admin/companies/${c.id}`, {
+        method: "DELETE", headers,
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || "Failed");
+      }
+      toast.success("Firm deleted successfully");
+      load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete firm");
+    }
   };
 
   const stats = {
@@ -147,10 +170,16 @@ export default function SuperAdminPage() {
                     {c.subscriptionEnds ? new Date(c.subscriptionEnds).toLocaleDateString() : <span className="text-slate-600 italic">No expiry</span>}
                   </td>
                   <td className="px-6 py-4">
-                    <button onClick={() => openEdit(c)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-legal-gold/30 hover:text-legal-gold text-slate-400 transition-all text-xs">
-                      <Edit2 className="w-3 h-3" /> Edit
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => openEdit(c)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-legal-gold/30 hover:text-legal-gold text-slate-400 transition-all text-xs">
+                        <Edit2 className="w-3 h-3" /> Edit
+                      </button>
+                      <button onClick={() => handleDelete(c)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 hover:text-red-400 text-slate-500 transition-all text-xs">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
