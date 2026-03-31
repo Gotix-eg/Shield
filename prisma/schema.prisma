@@ -343,10 +343,10 @@ model ProjectAttachment {
   id           Int            @id @default(autoincrement())
   projectId    Int
   type         AttachmentType @default(OTHER)
-  label        String?
   url          String
   uploadedById Int?
   createdAt    DateTime       @default(now())
+  label        String?
   project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   uploadedBy   User?          @relation(fields: [uploadedById], references: [id])
 }
