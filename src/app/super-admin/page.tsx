@@ -84,9 +84,9 @@ export default function SuperAdminPage() {
       const res = await fetch(`/api/super-admin/companies/${c.id}`, {
         method: "DELETE", headers,
       });
+      const body = await res.json();
       if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error || "Failed");
+        throw new Error(body.error + (body.details ? `\n\nDetails: ${body.details}` : ""));
       }
       toast.success("Firm deleted successfully");
       load();
