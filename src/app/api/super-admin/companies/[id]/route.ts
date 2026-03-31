@@ -65,17 +65,19 @@ export async function DELETE(
       await tx.trustAccount.deleteMany({ where: { client: { companyId: id } } });
       await tx.transaction.deleteMany({ where: { creator: { companyId: id } } });
 
-      // --- Main Level Entities ---
-      await tx.invoice.deleteMany({ where: { companyId: id } });
-      await tx.project.deleteMany({ where: { companyId: id } });
-      await tx.client.deleteMany({ where: { companyId: id } });
-
-      // --- Accounting ---
+      // --- Accounting (Might reference Project, User, or Bank) ---
       await tx.bankTransaction.deleteMany({ where: { bank: { companyId: id } } });
       await tx.officeExpense.deleteMany({ where: { bank: { companyId: id } } });
       await tx.payrollBatch.deleteMany({ where: { company: { id } } });
       await tx.incomeCashLedger.deleteMany({ where: { company: { id } } });
       await tx.expenseCashLedger.deleteMany({ where: { company: { id } } });
+
+      // --- Main Level Entities ---
+      await tx.invoice.deleteMany({ where: { companyId: id } });
+      await tx.project.deleteMany({ where: { companyId: id } });
+      await tx.client.deleteMany({ where: { companyId: id } });
+
+      // --- Foundation Entities ---
       await tx.bankAccount.deleteMany({ where: { companyId: id } });
 
       // --- Users & HR ---
