@@ -52,7 +52,7 @@ function decodeRole(token?:string):UserRole|null{
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut, Bell, ChevronDown, LayoutDashboard, Users, FolderKanban, CheckSquare, Clock, CreditCard, Calendar, FileText, BarChart3, Settings, Users2, Banknote, Briefcase } from "lucide-react";
+import { LogOut, Bell, LayoutDashboard, Users, FolderKanban, CheckSquare, Clock, CreditCard, Calendar, FileText, BarChart3, Settings, Users2, Banknote, Shield } from "lucide-react";
 
 export default function NavBar() {
   const [role,setRole]=useState<UserRole|null>(() => decodeRole(getAuth() || undefined));
@@ -73,12 +73,43 @@ export default function NavBar() {
   if (!tokenRaw || pathname === "/" || pathname.includes("login") || pathname.includes("register")) return null;
 
   const resolvedRole = role ?? decodeRole(tokenRaw || undefined);
-  const allowedPages = ROLE_PAGES[resolvedRole as string] || [];
 
   const handleLogout = () => {
     clearAuth();
-    router.push("/login");
+    window.location.href = "/login";
   };
+
+  // Super Admin gets a minimal sidebar
+  if (resolvedRole === "SUPER_ADMIN") {
+    return (
+      <aside className="w-[var(--sidebar-width)] h-screen sticky top-0 left-0 bg-[#0a0f1a] border-r border-white/5 flex flex-col z-[100] shrink-0">
+        <div className="p-8 pb-12">
+          <Link href="/super-admin" className="group flex flex-col items-center">
+            <span className="text-4xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500">PRO LAW</span>
+            <span className="text-[8px] uppercase tracking-[0.6em] text-slate-500 font-bold mt-2">Super Admin</span>
+          </Link>
+        </div>
+        <nav className="flex-1 px-6 space-y-1">
+          <Link href="/super-admin"
+            className={`flex items-center gap-4 px-5 py-3.5 rounded-xl text-[13px] font-medium tracking-wide transition-all duration-300 relative group ${
+              pathname.startsWith("/super-admin") ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/5"
+            }`}>
+            <Shield className="w-4 h-4 text-legal-gold" />
+            <span>Platform Admin</span>
+          </Link>
+        </nav>
+        <div className="p-6 mt-auto border-t border-white/5">
+          <button onClick={handleLogout}
+            className="w-full flex items-center gap-4 px-5 py-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 group transition-all">
+            <LogOut className="w-4 h-4 text-red-400" />
+            <span className="text-[13px] font-bold tracking-widest text-red-400">SIGN OUT</span>
+          </button>
+        </div>
+      </aside>
+    );
+  }
+
+  const allowedPages = ROLE_PAGES[resolvedRole as string] || [];
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", key: "dashboard", icon: LayoutDashboard },

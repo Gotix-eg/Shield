@@ -13,32 +13,59 @@ export async function POST(request: NextRequest) {
     };
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: "Missing email or password" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing email or password" }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
     const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!match) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+    // ── SUPER_ADMIN bypasses all company checks ───────────────────────────
+    if ((user.role as string) !== "SUPER_ADMIN" && user.companyId) {
+      const company = await prisma.company.findUnique({ where: { id: user.companyId } });
+
+      if (company) {
+        // 1. Suspended
+        if ((company as any).status === "SUSPENDED") {
+          return NextResponse.json(
+            { error: "Your firm account has been suspended. Please contact support." },
+            { status: 403 }
+          );
+        }
+
+        // 2. Subscription expired
+        const subEnds = (company as any).subscriptionEnds as Date | null;
+        if (subEnds && new Date() > new Date(subEnds)) {
+          return NextResponse.json(
+            { error: "Your subscription has expired. Please renew to continue." },
+            { status: 403 }
+          );
+        }
+
+        // 3. Seat limit — count all users in the company
+        const maxSeats: number = (company as any).maxSeats ?? 3;
+        const seatCount = await prisma.user.count({ where: { companyId: user.companyId } });
+        if (seatCount > maxSeats) {
+          return NextResponse.json(
+            { error: `Your firm has reached the maximum allowed users (${maxSeats}). Please contact your administrator.` },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, companyId: user.companyId },
       JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "8h" }
     );
 
     const res = NextResponse.json({ token }, { status: 200 });
     res.headers.set(
       "Set-Cookie",
-      `token=${token}; Max-Age=3600; Path=/; HttpOnly; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
+      `token=${token}; Max-Age=28800; Path=/; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`
     );
     return res;
   } catch (err) {

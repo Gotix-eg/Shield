@@ -14,6 +14,12 @@ model Company {
   address            String?
   logoUrl            String?
   phone              String?
+  // ─── SaaS fields ───────────────────────────────────────
+  status             CompanyStatus       @default(DEMO)
+  maxSeats           Int                 @default(3)
+  subscriptionEnds   DateTime?
+  registeredEmail    String?
+  // ───────────────────────────────────────────────────────
   accounts           Account[]
   bankAccounts       BankAccount[]
   bankTransactions   BankTransaction[]
@@ -708,6 +714,7 @@ model Task {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   ACCOUNTANT_MASTER
   ACCOUNTANT_ASSISTANT
@@ -719,6 +726,12 @@ enum Role {
   HR_MANAGER
   MANAGING_PARTNER
   ADMIN_REPORTS
+}
+
+enum CompanyStatus {
+  DEMO
+  ACTIVE
+  SUSPENDED
 }
 
 enum ProjectStatus {
