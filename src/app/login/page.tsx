@@ -35,7 +35,8 @@ export default function LoginPage() {
         document.cookie = `token=${data.token}; Path=/; SameSite=Lax`;
       }
 
-      router.push("/dashboard");
+      // force hard navigation so NavBar and layout pick up the new token
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
