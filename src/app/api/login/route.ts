@@ -4,16 +4,32 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = (await request.json()) as {
+    const { email, password, captchaToken } = (await request.json()) as {
       email?: string;
       password?: string;
+      captchaToken?: string;
     };
 
     if (!email || !password) {
       return NextResponse.json({ error: "Missing email or password" }, { status: 400 });
+    }
+
+    // ── Verify reCAPTCHA ─────────────────────────────────────────────────────
+    if (!captchaToken) {
+      return NextResponse.json({ error: "CAPTCHA verification required." }, { status: 400 });
+    }
+    const captchaRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${RECAPTCHA_SECRET}&response=${captchaToken}`,
+    });
+    const captchaData = await captchaRes.json();
+    if (!captchaData.success) {
+      return NextResponse.json({ error: "CAPTCHA verification failed. Please try again." }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { email } });

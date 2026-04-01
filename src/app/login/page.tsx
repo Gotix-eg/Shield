@@ -1,29 +1,37 @@
 /*
-  Simple Login page recreated after backup loss.
-  Shows email & password inputs and posts to /api/login.
+  Login page with Google reCAPTCHA v2 protection.
 */
 "use client";
 
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, FormEvent } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    const captchaToken = recaptchaRef.current?.getValue();
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA verification.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, captchaToken }),
       });
 
       const data = await res.json();
@@ -39,6 +47,7 @@ export default function LoginPage() {
       window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Login failed");
+      recaptchaRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -116,6 +125,17 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                 />
+              </div>
+
+              {/* reCAPTCHA */}
+              <div className="flex justify-center py-2">
+                <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 p-2">
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                    theme="dark"
+                  />
+                </div>
               </div>
             </div>
 
