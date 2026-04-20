@@ -29,6 +29,8 @@ export default function NewProjectPage() {
   const [agentFees, setAgentFees] = useState("");
   const [clientWillPay, setClientWillPay] = useState(false);
   const [officePercentage, setOfficePercentage] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState<number | "">("");
+  const [selectedLawyerId, setSelectedLawyerId] = useState<number | "">("");
 
   // Billing
   const [billingType, setBillingType] = useState<"HOURS" | "FIXED">("HOURS");
@@ -52,6 +54,20 @@ export default function NewProjectPage() {
   const { data: banks = [] } = useSWR<Bank[]>("/api/banks", (url: string) =>
     fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.json())
   );
+
+  // fetch agents and lawyers
+  const [agents, setAgents] = useState<{id: number; name: string}[]>([]);
+  const [lawyers, setLawyers] = useState<{id: number; name: string}[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/agents", { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch("/api/list/lawyers", { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+    ]).then(([a, l]) => {
+      setAgents(Array.isArray(a) ? a : []);
+      setLawyers(Array.isArray(l) ? l : []);
+    });
+  }, []);
 
   // Files to attach to the project
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -107,6 +123,16 @@ export default function NewProjectPage() {
       return;
     }
 
+    // Validate assignee selection
+    if ((assigneeType === "LAWYER" || assigneeType === "BOTH") && !selectedLawyerId) {
+      toast.error("Please select a lawyer");
+      return;
+    }
+    if ((assigneeType === "AGENT" || assigneeType === "BOTH") && !selectedAgentId) {
+      toast.error("Please select an agent");
+      return;
+    }
+
     try {
       // 1. Create the project
       const res = await fetch("/api/projects", {
@@ -131,6 +157,8 @@ export default function NewProjectPage() {
           agentFees: agentFees ? parseFloat(agentFees) : null,
           clientWillPay,
           officePercentage: officePercentage ? parseFloat(officePercentage) : null,
+          agentId: selectedAgentId ? Number(selectedAgentId) : null,
+          lawyerId: selectedLawyerId ? Number(selectedLawyerId) : null,
         }),
       });
       if (!res.ok) throw new Error("Create failed");
@@ -289,7 +317,7 @@ export default function NewProjectPage() {
                 </label>
                 <select
                   value={assigneeType}
-                  onChange={(e) => setAssigneeType(e.target.value)}
+                  onChange={(e) => { setAssigneeType(e.target.value); setSelectedAgentId(""); setSelectedLawyerId(""); }}
                   className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
                 >
                   <option value="LAWYER">Lawyer</option>
@@ -298,22 +326,56 @@ export default function NewProjectPage() {
                 </select>
               </div>
 
+              {/* Show Agent dropdown when Agent or Both */}
               {(assigneeType === "AGENT" || assigneeType === "BOTH") && (
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
-                    Agent Fees
+                    Select Agent
                   </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={agentFees}
-                    onChange={(e) => setAgentFees(e.target.value)}
+                  <select
+                    value={selectedAgentId}
+                    onChange={(e) => setSelectedAgentId(e.target.value ? Number(e.target.value) : "")}
                     className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
-                    placeholder="0.00"
-                  />
+                  >
+                    <option value="">Select Agent</option>
+                    {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {/* Show Lawyer dropdown when Lawyer or Both */}
+              {(assigneeType === "LAWYER" || assigneeType === "BOTH") && (
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Select Lawyer
+                  </label>
+                  <select
+                    value={selectedLawyerId}
+                    onChange={(e) => setSelectedLawyerId(e.target.value ? Number(e.target.value) : "")}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  >
+                    <option value="">Select Lawyer</option>
+                    {lawyers.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  </select>
                 </div>
               )}
             </div>
+
+            {(assigneeType === "AGENT" || assigneeType === "BOTH") && (
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                  Agent Fees
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={agentFees}
+                  onChange={(e) => setAgentFees(e.target.value)}
+                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  placeholder="0.00"
+                />
+              </div>
+            )}
 
             {/* Client Payment */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

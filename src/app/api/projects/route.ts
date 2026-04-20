@@ -71,7 +71,7 @@ export const POST = withCompany(async (request: NextRequest) => {
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, clientWillPay = false, officePercentage = null } = await request.json();
+  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, clientWillPay = false, officePercentage = null, agentId = null, lawyerId = null } = await request.json();
   if (!name || !clientId)
     return NextResponse.json({ error: "name and clientId required" }, { status: 400 });
   if (advanceAmount !== undefined && advanceAmount !== null && typeof advanceAmount !== "number")
@@ -165,7 +165,17 @@ export const POST = withCompany(async (request: NextRequest) => {
       officePercentage: officePercentage ? Number(officePercentage) : null,
     },
   });
-    return NextResponse.json(project, { status: 201 });
+
+  // Create project assignments for lawyer and/or agent
+  if (lawyerId) {
+    await prisma.projectAssignment.upsert({
+      where: { userId_projectId: { userId: Number(lawyerId), projectId: project.id } },
+      create: { userId: Number(lawyerId), projectId: project.id },
+      update: {},
+    });
+  }
+
+  return NextResponse.json(project, { status: 201 });
   } catch (err: any) {
     console.error('Project create error', err);
     return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
