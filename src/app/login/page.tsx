@@ -3,18 +3,28 @@
 */
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useRef, FormEvent } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const RECAPTCHA_SITE_KEY = "6Lccl6EsAAAAACMYKaSIEpzKQFabtzHeg_7hg7To";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const captchaToken = recaptchaRef.current?.getValue();
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA verification.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/login", {
@@ -118,20 +128,29 @@ export default function LoginPage() {
 
               </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-legal py-5 rounded-xl text-lg relative overflow-hidden group shadow-2xl"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-legal-900/30 border-t-legal-900 rounded-full animate-spin"></div>
-                ) : (
-                  <>Enter Platform <span className="text-xl">→</span></>
-                )}
-              </span>
-            </button>
-          </form>
+            {/* reCAPTCHA */}
+              <div className="flex justify-center py-2">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={RECAPTCHA_SITE_KEY}
+                  theme="dark"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full btn-legal py-5 rounded-xl text-lg relative overflow-hidden group shadow-2xl"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-legal-900/30 border-t-legal-900 rounded-full animate-spin"></div>
+                  ) : (
+                    <>Enter Platform <span className="text-xl">→</span></>
+                  )}
+                </span>
+              </button>
+            </form>
 
           <footer className="mt-12 pt-8 border-t border-white/5 text-center">
             <p className="text-slate-600 text-xs font-light tracking-widest uppercase">
