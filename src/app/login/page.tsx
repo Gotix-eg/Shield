@@ -3,29 +3,18 @@
 */
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
-
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6Lccl6EsAAAAACMYKaSIEpzKQFabtzHeg_7hg7To";
+import { useState, FormEvent } from "react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
-    const captchaToken = recaptchaRef.current?.getValue();
-    if (!captchaToken) {
-      setError("Please complete the CAPTCHA verification.");
-      setLoading(false);
-      return;
-    }
 
     try {
       const res = await fetch("/api/login", {
@@ -127,17 +116,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* reCAPTCHA */}
-              <div className="flex justify-center py-2">
-                <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 p-2">
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={RECAPTCHA_SITE_KEY}
-                    theme="dark"
-                  />
-                </div>
               </div>
-            </div>
 
             <button
               type="submit"
