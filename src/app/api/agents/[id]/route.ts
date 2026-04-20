@@ -25,10 +25,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const agent = await prisma.agent.findUnique({
     where: { id },
-    include: {
-      client: { select: { id: true, name: true } },
-      project: { select: { id: true, name: true } },
-    },
   });
 
   if (!agent || agent.companyId !== user.companyId) {
@@ -52,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const body = await req.json();
-  const { name, country, city, address, phone, email, taxNumber, clientId, projectId } = body;
+  const { name, country, city, address, phone, email, taxNumber } = body;
 
   const agent = await prisma.agent.update({
     where: { id },
@@ -64,8 +60,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       phone: phone ?? existing.phone,
       email: email ?? existing.email,
       taxNumber: taxNumber ?? existing.taxNumber,
-      clientId: clientId !== undefined ? (clientId ? Number(clientId) : null) : existing.clientId,
-      projectId: projectId !== undefined ? (projectId ? Number(projectId) : null) : existing.projectId,
     },
   });
 

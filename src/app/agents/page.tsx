@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import useSWR from "swr";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuth } from "@/lib/auth";
 import { Users, Plus, Edit2, Trash2, X, Globe, MapPin, Phone, Mail, FileText } from "lucide-react";
@@ -15,14 +14,7 @@ interface Agent {
   phone?: string;
   email?: string;
   taxNumber?: string;
-  clientId?: number;
-  projectId?: number;
-  client?: { id: number; name: string };
-  project?: { id: number; name: string };
 }
-
-interface Client { id: number; name: string }
-interface Project { id: number; name: string }
 
 const fetcher = (url: string) =>
   fetch(url, { headers: { Authorization: `Bearer ${getAuth()}` } }).then((r) => r.json());
@@ -42,12 +34,7 @@ export default function AgentsPage() {
     phone: "",
     email: "",
     taxNumber: "",
-    clientId: "",
-    projectId: "",
   });
-
-  const { data: clients } = useSWR<Client[]>("/api/list/clients", fetcher);
-  const { data: projects } = useSWR<Project[]>("/api/list/projects", fetcher);
 
   const loadAgents = async () => {
     setLoading(true);
@@ -61,7 +48,7 @@ export default function AgentsPage() {
   useEffect(() => { loadAgents(); }, []);
 
   const resetForm = () => {
-    setForm({ name: "", country: "", city: "", address: "", phone: "", email: "", taxNumber: "", clientId: "", projectId: "" });
+    setForm({ name: "", country: "", city: "", address: "", phone: "", email: "", taxNumber: "" });
     setEditing(null);
   };
 
@@ -75,8 +62,6 @@ export default function AgentsPage() {
       phone: a.phone || "",
       email: a.email || "",
       taxNumber: a.taxNumber || "",
-      clientId: a.clientId?.toString() || "",
-      projectId: a.projectId?.toString() || "",
     });
     setShowForm(true);
   };
@@ -141,8 +126,6 @@ export default function AgentsPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-semibold text-gray-900">{a.name}</h3>
-                    {a.client && <p className="text-sm text-gray-500">Client: {a.client.name}</p>}
-                    {a.project && <p className="text-sm text-gray-500">Project: {a.project.name}</p>}
                   </div>
                   <div className="flex gap-1">
                     <button onClick={() => openEdit(a)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
@@ -232,31 +215,9 @@ export default function AgentsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax Number (الرقم الضريبي)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax Number</label>
                   <input value={form.taxNumber} onChange={(e) => setForm({ ...form, taxNumber: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2" placeholder="Tax ID" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Client</label>
-                    <select value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2">
-                      <option value="">Select Client</option>
-                      {Array.isArray(clients) && clients.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                    <select value={form.projectId} onChange={(e) => setForm({ ...form, projectId: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2">
-                      <option value="">Select Project</option>
-                      {Array.isArray(projects) && projects.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
               </div>
               <div className="flex gap-3 p-5 border-t">

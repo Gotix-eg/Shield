@@ -21,20 +21,8 @@ export async function GET(req: NextRequest) {
   const user = isAuth(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { searchParams } = new URL(req.url);
-  const clientId = searchParams.get('clientId');
-  const projectId = searchParams.get('projectId');
-
-  const where: any = { companyId: user.companyId };
-  if (clientId) where.clientId = Number(clientId);
-  if (projectId) where.projectId = Number(projectId);
-
   const agents = await prisma.agent.findMany({
-    where,
-    include: {
-      client: { select: { id: true, name: true } },
-      project: { select: { id: true, name: true } },
-    },
+    where: { companyId: user.companyId },
     orderBy: { name: 'asc' },
   });
 
@@ -47,7 +35,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { name, country, city, address, phone, email, taxNumber, clientId, projectId } = body;
+  const { name, country, city, address, phone, email, taxNumber } = body;
 
   if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
 
@@ -60,8 +48,6 @@ export async function POST(req: NextRequest) {
       phone,
       email,
       taxNumber,
-      clientId: clientId ? Number(clientId) : null,
-      projectId: projectId ? Number(projectId) : null,
       companyId: user.companyId,
     },
   });
