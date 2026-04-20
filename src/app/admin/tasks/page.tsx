@@ -3,7 +3,6 @@ import { useEffect, useState, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuth } from "@/lib/auth";
 import { Download, Filter, Upload } from "lucide-react";
-import { COUNTRIES, ACTION_FIELDS } from "@/lib/countries";
 function getCompanyId(): number | undefined {
   const t = getAuth();
   if (!t) return undefined;
@@ -32,52 +31,7 @@ interface Task {
   assignees: { id: number; name: string }[];
 }
 
-const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE", "ENFORCEMENT"] as const;
-
-const IP_ACTIONS_BY_TYPE: Record<string, string[]> = {
-  TRADEMARK: [
-    "Trademark search", "Clearance opinion", "Application preparation", 
-    "Application filing", "Office action response", "Publication monitoring",
-    "Opposition filing", "Opposition defense", "Registration", 
-    "Renewal", "Recordal (assignment / license / change)",
-    "Coexistence agreement", "Trademark watch", "Infringement review",
-    "Cease & desist", "Customs recordal", "Cancellation / petition", "Appeal (before the trademark office)"
-  ],
-  PATENT: [
-    "Patentability search", "Prior art search", "Patent drafting", 
-    "Application preparation", "Application filing", "Formal examination response",
-    "Substantive examination response", "Amendment filing", "Grant processing",
-    "Validation (for regional patents)", "Annuity / maintenance fee payment",
-    "Recordal (assignment / license)", "Patent watch", 
-    "Freedom-to-operate analysis", "Patent infringement analysis",
-    "Patent opposition", "Revocation action", "Appeal"
-  ],
-  INDUSTRIAL_DESIGN: [
-    "Design search", "Filing preparation", "Application filing",
-    "Office action response", "Publication monitoring", "Registration processing",
-    "Renewal", "Recordal (assignment / license / change)", 
-    "Design watch", "Infringement assessment"
-  ],
-  PLANT_VARIETY: [
-    "Plant variety search", "Application preparation", "Filing application",
-    "Office action response", "Grant processing", "Renewal", "Recordal"
-  ],
-  COPYRIGHT: [
-    "Copyright advisory", "Ownership verification", "Copyright registration",
-    "Recordal (assignment / license)", "Copyright notice / documentation",
-    "Copyright monitoring", "Infringement assessment", "Takedown request"
-  ],
-  SOFTWARE: [
-    "Software search", "Clearance opinion", "Application preparation",
-    "Application filing", "Office action response", "Registration processing",
-    "Renewal", "Recordal", "Infringement analysis"
-  ],
-  ENFORCEMENT: [
-    "Investigation request", "Evidence collection", "Market investigation",
-    "Online monitoring", "Test purchase", "Infringement analysis",
-    "Cease & desist", "Settlement negotiation", "Complaint"
-  ]
-};
+const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE"] as const;
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -95,13 +49,12 @@ export default function TasksPage() {
   });
   const IP_ACTIONS = ["Filing", "Petition", "Opposition", "Assignment", "Renewal", "Inscription/Amendment"] as const;
 
-const [form, setForm] = useState({
+  const [form, setForm] = useState({
     title: "",
     description: "",
     taskType: "",
     ipType: "",
     ipAction: "",
-    actionDetails: {} as Record<string, any>,
     isAgent: false,
     agentId: "",
     defendantName: "",
@@ -207,18 +160,15 @@ const [form, setForm] = useState({
         const row: any = {};
         headers.forEach((h, idx) => { row[h] = values[idx]; });
         
-        // Find client and project IDs
         const client = clients.find(c => c.name === row.Client);
         const project = projects.find(p => p.name === row.Project);
         
-        // Find assignee IDs
         const assigneeNames = row.Assignees?.split(";").map((n: string) => n.trim()) || [];
         const assigneeIds = assigneeNames.map((name: string) => {
           const lawyer = lawyers.find(l => l.name === name);
           return lawyer?.id;
         }).filter(Boolean);
         
-        // Find agent ID
         const agent = row.Agent ? agents.find(a => a.name === row.Agent) : null;
         
         if (row.Title && assigneeIds.length > 0 && row["Due Date"]) {
@@ -279,7 +229,7 @@ const [form, setForm] = useState({
       toast.success("Task created");
       setShowModal(false);
       setForm({
-        title: "", description: "", taskType: "", ipType: "", ipAction: "", actionDetails: {}, isAgent: false, agentId: "",
+        title: "", description: "", taskType: "", ipType: "", ipAction: "", isAgent: false, agentId: "",
         defendantName: "", opponent: "", court: "", assigneeIds: [], dueDate: "", clientId: "", projectId: ""
       });
       load();
@@ -433,7 +383,6 @@ const [form, setForm] = useState({
           <div className="bg-white w-full max-w-lg rounded-lg p-6 m-4">
             <h2 className="text-xl font-semibold mb-4">Add Task</h2>
             <div className="space-y-3">
-              {/* Task Type Selection */}
               <select
                 className="w-full border p-2"
                 value={form.taskType}
@@ -445,7 +394,6 @@ const [form, setForm] = useState({
                 <option value="LITIGATION">Litigation</option>
               </select>
 
-              {/* IP Sub-type (only shown when IP is selected) */}
               {form.taskType === "IP" && (
                 <>
                   <select
@@ -462,87 +410,14 @@ const [form, setForm] = useState({
                     <select
                       className="w-full border p-2"
                       value={form.ipAction}
-                      onChange={e => setForm({ ...form, ipAction: e.target.value, actionDetails: {} })}
+                      onChange={e => setForm({ ...form, ipAction: e.target.value })}
                     >
                       <option value="">Select Action</option>
-                      {(IP_ACTIONS_BY_TYPE[form.ipType] || []).map(a => (
+                      {IP_ACTIONS.map(a => (
                         <option key={a} value={a}>{a}</option>
                       ))}
                     </select>
-                    {form.ipAction && ACTION_FIELDS[form.ipAction] && (
-                      <div className="border p-3 rounded mt-2 space-y-3">
-                        <p className="font-medium text-sm text-gray-700">{form.ipAction} Details</p>
-                        {ACTION_FIELDS[form.ipAction].map(field => (
-                          <div key={field.name}>
-                            {field.type === "select" && (
-                              <select
-                                className="w-full border p-2 text-sm"
-                                value={form.actionDetails[field.name] || ""}
-                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
-                              >
-                                <option value="">{field.label}</option>
-                                {field.options?.map(opt => (
-                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                              </select>
-                            )}
-                            {field.type === "text" && (
-                              <input
-                                type="text"
-                                className="w-full border p-2 text-sm"
-                                placeholder={field.label}
-                                value={form.actionDetails[field.name] || ""}
-                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
-                              />
-                            )}
-                            {field.type === "date" && (
-                              <input
-                                type="date"
-                                className="w-full border p-2 text-sm"
-                                placeholder={field.label}
-                                value={form.actionDetails[field.name] || ""}
-                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
-                              />
-                            )}
-                            {field.type === "textarea" && (
-                              <textarea
-                                className="w-full border p-2 text-sm"
-                                placeholder={field.label}
-                                rows={2}
-                                value={form.actionDetails[field.name] || ""}
-                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
-                              />
-                            )}
-                            {field.type === "number" && (
-                              <input
-                                type="number"
-                                className="w-full border p-2 text-sm"
-                                placeholder={field.label}
-                                value={form.actionDetails[field.name] || ""}
-                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
-                              />
-                            )}
-                            {field.type === "boolean" && (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  id={`${field.name}-${form.ipAction}`}
-                                  checked={form.actionDetails[field.name] || false}
-                                  onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.checked } })}
-                                />
-                                <label htmlFor={`${field.name}-${form.ipAction}`} className="text-sm">{field.label}</label>
-                              </div>
-                            )}
-                            {field.type === "file" && (
-                              <div>
-                                <label className="block text-sm text-gray-600 mb-1">{field.label}</label>
-                                <input type="file" className="w-full border p-2 text-sm" />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  )}
                 </>
               )}
 
@@ -559,7 +434,6 @@ const [form, setForm] = useState({
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               ></textarea>
 
-              {/* Corporate / IP / Litigation - Client & Project */}
               {form.taskType && form.taskType !== "" && (
                 <>
                   <select
@@ -586,7 +460,6 @@ const [form, setForm] = useState({
                 </>
               )}
 
-              {/* Litigation specific fields */}
               {form.taskType === "LITIGATION" && (
                 <>
                   <input
@@ -610,7 +483,6 @@ const [form, setForm] = useState({
                 </>
               )}
 
-              {/* Assign to Lawyers (multiple) */}
               <div className="border p-2 rounded max-h-40 overflow-y-auto">
                 <p className="text-sm font-medium mb-2">Select Lawyers</p>
                 {lawyers.map(l => (
@@ -632,7 +504,6 @@ const [form, setForm] = useState({
                 ))}
               </div>
 
-              {/* Agent checkbox (available for all types) */}
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
