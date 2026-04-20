@@ -171,6 +171,14 @@ model Project {
   clientWillPay      Boolean             @default(false)
   /// Office percentage from client payment
   officePercentage   Decimal?
+  /// Agent process status
+  agentStatus     String?             @default("OPEN")
+  /// Amount paid to agent so far
+  agentPaid      Decimal?
+  /// Total invoice amount for client
+  clientInvoiceAmount Decimal?
+  /// Main agent (user) assigned to this project
+  agentId        Int?
   advancePayments    AdvancePayment[]
   approvalScopes     ApprovalScope[]
   documents          Document[]

@@ -30,9 +30,13 @@ function getUserId(request: NextRequest): number | null {
 
 export const GET = withCompany(async (request: NextRequest, companyId?: number) => {
   const userId = getUserId(request);
+  const { searchParams } = new URL(request.url);
+  const agentIdParam = searchParams.get('agentId');
+  
   let whereClause: any = {};
   if (companyId) whereClause.companyId = companyId;
-  if (userId) {
+  if (agentIdParam) whereClause.agentId = Number(agentIdParam);
+  if (userId && !agentIdParam) {
     // fetch user role
     const user = await prisma.user.findUnique({ where: { id: userId }, select:{ role:true, companyId:true }});
     const companyId = user?.companyId;
