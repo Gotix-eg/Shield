@@ -17,6 +17,8 @@ interface Project {
   id: number;
   name: string;
   agentStatus?: string;
+  agentNotes?: string;
+  agentCurrency?: string;
   clientInvoiceAmount?: number;
   agentFees?: number;
   agentPaid?: number;
@@ -49,6 +51,12 @@ export default function AgentProcessPage() {
   const [agentFees, setAgentFees] = useState("");
   const [clientWillPay, setClientWillPay] = useState(false);
 
+  // Status edit modal
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusProject, setStatusProject] = useState<Project | null>(null);
+  const [newStatus, setNewStatus] = useState("");
+  const [statusNotes, setStatusNotes] = useState("");
+
   // Payment modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentProject, setPaymentProject] = useState<Project | null>(null);
@@ -80,16 +88,39 @@ export default function AgentProcessPage() {
       .finally(() => setLoading(false));
   }, [selectedAgent]);
 
-  const updateStatus = async (projectId: number, status: string) => {
+  const saveStatus = async () => {
+    if (!statusProject) return;
     try {
-      const res = await fetch(`/api/projects/${projectId}`, {
+      const res = await fetch(`/api/projects/${statusProject.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAuth()}` },
-        body: JSON.stringify({ agentStatus: status }),
+        body: JSON.stringify({ 
+          agentStatus: newStatus,
+          agentNotes: statusNotes
+        }),
       });
       if (!res.ok) throw new Error();
       toast.success("Status updated");
-      // Refresh projects
+      setShowStatusModal(false);
+      setStatusProject(null);
+      setNewStatus("");
+      setStatusNotes("");
+      // Refresh
+      const updated = await fetch(`/api/projects?agentId=${selectedAgent}`, { headers: { Authorization: `Bearer ${getAuth()}` } }).then(r => r.json());
+      setProjects(Array.isArray(updated) ? updated : []);
+    } catch {
+      toast.error("Failed to update");
+    }
+  };
+
+  const openStatusEdit = (p: Project) => {
+    setStatusProject(p);
+    setNewStatus(p.agentStatus || "OPEN");
+    setStatusNotes(p.agentNotes || "");
+    setShowStatusModal(true);
+  };
+
+  const updateStatus = async (projectId: number, status: string) => {
       const updated = await fetch(`/api/projects?agentId=${selectedAgent}`, { headers: { Authorization: `Bearer ${getAuth()}` } }).then(r => r.json());
       setProjects(Array.isArray(updated) ? updated : []);
     } catch {
@@ -270,6 +301,7 @@ export default function AgentProcessPage() {
                       <th className="px-5 py-3 text-left font-medium text-gray-500">Invoice Amount</th>
                       <th className="px-5 py-3 text-left font-medium text-gray-500">Paid</th>
                       <th className="px-5 py-3 text-left font-medium text-gray-500">Remaining</th>
+                      <th className="px-5 py-3 text-left font-medium text-gray-500">Notes</th>
                       <th className="px-5 py-3 text-left font-medium text-gray-500">Actions</th>
                     </tr>
                   </thead>
@@ -288,8 +320,15 @@ export default function AgentProcessPage() {
                           <td className="px-5 py-3">${(p.clientInvoiceAmount || 0).toLocaleString()}</td>
                           <td className="px-5 py-3">${(p.agentPaid || 0).toLocaleString()}</td>
                           <td className="px-5 py-3 font-medium">${remaining.toLocaleString()}</td>
+                          <td className="px-5 py-3 text-sm text-gray-500">{p.agentNotes || "-"}</td>
                           <td className="px-5 py-3">
                             <div className="flex gap-2">
+                              <button 
+                                onClick={() => openStatusEdit(p)}
+                                className="text-gray-600 hover:underline text-xs"
+                              >
+                                Edit
+                              </button>
                               {p.agentStatus === "OPEN" && (
                                 <button 
                                   onClick={() => updateStatus(p.id, "IN_PROGRESS")}
@@ -437,6 +476,46 @@ export default function AgentProcessPage() {
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setShowPaymentModal(false)} className="flex-1 py-2 border rounded-lg">Cancel</button>
                 <button onClick={payAgent} className="flex-1 py-2 bg-purple-600 text-white rounded-lg">Record Payment</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Status Edit Modal */}
+        {showStatusModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl w-full max-w-md p-6">
+              <h2 className="text-lg font-semibold mb-4">Edit Status</h2>
+              <p className="text-sm text-gray-500 mb-4">Project: {statusProject?.name}</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select 
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2"
+                  >
+                    <option value="OPEN">Open</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="CLOSED">Closed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes / Comments</label>
+                  <textarea 
+                    value={statusNotes}
+                    onChange={(e) => setStatusNotes(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="Add notes..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setShowStatusModal(false)} className="flex-1 py-2 border rounded-lg">Cancel</button>
+                <button onClick={saveStatus} className="flex-1 py-2 bg-purple-600 text-white rounded-lg">Save</button>
               </div>
             </div>
           </div>

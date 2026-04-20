@@ -167,6 +167,10 @@ model Project {
   assigneeType       String?             @default("LAWYER")
   /// Agent fees (if agent is involved)
   agentFees          Decimal?
+  /// Currency for agent fees
+  agentCurrency     String?
+  /// Notes for agent status
+  agentNotes       String?
   /// Will the client pay directly?
   clientWillPay      Boolean             @default(false)
   /// Office percentage from client payment

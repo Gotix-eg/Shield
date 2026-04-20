@@ -75,7 +75,7 @@ export const POST = withCompany(async (request: NextRequest) => {
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, clientWillPay = false, officePercentage = null, agentId = null, lawyerId = null } = await request.json();
+  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, agentCurrency = null, clientWillPay = false, officePercentage = null, agentId = null, lawyerId = null } = await request.json();
   if (!name || !clientId)
     return NextResponse.json({ error: "name and clientId required" }, { status: 400 });
   if (advanceAmount !== undefined && advanceAmount !== null && typeof advanceAmount !== "number")
@@ -165,6 +165,8 @@ export const POST = withCompany(async (request: NextRequest) => {
       companyId,
       assigneeType,
       agentFees: agentFees ? Number(agentFees) : null,
+      agentCurrency: agentCurrency ?? null,
+      agentId: agentId ? Number(agentId) : null,
       clientWillPay,
       officePercentage: officePercentage ? Number(officePercentage) : null,
     },

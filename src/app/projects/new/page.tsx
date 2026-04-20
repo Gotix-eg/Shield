@@ -27,6 +27,7 @@ export default function NewProjectPage() {
   // Assignee Type
   const [assigneeType, setAssigneeType] = useState("LAWYER");
   const [agentFees, setAgentFees] = useState("");
+  const [agentCurrency, setAgentCurrency] = useState("USD");
   const [clientWillPay, setClientWillPay] = useState(false);
   const [officePercentage, setOfficePercentage] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState<number | "">("");
@@ -155,6 +156,7 @@ export default function NewProjectPage() {
               : null,
           assigneeType,
           agentFees: agentFees ? parseFloat(agentFees) : null,
+          agentCurrency,
           clientWillPay,
           officePercentage: officePercentage ? parseFloat(officePercentage) : null,
           agentId: selectedAgentId ? Number(selectedAgentId) : null,
@@ -362,18 +364,32 @@ export default function NewProjectPage() {
             </div>
 
             {(assigneeType === "AGENT" || assigneeType === "BOTH") && (
-              <div>
-                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
-                  Agent Fees
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={agentFees}
-                  onChange={(e) => setAgentFees(e.target.value)}
-                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
-                  placeholder="0.00"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Agent Fees
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={agentFees}
+                    onChange={(e) => setAgentFees(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Currency
+                  </label>
+                  <select
+                    value={agentCurrency}
+                    onChange={(e) => setAgentCurrency(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  >
+                    {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
               </div>
             )}
 
