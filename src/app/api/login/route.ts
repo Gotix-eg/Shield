@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "6Lccl6EsAAAAALIuhkF7UECe9K8GhEpgACjVpHyn";
 
 export async function POST(request: NextRequest) {
   try {

@@ -6,7 +6,7 @@
 import { useState, useRef, FormEvent } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6Lccl6EsAAAAACMYKaSIEpzKQFabtzHeg_7hg7To";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
