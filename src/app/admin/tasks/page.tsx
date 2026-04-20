@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuth } from "@/lib/auth";
+import { Download, Filter } from "lucide-react";
 function getCompanyId(): number | undefined {
   const t = getAuth();
   if (!t) return undefined;
@@ -35,6 +36,13 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "",
+    taskType: "",
+    clientId: "",
+    assigneeId: "",
+  });
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -89,6 +97,45 @@ export default function TasksPage() {
   };
 
   useEffect(load, []);
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      if (filters.status && t.status !== filters.status) return false;
+      if (filters.taskType && t.taskType !== filters.taskType) return false;
+      if (filters.clientId && t.client?.id !== Number(filters.clientId)) return false;
+      if (filters.assigneeId && !t.assignees?.some(a => a.id === Number(filters.assigneeId))) return false;
+      return true;
+    });
+  }, [tasks, filters]);
+
+  const exportToExcel = () => {
+    const headers = ["Title", "Type", "Client", "Project", "Assignees", "Due Date", "Status", "Description", "Defendant", "Opponent", "Court"];
+    const rows = filteredTasks.map(t => [
+      t.title,
+      t.taskType || "",
+      t.client?.name || "",
+      t.project?.name || "",
+      t.assignees?.map(a => a.name).join(", ") || "",
+      new Date(t.dueDate).toLocaleDateString(),
+      t.status,
+      t.description || "",
+      t.defendantName || "",
+      t.opponent || "",
+      t.court || "",
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tasks_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const clearFilters = () => {
+    setFilters({ status: "", taskType: "", clientId: "", assigneeId: "" });
+  };
 
   const addTask = async () => {
     try {
@@ -158,14 +205,50 @@ export default function TasksPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <Toaster />
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={()=>setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Task</button>
+      <div className="flex justify-between items-center mb-4 gap-4">
+        <div className="flex gap-2">
+          <button onClick={()=>setShowFilters(!showFilters)} className="flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-50">
+            <Filter className="w-4 h-4" /> Filters
+          </button>
+          <button onClick={exportToExcel} className="flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-50">
+            <Download className="w-4 h-4" /> Export
+          </button>
+        </div>
         <h1 className="text-2xl font-semibold">Tasks</h1>
+        <button onClick={()=>setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Task</button>
       </div>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
+      {showFilters && (
+        <div className="bg-gray-50 p-4 rounded-lg mb-4 grid grid-cols-4 gap-4">
+          <select value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })} className="border p-2 rounded">
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="DONE">Done</option>
+          </select>
+          <select value={filters.taskType} onChange={e => setFilters({ ...filters, taskType: e.target.value })} className="border p-2 rounded">
+            <option value="">All Types</option>
+            <option value="CORPORATE">Corporate</option>
+            <option value="IP">IP</option>
+            <option value="LITIGATION">Litigation</option>
+          </select>
+          <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value })} className="border p-2 rounded">
+            <option value="">All Clients</option>
+            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select value={filters.assigneeId} onChange={e => setFilters({ ...filters, assigneeId: e.target.value })} className="border p-2 rounded">
+            <option value="">All Lawyers</option>
+            {lawyers.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+          <button onClick={clearFilters} className="text-blue-600 hover:underline text-sm">Clear Filters</button>
+        </div>
+      )}
+
+      {(loading || filteredTasks.length !== tasks.length) && (
+        <p className="text-sm text-gray-500 mb-2">
+          {loading ? "Loading..." : `Showing ${filteredTasks.length} of ${tasks.length} tasks`}
+        </p>
+      )}
         <div className="overflow-x-auto border rounded-lg">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
@@ -176,7 +259,7 @@ export default function TasksPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {tasks.map((t) => (
+              {filteredTasks.map((t) => (
                 <tr key={t.id} className="hover:bg-gray-50">
                   <td className="px-3 py-2">{t.title}</td>
                   <td className="px-3 py-2 capitalize">{t.taskType?.toLowerCase() || "-"}</td>
