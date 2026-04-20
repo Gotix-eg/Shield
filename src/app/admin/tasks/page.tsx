@@ -17,10 +17,19 @@ interface Task {
   title: string;
   status: string;
   dueDate: string;
+  taskType?: string;
+  ipType?: string;
+  isAgent: boolean;
+  agent?: { id: number; name: string } | null;
+  defendantName?: string;
+  opponent?: string;
+  court?: string;
   client?: { id: number; name: string } | null;
   project?: { id: number; name: string } | null;
   assignee: { id: number; name: string };
 }
+
+const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE"] as const;
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -28,24 +37,30 @@ export default function TasksPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     title: "",
+    description: "",
+    taskType: "",
+    ipType: "",
+    isAgent: false,
+    agentId: "",
+    defendantName: "",
+    opponent: "",
+    court: "",
     assigneeId: "",
     dueDate: "",
     clientId: "",
     projectId: "",
-    description: "",
   });
 
-  // reference lists
   const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
   const [projects, setProjects] = useState<{ id: number; name: string; clientId: number }[]>([]);
   const [lawyers, setLawyers] = useState<{ id: number; name: string }[]>([]);
+  const [agents, setAgents] = useState<{ id: number; name: string }[]>([]);
 
   function buildAuth(): { [key: string]: string } {
     const t = getAuth();
     return t ? { Authorization: `Bearer ${t}` } : {};
   }
 
-  // Load clients, projects AND lawyers on mount
   useEffect(() => {
     const cid = getCompanyId();
     const qs = cid ? `?companyId=${cid}` : "";
@@ -53,14 +68,15 @@ export default function TasksPage() {
       fetch(`/api/list/clients${qs}`, { headers: buildAuth() }).then(r => r.json()),
       fetch(`/api/list/projects${qs}`, { headers: buildAuth() }).then(r => r.json()),
       fetch(`/api/list/lawyers${qs}`, { headers: buildAuth() }).then(r => r.json()),
+      fetch(`/api/agents`, { headers: buildAuth() }).then(r => r.json()),
     ])
-      .then(([c, p, l]) => {
+      .then(([c, p, l, a]) => {
         setClients(Array.isArray(c) ? c : []);
         setProjects(Array.isArray(p) ? p : []);
         setLawyers(Array.isArray(l) ? l : []);
+        setAgents(Array.isArray(a) ? a : []);
       })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const load = () => {
@@ -84,6 +100,7 @@ export default function TasksPage() {
           assigneeId: parseInt(form.assigneeId || "0"),
           clientId: form.clientId ? parseInt(form.clientId) : undefined,
           projectId: form.projectId ? parseInt(form.projectId) : undefined,
+          agentId: form.isAgent && form.agentId ? parseInt(form.agentId) : undefined,
         }),
       });
       if (!res.ok) {
@@ -93,7 +110,10 @@ export default function TasksPage() {
       }
       toast.success("Task created");
       setShowModal(false);
-      setForm({ title: "", assigneeId: "", dueDate: "", clientId: "", projectId: "", description: "" });
+      setForm({
+        title: "", description: "", taskType: "", ipType: "", isAgent: false, agentId: "",
+        defendantName: "", opponent: "", court: "", assigneeId: "", dueDate: "", clientId: "", projectId: ""
+      });
       load();
     } catch (err:any) {
       toast.error(err.message || "Creation failed");
@@ -150,7 +170,7 @@ export default function TasksPage() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {["Title","Client","Project","Assignee","Due Date","Status","Actions"].map((h) => (
+                {["Title","Type","Client","Project","Assignee","Due Date","Status","Actions"].map((h) => (
                   <th key={h} className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -159,6 +179,7 @@ export default function TasksPage() {
               {tasks.map((t) => (
                 <tr key={t.id} className="hover:bg-gray-50">
                   <td className="px-3 py-2">{t.title}</td>
+                  <td className="px-3 py-2 capitalize">{t.taskType?.toLowerCase() || "-"}</td>
                   <td className="px-3 py-2">{t.client?.name || "-"}</td>
                   <td className="px-3 py-2">{t.project?.name || "-"}</td>
                   <td className="px-3 py-2">{t.assignee.name}</td>
@@ -181,10 +202,36 @@ export default function TasksPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-lg p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white w-full max-w-lg rounded-lg p-6 m-4">
             <h2 className="text-xl font-semibold mb-4">Add Task</h2>
             <div className="space-y-3">
+              {/* Task Type Selection */}
+              <select
+                className="w-full border p-2"
+                value={form.taskType}
+                onChange={e => setForm({ ...form, taskType: e.target.value, ipType: "" })}
+              >
+                <option value="">Select Task Type</option>
+                <option value="CORPORATE">Corporate</option>
+                <option value="IP">IP</option>
+                <option value="LITIGATION">Litigation</option>
+              </select>
+
+              {/* IP Sub-type (only shown when IP is selected) */}
+              {form.taskType === "IP" && (
+                <select
+                  className="w-full border p-2"
+                  value={form.ipType}
+                  onChange={e => setForm({ ...form, ipType: e.target.value })}
+                >
+                  <option value="">Select IP Type</option>
+                  {IP_TYPES.map(t => (
+                    <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
+                  ))}
+                </select>
+              )}
+
               <input
                 className="w-full border p-2"
                 placeholder="Title"
@@ -197,28 +244,59 @@ export default function TasksPage() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               ></textarea>
-              <select
-                className="w-full border p-2"
-                value={form.clientId}
-                onChange={e => setForm({ ...form, clientId: e.target.value, projectId: '' })}
-              >
-                <option value="">Select Client</option>
-                {clients.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <select
-                className="w-full border p-2"
-                value={form.projectId}
-                onChange={e => setForm({ ...form, projectId: e.target.value })}
-                disabled={!form.clientId}
-              >
-                <option value="">Select Project</option>
-                {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              {/* Lawyer — always loaded, not dependent on project */}
+
+              {/* Corporate / IP / Litigation - Client & Project */}
+              {form.taskType && form.taskType !== "" && (
+                <>
+                  <select
+                    className="w-full border p-2"
+                    value={form.clientId}
+                    onChange={e => setForm({ ...form, clientId: e.target.value, projectId: '' })}
+                  >
+                    <option value="">Select Client</option>
+                    {clients.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="w-full border p-2"
+                    value={form.projectId}
+                    onChange={e => setForm({ ...form, projectId: e.target.value })}
+                    disabled={!form.clientId}
+                  >
+                    <option value="">Select Project</option>
+                    {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              {/* Litigation specific fields */}
+              {form.taskType === "LITIGATION" && (
+                <>
+                  <input
+                    className="w-full border p-2"
+                    placeholder="Defendant Name (اسم الخصم)"
+                    value={form.defendantName}
+                    onChange={(e) => setForm({ ...form, defendantName: e.target.value })}
+                  />
+                  <input
+                    className="w-full border p-2"
+                    placeholder="Opponent (المختصم)"
+                    value={form.opponent}
+                    onChange={(e) => setForm({ ...form, opponent: e.target.value })}
+                  />
+                  <input
+                    className="w-full border p-2"
+                    placeholder="Court (المحكمة المختصة)"
+                    value={form.court}
+                    onChange={(e) => setForm({ ...form, court: e.target.value })}
+                  />
+                </>
+              )}
+
+              {/* Assign to Lawyer */}
               <select
                 className="w-full border p-2"
                 value={form.assigneeId}
@@ -229,6 +307,30 @@ export default function TasksPage() {
                   <option key={l.id} value={l.id}>{l.name}</option>
                 ))}
               </select>
+
+              {/* Agent checkbox (available for all types) */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isAgent"
+                  checked={form.isAgent}
+                  onChange={e => setForm({ ...form, isAgent: e.target.checked, agentId: "" })}
+                />
+                <label htmlFor="isAgent">Assign to Agent?</label>
+              </div>
+              {form.isAgent && (
+                <select
+                  className="w-full border p-2"
+                  value={form.agentId}
+                  onChange={e => setForm({ ...form, agentId: e.target.value })}
+                >
+                  <option value="">Select Agent</option>
+                  {agents.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              )}
+
               <input
                 type="date"
                 className="w-full border p-2"

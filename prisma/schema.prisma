@@ -138,6 +138,7 @@ model Agent {
   companyId   Int
   createdAt   DateTime  @default(now())
   company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tasks        Task[]
 }
 
 model Project {
@@ -713,6 +714,13 @@ model Task {
   id          Int        @id @default(autoincrement())
   title       String
   description String?
+  taskType    String?    // CORPORATE, IP, LITIGATION
+  ipType      String?    // TRADEMARK, PATENT, INDUSTRIAL_DESIGN, PLANT_VARIETY, COPYRIGHT, SOFTWARE
+  isAgent     Boolean    @default(false)
+  agentId     Int?
+  defendantName String?  // for Litigation
+  opponent    String?    // for Litigation
+  court       String?    // for Litigation
   clientId    Int?
   projectId   Int?
   assignerId  Int
@@ -724,6 +732,7 @@ model Task {
   assigner    User       @relation("taskAssigner", fields: [assignerId], references: [id])
   client      Client?    @relation("ClientTasks", fields: [clientId], references: [id])
   project     Project?   @relation("ProjectTasks", fields: [projectId], references: [id])
+  agent       Agent?     @relation(fields: [agentId], references: [id])
 
   @@index([assigneeId, dueDate])
 }

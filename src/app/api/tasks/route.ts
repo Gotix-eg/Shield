@@ -45,7 +45,8 @@ export async function GET(req: NextRequest) {
       client: { select: { name: true, id: true } },
       project: { select: { name: true, id: true } },
       assignee: { select: { name: true, id: true } },
-      assigner: { select: { name: true, id: true } }
+      assigner: { select: { name: true, id: true } },
+      agent: { select: { name: true, id: true } }
     },
     orderBy: { dueDate: 'asc' }
   });
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const data = await req.json();
-  const { title, description, clientId, projectId, assigneeId, dueDate } = data;
+  const { title, description, taskType, ipType, isAgent, agentId, defendantName, opponent, court, clientId, projectId, assigneeId, dueDate } = data;
   if (!title || !assigneeId || !dueDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
@@ -83,10 +84,17 @@ export async function POST(req: NextRequest) {
     data: {
       title,
       description,
-      clientId: clientId ?? null,
-      projectId: projectId ?? null,
+      taskType,
+      ipType,
+      isAgent: isAgent ?? false,
+      agentId: agentId ? Number(agentId) : null,
+      defendantName,
+      opponent,
+      court,
+      clientId: clientId ? Number(clientId) : null,
+      projectId: projectId ? Number(projectId) : null,
       assignerId: session.user.id,
-      assigneeId,
+      assigneeId: Number(assigneeId),
       dueDate: new Date(dueDate),
     }
   });
