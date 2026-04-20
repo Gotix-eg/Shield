@@ -33,6 +33,46 @@ interface Task {
 
 const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE"] as const;
 
+const IP_ACTIONS_BY_TYPE: Record<string, string[]> = {
+  TRADEMARK: [
+    "Trademark search", "Clearance opinion", "Application preparation", 
+    "Filing trademark application", "Office action response", "Publication monitoring",
+    "Opposition filing", "Opposition defense", "Registration processing", 
+    "Renewal filing", "Recordal (assignment / license / change of name)",
+    "Coexistence agreement", "Trademark watch service", "Infringement analysis",
+    "Cease and desist letter", "Customs recordal", "Cancellation action", "Appeal"
+  ],
+  PATENT: [
+    "Patentability search", "Prior art search", "Patent drafting", 
+    "Application preparation", "Patent filing", "Formal examination response",
+    "Substantive examination response", "Amendment filing", "Grant processing",
+    "Validation (for regional patents)", "Annuity / maintenance fee payment",
+    "Recordal (assignment / license)", "Patent watch", 
+    "Freedom-to-operate analysis", "Patent infringement analysis",
+    "Patent opposition", "Revocation action", "Appeal"
+  ],
+  INDUSTRIAL_DESIGN: [
+    "Design search", "Filing preparation", "Design application filing",
+    "Office action response", "Publication monitoring", "Registration processing",
+    "Renewal", "Recordal (assignment / license / change)", 
+    "Design watch", "Infringement assessment"
+  ],
+  PLANT_VARIETY: [
+    "Plant variety search", "Application preparation", "Filing application",
+    "Office action response", "Grant processing", "Renewal", "Recordal"
+  ],
+  COPYRIGHT: [
+    "Copyright advisory", "Ownership verification", "Copyright registration",
+    "Recordal (assignment / license)", "Copyright notice / documentation",
+    "Copyright monitoring", "Infringement assessment", "Takedown request"
+  ],
+  SOFTWARE: [
+    "Software search", "Clearance opinion", "Application preparation",
+    "Filing application", "Office action response", "Registration processing",
+    "Renewal", "Recordal", "Infringement analysis"
+  ]
+};
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -418,7 +458,7 @@ const [form, setForm] = useState({
                       onChange={e => setForm({ ...form, ipAction: e.target.value })}
                     >
                       <option value="">Select Action</option>
-                      {IP_ACTIONS.map(a => (
+                      {(IP_ACTIONS_BY_TYPE[form.ipType] || []).map(a => (
                         <option key={a} value={a}>{a}</option>
                       ))}
                     </select>
