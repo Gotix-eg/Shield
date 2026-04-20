@@ -736,6 +736,7 @@ model Task {
   taskType    String?
   ipType      String?
   ipAction   String?
+  actionDetails Json?     // stores action-specific fields as JSON
   isAgent     Boolean    @default(false)
   agentId     Int?
   defendantName String?
