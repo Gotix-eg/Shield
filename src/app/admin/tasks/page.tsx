@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuth } from "@/lib/auth";
 import { Download, Filter, Upload } from "lucide-react";
+import { COUNTRIES, ACTION_FIELDS } from "@/lib/countries";
 function getCompanyId(): number | undefined {
   const t = getAuth();
   if (!t) return undefined;
@@ -100,6 +101,7 @@ const [form, setForm] = useState({
     taskType: "",
     ipType: "",
     ipAction: "",
+    actionDetails: {} as Record<string, any>,
     isAgent: false,
     agentId: "",
     defendantName: "",
@@ -277,7 +279,7 @@ const [form, setForm] = useState({
       toast.success("Task created");
       setShowModal(false);
       setForm({
-        title: "", description: "", taskType: "", ipType: "", ipAction: "", isAgent: false, agentId: "",
+        title: "", description: "", taskType: "", ipType: "", ipAction: "", actionDetails: {}, isAgent: false, agentId: "",
         defendantName: "", opponent: "", court: "", assigneeIds: [], dueDate: "", clientId: "", projectId: ""
       });
       load();
@@ -460,14 +462,87 @@ const [form, setForm] = useState({
                     <select
                       className="w-full border p-2"
                       value={form.ipAction}
-                      onChange={e => setForm({ ...form, ipAction: e.target.value })}
+                      onChange={e => setForm({ ...form, ipAction: e.target.value, actionDetails: {} })}
                     >
                       <option value="">Select Action</option>
                       {(IP_ACTIONS_BY_TYPE[form.ipType] || []).map(a => (
                         <option key={a} value={a}>{a}</option>
                       ))}
                     </select>
-                  )}
+                    {form.ipAction && ACTION_FIELDS[form.ipAction] && (
+                      <div className="border p-3 rounded mt-2 space-y-3">
+                        <p className="font-medium text-sm text-gray-700">{form.ipAction} Details</p>
+                        {ACTION_FIELDS[form.ipAction].map(field => (
+                          <div key={field.name}>
+                            {field.type === "select" && (
+                              <select
+                                className="w-full border p-2 text-sm"
+                                value={form.actionDetails[field.name] || ""}
+                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                              >
+                                <option value="">{field.label}</option>
+                                {field.options?.map(opt => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                            )}
+                            {field.type === "text" && (
+                              <input
+                                type="text"
+                                className="w-full border p-2 text-sm"
+                                placeholder={field.label}
+                                value={form.actionDetails[field.name] || ""}
+                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                              />
+                            )}
+                            {field.type === "date" && (
+                              <input
+                                type="date"
+                                className="w-full border p-2 text-sm"
+                                placeholder={field.label}
+                                value={form.actionDetails[field.name] || ""}
+                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                              />
+                            )}
+                            {field.type === "textarea" && (
+                              <textarea
+                                className="w-full border p-2 text-sm"
+                                placeholder={field.label}
+                                rows={2}
+                                value={form.actionDetails[field.name] || ""}
+                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                              />
+                            )}
+                            {field.type === "number" && (
+                              <input
+                                type="number"
+                                className="w-full border p-2 text-sm"
+                                placeholder={field.label}
+                                value={form.actionDetails[field.name] || ""}
+                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                              />
+                            )}
+                            {field.type === "boolean" && (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  id={`${field.name}-${form.ipAction}`}
+                                  checked={form.actionDetails[field.name] || false}
+                                  onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.checked } })}
+                                />
+                                <label htmlFor={`${field.name}-${form.ipAction}`} className="text-sm">{field.label}</label>
+                              </div>
+                            )}
+                            {field.type === "file" && (
+                              <div>
+                                <label className="block text-sm text-gray-600 mb-1">{field.label}</label>
+                                <input type="file" className="w-full border p-2 text-sm" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </>
               )}
 
