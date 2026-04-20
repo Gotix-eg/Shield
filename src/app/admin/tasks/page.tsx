@@ -20,6 +20,7 @@ interface Task {
   dueDate: string;
   taskType?: string;
   ipType?: string;
+  ipAction?: string;
   isAgent: boolean;
   agent?: { id: number; name: string } | null;
   defendantName?: string;
@@ -46,11 +47,14 @@ export default function TasksPage() {
     assigneeId: "",
     agentId: "",
   });
-  const [form, setForm] = useState({
+  const IP_ACTIONS = ["Filing", "Petition", "Opposition", "Assignment", "Renewal", "Inscription/Amendment"] as const;
+
+const [form, setForm] = useState({
     title: "",
     description: "",
     taskType: "",
     ipType: "",
+    ipAction: "",
     isAgent: false,
     agentId: "",
     defendantName: "",
@@ -228,7 +232,7 @@ export default function TasksPage() {
       toast.success("Task created");
       setShowModal(false);
       setForm({
-        title: "", description: "", taskType: "", ipType: "", isAgent: false, agentId: "",
+        title: "", description: "", taskType: "", ipType: "", ipAction: "", isAgent: false, agentId: "",
         defendantName: "", opponent: "", court: "", assigneeIds: [], dueDate: "", clientId: "", projectId: ""
       });
       load();
@@ -406,6 +410,18 @@ export default function TasksPage() {
                     <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
                   ))}
                 </select>
+                {form.taskType === "IP" && form.ipType && (
+                  <select
+                    className="w-full border p-2"
+                    value={form.ipAction}
+                    onChange={e => setForm({ ...form, ipAction: e.target.value })}
+                  >
+                    <option value="">Select Action</option>
+                    {IP_ACTIONS.map(a => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                )}
               )}
 
               <input

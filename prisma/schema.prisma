@@ -735,6 +735,7 @@ model Task {
   description String?
   taskType    String?
   ipType      String?
+  ipAction   String?
   isAgent     Boolean    @default(false)
   agentId     Int?
   defendantName String?
