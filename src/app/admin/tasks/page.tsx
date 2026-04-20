@@ -277,19 +277,19 @@ export default function TasksPage() {
                 <>
                   <input
                     className="w-full border p-2"
-                    placeholder="Defendant Name (اسم الخصم)"
+                    placeholder="Defendant Name"
                     value={form.defendantName}
                     onChange={(e) => setForm({ ...form, defendantName: e.target.value })}
                   />
                   <input
                     className="w-full border p-2"
-                    placeholder="Opponent (المختصم)"
+                    placeholder="Opponent"
                     value={form.opponent}
                     onChange={(e) => setForm({ ...form, opponent: e.target.value })}
                   />
                   <input
                     className="w-full border p-2"
-                    placeholder="Court (المحكمة المختصة)"
+                    placeholder="Court"
                     value={form.court}
                     onChange={(e) => setForm({ ...form, court: e.target.value })}
                   />
