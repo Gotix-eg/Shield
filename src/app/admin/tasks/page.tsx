@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuth } from "@/lib/auth";
-import { Download, Filter } from "lucide-react";
+import { Download, Filter, Upload } from "lucide-react";
 function getCompanyId(): number | undefined {
   const t = getAuth();
   if (!t) return undefined;
@@ -42,6 +42,7 @@ export default function TasksPage() {
     taskType: "",
     ipType: "",
     clientId: "",
+    projectId: "",
     assigneeId: "",
     agentId: "",
   });
@@ -106,6 +107,7 @@ export default function TasksPage() {
       if (filters.taskType && t.taskType !== filters.taskType) return false;
       if (filters.ipType && t.ipType !== filters.ipType) return false;
       if (filters.clientId && t.client?.id !== Number(filters.clientId)) return false;
+      if (filters.projectId && t.project?.id !== Number(filters.projectId)) return false;
       if (filters.assigneeId && !t.assignees?.some(a => a.id === Number(filters.assigneeId))) return false;
       if (filters.agentId && t.agent?.id !== Number(filters.agentId)) return false;
       return true;
@@ -113,19 +115,22 @@ export default function TasksPage() {
   }, [tasks, filters]);
 
   const exportToExcel = () => {
-    const headers = ["Title", "Type", "Client", "Project", "Assignees", "Due Date", "Status", "Description", "Defendant", "Opponent", "Court"];
+    const headers = ["Title", "Type", "IP Type", "Client", "Project", "Assignees", "Agent", "Due Date", "Status", "Description", "Defendant", "Opponent", "Court", "Created At"];
     const rows = filteredTasks.map(t => [
       t.title,
       t.taskType || "",
+      t.ipType || "",
       t.client?.name || "",
       t.project?.name || "",
       t.assignees?.map(a => a.name).join(", ") || "",
+      t.agent?.name || "",
       new Date(t.dueDate).toLocaleDateString(),
       t.status,
       t.description || "",
       t.defendantName || "",
       t.opponent || "",
       t.court || "",
+      t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "",
     ]);
     const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
@@ -137,8 +142,69 @@ export default function TasksPage() {
     URL.revokeObjectURL(url);
   };
 
+  const importFromCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      const lines = text.split("\n").filter(l => l.trim());
+      const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim());
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(",").map(v => v.replace(/"/g, "").trim());
+        const row: any = {};
+        headers.forEach((h, idx) => { row[h] = values[idx]; });
+        
+        // Find client and project IDs
+        const client = clients.find(c => c.name === row.Client);
+        const project = projects.find(p => p.name === row.Project);
+        
+        // Find assignee IDs
+        const assigneeNames = row.Assignees?.split(";").map((n: string) => n.trim()) || [];
+        const assigneeIds = assigneeNames.map((name: string) => {
+          const lawyer = lawyers.find(l => l.name === name);
+          return lawyer?.id;
+        }).filter(Boolean);
+        
+        // Find agent ID
+        const agent = row.Agent ? agents.find(a => a.name === row.Agent) : null;
+        
+        if (row.Title && assigneeIds.length > 0 && row["Due Date"]) {
+          try {
+            await fetch("/api/tasks", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...buildAuth() },
+              body: JSON.stringify({
+                title: row.Title,
+                description: row.Description,
+                taskType: row.Type || null,
+                ipType: row["IP Type"] || null,
+                clientId: client?.id,
+                projectId: project?.id,
+                assigneeIds,
+                agentId: agent?.id,
+                dueDate: new Date(row["Due Date"]).toISOString(),
+                isAgent: !!agent,
+                defendantName: row.Defendant || null,
+                opponent: row.Opponent || null,
+                court: row.Court || null,
+              }),
+            });
+          } catch (err) {
+            console.error("Import error:", err);
+          }
+        }
+      }
+      toast.success("Import completed");
+      load();
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
   const clearFilters = () => {
-    setFilters({ status: "", taskType: "", ipType: "", clientId: "", assigneeId: "", agentId: "" });
+    setFilters({ status: "", taskType: "", ipType: "", clientId: "", projectId: "", assigneeId: "", agentId: "" });
   };
 
   const addTask = async () => {
@@ -214,6 +280,10 @@ export default function TasksPage() {
           <button onClick={()=>setShowFilters(!showFilters)} className="flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-50">
             <Filter className="w-4 h-4" /> Filters
           </button>
+          <label className="flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-50 cursor-pointer">
+            <Upload className="w-4 h-4" /> Import
+            <input type="file" accept=".csv" onChange={importFromCSV} className="hidden" />
+          </label>
           <button onClick={exportToExcel} className="flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-50">
             <Download className="w-4 h-4" /> Export
           </button>
@@ -247,9 +317,13 @@ export default function TasksPage() {
               <option value="SOFTWARE">Software</option>
             </select>
           )}
-          <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value })} className="border p-2 rounded">
+          <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value, projectId: "" })} className="border p-2 rounded">
             <option value="">All Clients</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select value={filters.projectId} onChange={e => setFilters({ ...filters, projectId: e.target.value })} className="border p-2 rounded" disabled={!filters.clientId}>
+            <option value="">All Projects</option>
+            {projects.filter(p => !filters.clientId || p.clientId === Number(filters.clientId)).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <select value={filters.assigneeId} onChange={e => setFilters({ ...filters, assigneeId: e.target.value })} className="border p-2 rounded">
             <option value="">All Lawyers</option>
