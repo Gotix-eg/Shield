@@ -23,6 +23,12 @@ export default function NewProjectPage() {
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState<number | "">("");
   const [status, setStatus] = useState("OPEN");
+  
+  // Assignee Type
+  const [assigneeType, setAssigneeType] = useState("LAWYER");
+  const [agentFees, setAgentFees] = useState("");
+  const [clientWillPay, setClientWillPay] = useState(false);
+  const [officePercentage, setOfficePercentage] = useState("");
 
   // Billing
   const [billingType, setBillingType] = useState<"HOURS" | "FIXED">("HOURS");
@@ -121,6 +127,10 @@ export default function NewProjectPage() {
             (billingType === "HOURS" && rateSource === "PROJECT") || billingType === "FIXED"
               ? billingCurrency
               : null,
+          assigneeType,
+          agentFees: agentFees ? parseFloat(agentFees) : null,
+          clientWillPay,
+          officePercentage: officePercentage ? parseFloat(officePercentage) : null,
         }),
       });
       if (!res.ok) throw new Error("Create failed");
@@ -269,6 +279,72 @@ export default function NewProjectPage() {
                   <option value="CLOSED">Closed</option>
                 </select>
               </div>
+            </div>
+
+            {/* Assignee Type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                  Handled By
+                </label>
+                <select
+                  value={assigneeType}
+                  onChange={(e) => setAssigneeType(e.target.value)}
+                  className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                >
+                  <option value="LAWYER">Lawyer</option>
+                  <option value="AGENT">Agent</option>
+                  <option value="BOTH">Both</option>
+                </select>
+              </div>
+
+              {(assigneeType === "AGENT" || assigneeType === "BOTH") && (
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Agent Fees
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={agentFees}
+                    onChange={(e) => setAgentFees(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Client Payment */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="clientWillPay"
+                  checked={clientWillPay}
+                  onChange={(e) => setClientWillPay(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="clientWillPay" className="text-sm text-slate-300">
+                  Client will pay directly
+                </label>
+              </div>
+
+              {clientWillPay && (
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Office Percentage
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={officePercentage}
+                    onChange={(e) => setOfficePercentage(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                    placeholder="e.g. 20"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

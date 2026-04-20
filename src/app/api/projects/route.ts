@@ -71,7 +71,7 @@ export const POST = withCompany(async (request: NextRequest) => {
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null } = await request.json();
+  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, clientWillPay = false, officePercentage = null } = await request.json();
   if (!name || !clientId)
     return NextResponse.json({ error: "name and clientId required" }, { status: 400 });
   if (advanceAmount !== undefined && advanceAmount !== null && typeof advanceAmount !== "number")
@@ -159,6 +159,10 @@ export const POST = withCompany(async (request: NextRequest) => {
       code: projCode,
       accountId: revAccount.id,
       companyId,
+      assigneeType,
+      agentFees: agentFees ? Number(agentFees) : null,
+      clientWillPay,
+      officePercentage: officePercentage ? Number(officePercentage) : null,
     },
   });
     return NextResponse.json(project, { status: 201 });

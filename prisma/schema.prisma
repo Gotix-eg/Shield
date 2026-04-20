@@ -163,6 +163,14 @@ model Project {
   budget             Decimal?
   endDate            DateTime?
   startDate          DateTime?
+  /// Who is handling the project: LAWYER, AGENT, or BOTH
+  assigneeType       String?             @default("LAWYER")
+  /// Agent fees (if agent is involved)
+  agentFees          Decimal?
+  /// Will the client pay directly?
+  clientWillPay      Boolean             @default(false)
+  /// Office percentage from client payment
+  officePercentage   Decimal?
   advancePayments    AdvancePayment[]
   approvalScopes     ApprovalScope[]
   documents          Document[]
