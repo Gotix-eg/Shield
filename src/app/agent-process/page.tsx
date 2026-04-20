@@ -121,6 +121,14 @@ export default function AgentProcessPage() {
   };
 
   const updateStatus = async (projectId: number, status: string) => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAuth()}` },
+        body: JSON.stringify({ agentStatus: status }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Status updated");
       const updated = await fetch(`/api/projects?agentId=${selectedAgent}`, { headers: { Authorization: `Bearer ${getAuth()}` } }).then(r => r.json());
       setProjects(Array.isArray(updated) ? updated : []);
     } catch {
