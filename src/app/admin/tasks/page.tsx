@@ -40,8 +40,10 @@ export default function TasksPage() {
   const [filters, setFilters] = useState({
     status: "",
     taskType: "",
+    ipType: "",
     clientId: "",
     assigneeId: "",
+    agentId: "",
   });
   const [form, setForm] = useState({
     title: "",
@@ -102,8 +104,10 @@ export default function TasksPage() {
     return tasks.filter(t => {
       if (filters.status && t.status !== filters.status) return false;
       if (filters.taskType && t.taskType !== filters.taskType) return false;
+      if (filters.ipType && t.ipType !== filters.ipType) return false;
       if (filters.clientId && t.client?.id !== Number(filters.clientId)) return false;
       if (filters.assigneeId && !t.assignees?.some(a => a.id === Number(filters.assigneeId))) return false;
+      if (filters.agentId && t.agent?.id !== Number(filters.agentId)) return false;
       return true;
     });
   }, [tasks, filters]);
@@ -134,7 +138,7 @@ export default function TasksPage() {
   };
 
   const clearFilters = () => {
-    setFilters({ status: "", taskType: "", clientId: "", assigneeId: "" });
+    setFilters({ status: "", taskType: "", ipType: "", clientId: "", assigneeId: "", agentId: "" });
   };
 
   const addTask = async () => {
@@ -219,19 +223,30 @@ export default function TasksPage() {
       </div>
 
       {showFilters && (
-        <div className="bg-gray-50 p-4 rounded-lg mb-4 grid grid-cols-4 gap-4">
+        <div className="bg-gray-50 p-4 rounded-lg mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <select value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })} className="border p-2 rounded">
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
             <option value="IN_PROGRESS">In Progress</option>
             <option value="DONE">Done</option>
           </select>
-          <select value={filters.taskType} onChange={e => setFilters({ ...filters, taskType: e.target.value })} className="border p-2 rounded">
+          <select value={filters.taskType} onChange={e => setFilters({ ...filters, taskType: e.target.value, ipType: "" })} className="border p-2 rounded">
             <option value="">All Types</option>
             <option value="CORPORATE">Corporate</option>
             <option value="IP">IP</option>
             <option value="LITIGATION">Litigation</option>
           </select>
+          {filters.taskType === "IP" && (
+            <select value={filters.ipType} onChange={e => setFilters({ ...filters, ipType: e.target.value })} className="border p-2 rounded">
+              <option value="">All IP Types</option>
+              <option value="TRADEMARK">Trademark</option>
+              <option value="PATENT">Patent</option>
+              <option value="INDUSTRIAL_DESIGN">Industrial Design</option>
+              <option value="PLANT_VARIETY">Plant Variety</option>
+              <option value="COPYRIGHT">Copyright</option>
+              <option value="SOFTWARE">Software</option>
+            </select>
+          )}
           <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value })} className="border p-2 rounded">
             <option value="">All Clients</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -239,6 +254,10 @@ export default function TasksPage() {
           <select value={filters.assigneeId} onChange={e => setFilters({ ...filters, assigneeId: e.target.value })} className="border p-2 rounded">
             <option value="">All Lawyers</option>
             {lawyers.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+          <select value={filters.agentId} onChange={e => setFilters({ ...filters, agentId: e.target.value })} className="border p-2 rounded">
+            <option value="">All Agents</option>
+            {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <button onClick={clearFilters} className="text-blue-600 hover:underline text-sm">Clear Filters</button>
         </div>
