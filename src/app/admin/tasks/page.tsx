@@ -400,28 +400,30 @@ const [form, setForm] = useState({
 
               {/* IP Sub-type (only shown when IP is selected) */}
               {form.taskType === "IP" && (
-                <select
-                  className="w-full border p-2"
-                  value={form.ipType}
-                  onChange={e => setForm({ ...form, ipType: e.target.value })}
-                >
-                  <option value="">Select IP Type</option>
-                  {IP_TYPES.map(t => (
-                    <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
-                  ))}
-                </select>
-                {form.taskType === "IP" && form.ipType && (
+                <>
                   <select
                     className="w-full border p-2"
-                    value={form.ipAction}
-                    onChange={e => setForm({ ...form, ipAction: e.target.value })}
+                    value={form.ipType}
+                    onChange={e => setForm({ ...form, ipType: e.target.value })}
                   >
-                    <option value="">Select Action</option>
-                    {IP_ACTIONS.map(a => (
-                      <option key={a} value={a}>{a}</option>
+                    <option value="">Select IP Type</option>
+                    {IP_TYPES.map(t => (
+                      <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
                     ))}
                   </select>
-                )}
+                  {form.ipType && (
+                    <select
+                      className="w-full border p-2"
+                      value={form.ipAction}
+                      onChange={e => setForm({ ...form, ipAction: e.target.value })}
+                    >
+                      <option value="">Select Action</option>
+                      {IP_ACTIONS.map(a => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
+                  )}
+                </>
               )}
 
               <input
