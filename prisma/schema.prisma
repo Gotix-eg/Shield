@@ -31,6 +31,7 @@ model Company {
   payrollBatches     PayrollBatch[]
   projects           Project[]
   users              User[]
+  agents             Agent[]
 }
 
 model User {
@@ -123,6 +124,25 @@ model Client {
   reportAccesses     ReportAccess[]
   tasks              Task[]              @relation("ClientTasks")
   trustAccounts      TrustAccount[]
+  agents            Agent[]
+}
+
+model Agent {
+  id            Int       @id @default(autoincrement())
+  name          String
+  country       String?
+  city          String?
+  address      String?
+  phone        String?
+  email        String?
+  taxNumber    String?
+  clientId     Int?
+  projectId    Int?
+  companyId   Int
+  createdAt   DateTime  @default(now())
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Project {
@@ -163,6 +183,7 @@ model Project {
   owner              User                @relation(fields: [ownerId], references: [id])
   assignments        ProjectAssignment[]
   attachments        ProjectAttachment[]
+  agents             Agent[]
   reportAccesses     ReportAccess[]
   tasks              Task[]              @relation("ProjectTasks")
   timeEntries        TimeEntry[]

@@ -9,9 +9,9 @@ type UserRole = string; // roles now dynamic
 interface NavLink { href:string; label:string; key:string }
 const ADMIN_ROLES = ["ADMIN","MANAGING_PARTNER","ACCOUNTANT_MASTER","ACCOUNTANT_ASSISTANT","LAWYER_PARTNER","LAWYER_MANAGER"];
 const ROLE_PAGES: Record<string,string[]> = {
-  OWNER:["clients","projects","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  MANAGING_PARTNER:["clients","projects","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  ADMIN:["clients","projects","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
+  OWNER:["clients","projects","agents","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
+  MANAGING_PARTNER:["clients","projects","agents","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
+  ADMIN:["clients","projects","agents","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
   ACCOUNTANT_MASTER:["invoices","reports","accounts","trust","leaves","payroll","notifications"],
   ACCOUNTANT_ASSISTANT:["invoices","accounts","leaves","notifications"],
   LAWYER_PARTNER:["clients","projects","time","reports","leaves","settings"],
@@ -25,6 +25,7 @@ const ROLE_PAGES: Record<string,string[]> = {
   const links:NavLink[] = [
     { href: "/clients",   label: "Clients", key:"clients" },
     { href: "/projects", label: "Projects", key:"projects" },
+    { href: "/agents", label: "Agents", key:"agents" },
     { href: "/admin/tasks", label: "Tasks", key:"tasks" },
     { href: "/time", label: "Time", key:"time" },
     { href: "/expenses", label: "Expenses", key:"expenses" },
