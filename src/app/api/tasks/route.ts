@@ -36,22 +36,34 @@ export async function GET(req: NextRequest) {
       }
     : {};
 
-  // user-level filter (non-managers see فقط التاسكات المخصصة لهم)
-  const userFilter = isManager ? {} : { assigneeId: session.user.id };
+  // user-level filter (non-managers see their tasks)
+  const userId = session.user.id;
+  const userFilter = isManager ? {} : { 
+    assigneeIds: { contains: String(userId) }
+  };
 
   const tasks = await prisma.task.findMany({
     where: { ...companyFilter, ...userFilter },
     include: {
       client: { select: { name: true, id: true } },
       project: { select: { name: true, id: true } },
-      assignee: { select: { name: true, id: true } },
       assigner: { select: { name: true, id: true } },
       agent: { select: { name: true, id: true } }
     },
     orderBy: { dueDate: 'asc' }
   });
 
-  return NextResponse.json(tasks);
+  // Fetch assignee users for each task
+  const tasksWithAssignees = await Promise.all(tasks.map(async (task) => {
+    const assigneeIds = task.assigneeIds.split(',').map(Number).filter(Boolean);
+    const assignees = await prisma.user.findMany({
+      where: { id: { in: assigneeIds } },
+      select: { id: true, name: true }
+    });
+    return { ...task, assignee: assignees[0], assignees };
+  }));
+
+  return NextResponse.json(tasksWithAssignees);
 }
 
 // POST /api/tasks -> create new task
@@ -76,10 +88,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const data = await req.json();
-  const { title, description, taskType, ipType, isAgent, agentId, defendantName, opponent, court, clientId, projectId, assigneeId, dueDate } = data;
-  if (!title || !assigneeId || !dueDate) {
+  const { title, description, taskType, ipType, isAgent, agentId, defendantName, opponent, court, clientId, projectId, assigneeIds, dueDate } = data;
+  
+  if (!title || !assigneeIds || !dueDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
+
+  const assigneeIdArray = Array.isArray(assigneeIds) ? assigneeIds.map(Number) : [Number(assigneeIds)];
+  const assigneeIdsStr = assigneeIdArray.join(',');
+
   const task = await prisma.task.create({
     data: {
       title,
@@ -94,23 +111,25 @@ export async function POST(req: NextRequest) {
       clientId: clientId ? Number(clientId) : null,
       projectId: projectId ? Number(projectId) : null,
       assignerId: session.user.id,
-      assigneeId: Number(assigneeId),
+      assigneeIds: assigneeIdsStr,
       dueDate: new Date(dueDate),
     }
   });
-  if (projectId) {
-    await prisma.projectAssignment.upsert({
-      where: { userId_projectId: { userId: assigneeId, projectId } },
-      create: { userId: assigneeId, projectId },
-      update: {},
-    });
-  }
-  // create notification to assignee
-  await prisma.notification.create({ data: { userId: assigneeId, type: 'TASK_ASSIGN', message: `You were assigned task "${title}"` } });
-  // send email if user has email
-  const assignee = await prisma.user.findUnique({ where: { id: assigneeId }, select:{ email:true } });
-  if (assignee?.email) {
-    try { await import('@/lib/email').then(m=>m.sendMail(assignee.email, 'New Task Assigned', `<p>You have a new task: <b>${title}</b></p>`)); } catch {}
+
+  // Create notifications and project assignments for each assignee
+  for (const assigneeId of assigneeIdArray) {
+    if (projectId) {
+      await prisma.projectAssignment.upsert({
+        where: { userId_projectId: { userId: assigneeId, projectId: Number(projectId) } },
+        create: { userId: assigneeId, projectId: Number(projectId) },
+        update: {},
+      });
+    }
+    await prisma.notification.create({ data: { userId: assigneeId, type: 'TASK_ASSIGN', message: `You were assigned task "${title}"` } });
+    const assignee = await prisma.user.findUnique({ where: { id: assigneeId }, select:{ email:true } });
+    if (assignee?.email) {
+      try { await import('@/lib/email').then(m=>m.sendMail(assignee.email, 'New Task Assigned', `<p>You have a new task: <b>${title}</b></p>`)); } catch {}
+    }
   }
   return NextResponse.json(task, { status: 201 });
 }

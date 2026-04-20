@@ -26,7 +26,7 @@ interface Task {
   court?: string;
   client?: { id: number; name: string } | null;
   project?: { id: number; name: string } | null;
-  assignee: { id: number; name: string };
+  assignees: { id: number; name: string }[];
 }
 
 const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE"] as const;
@@ -45,7 +45,7 @@ export default function TasksPage() {
     defendantName: "",
     opponent: "",
     court: "",
-    assigneeId: "",
+    assigneeIds: [] as number[],
     dueDate: "",
     clientId: "",
     projectId: "",
@@ -97,7 +97,7 @@ export default function TasksPage() {
         headers: { "Content-Type": "application/json", ...buildAuth() },
         body: JSON.stringify({
           ...form,
-          assigneeId: parseInt(form.assigneeId || "0"),
+          assigneeIds: form.assigneeIds,
           clientId: form.clientId ? parseInt(form.clientId) : undefined,
           projectId: form.projectId ? parseInt(form.projectId) : undefined,
           agentId: form.isAgent && form.agentId ? parseInt(form.agentId) : undefined,
@@ -112,7 +112,7 @@ export default function TasksPage() {
       setShowModal(false);
       setForm({
         title: "", description: "", taskType: "", ipType: "", isAgent: false, agentId: "",
-        defendantName: "", opponent: "", court: "", assigneeId: "", dueDate: "", clientId: "", projectId: ""
+        defendantName: "", opponent: "", court: "", assigneeIds: [], dueDate: "", clientId: "", projectId: ""
       });
       load();
     } catch (err:any) {
@@ -182,7 +182,7 @@ export default function TasksPage() {
                   <td className="px-3 py-2 capitalize">{t.taskType?.toLowerCase() || "-"}</td>
                   <td className="px-3 py-2">{t.client?.name || "-"}</td>
                   <td className="px-3 py-2">{t.project?.name || "-"}</td>
-                  <td className="px-3 py-2">{t.assignee.name}</td>
+                  <td className="px-3 py-2">{t.assignees?.map(a => a.name).join(", ") || "-"}</td>
                   <td className="px-3 py-2">{new Date(t.dueDate).toLocaleDateString()}</td>
                   <td className="px-3 py-2 capitalize">{t.status.toLowerCase()}</td>
                   <td className="px-3 py-2 space-x-2">
@@ -296,17 +296,27 @@ export default function TasksPage() {
                 </>
               )}
 
-              {/* Assign to Lawyer */}
-              <select
-                className="w-full border p-2"
-                value={form.assigneeId}
-                onChange={e => setForm({ ...form, assigneeId: e.target.value })}
-              >
-                <option value="">Select Lawyer</option>
+              {/* Assign to Lawyers (multiple) */}
+              <div className="border p-2 rounded max-h-40 overflow-y-auto">
+                <p className="text-sm font-medium mb-2">Select Lawyers</p>
                 {lawyers.map(l => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
+                  <div key={l.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`lawyer-${l.id}`}
+                      checked={form.assigneeIds.includes(l.id)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setForm({ ...form, assigneeIds: [...form.assigneeIds, l.id] });
+                        } else {
+                          setForm({ ...form, assigneeIds: form.assigneeIds.filter(id => id !== l.id) });
+                        }
+                      }}
+                    />
+                    <label htmlFor={`lawyer-${l.id}`}>{l.name}</label>
+                  </div>
                 ))}
-              </select>
+              </div>
 
               {/* Agent checkbox (available for all types) */}
               <div className="flex items-center gap-2">
@@ -342,7 +352,7 @@ export default function TasksPage() {
               <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded">Cancel</button>
               <button
                 onClick={addTask}
-                disabled={!form.title.trim() || !form.assigneeId || !form.dueDate}
+                disabled={!form.title.trim() || form.assigneeIds.length === 0 || !form.dueDate}
                 className="px-4 py-2 rounded text-white disabled:opacity-50"
                 style={{backgroundColor: (!form.title.trim() || !form.assigneeId || !form.dueDate) ? '#94a3b8':'#2563eb'}}
               >

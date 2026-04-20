@@ -62,7 +62,6 @@ model User {
   projectAttachments    ProjectAttachment[]
   ReportAccess          ReportAccess[]
   createdDeductions     SalaryDeduction[]    @relation("UserCreatedDeductions")
-  tasksAssigned         Task[]               @relation("taskAssignee")
   tasksCreated          Task[]               @relation("taskAssigner")
   accountantApprovals   TimeEntry[]          @relation("accountantApproval")
   managerApprovals      TimeEntry[]          @relation("managerApproval")
@@ -714,27 +713,26 @@ model Task {
   id          Int        @id @default(autoincrement())
   title       String
   description String?
-  taskType    String?    // CORPORATE, IP, LITIGATION
-  ipType      String?    // TRADEMARK, PATENT, INDUSTRIAL_DESIGN, PLANT_VARIETY, COPYRIGHT, SOFTWARE
+  taskType    String?
+  ipType      String?
   isAgent     Boolean    @default(false)
   agentId     Int?
-  defendantName String?  // for Litigation
-  opponent    String?    // for Litigation
-  court       String?    // for Litigation
+  defendantName String?
+  opponent    String?
+  court       String?
   clientId    Int?
   projectId   Int?
   assignerId  Int
-  assigneeId  Int
+  assigneeIds String   @default("") // comma-separated user IDs for multiple assignees
   dueDate     DateTime
   status      TaskStatus @default(PENDING)
   createdAt   DateTime   @default(now())
-  assignee    User       @relation("taskAssignee", fields: [assigneeId], references: [id])
   assigner    User       @relation("taskAssigner", fields: [assignerId], references: [id])
   client      Client?    @relation("ClientTasks", fields: [clientId], references: [id])
   project     Project?   @relation("ProjectTasks", fields: [projectId], references: [id])
   agent       Agent?     @relation(fields: [agentId], references: [id])
 
-  @@index([assigneeId, dueDate])
+  @@index([assigneeIds, dueDate])
 }
 
 enum Role {
