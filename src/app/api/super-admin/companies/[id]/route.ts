@@ -16,6 +16,37 @@ function isSuperAdmin(req: NextRequest): boolean {
   }
 }
 
+// PATCH /api/super-admin/companies/[id]
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  if (!isSuperAdmin(req)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+  const id = Number(params.id);
+  if (isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+
+  const body = await req.json();
+  const { status, subscriptionEnds, maxSeats } = body;
+
+  try {
+    const updated = await prisma.company.update({
+      where: { id },
+      data: {
+        ...(status && { status }),
+        ...(subscriptionEnds !== undefined && { 
+          subscriptionEnds: subscriptionEnds ? new Date(subscriptionEnds) : null 
+        }),
+        ...(maxSeats !== undefined && { maxSeats }),
+      },
+    });
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    console.error('Update company error:', error);
+    return NextResponse.json({ error: 'Failed to update company', details: error.message }, { status: 500 });
+  }
+}
+
 // DELETE /api/super-admin/companies/[id]
 export async function DELETE(
   req: NextRequest,
