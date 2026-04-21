@@ -53,10 +53,10 @@ const IP_ACTIONS_BY_TYPE: Record<string, string[]> = {
     "Patent opposition", "Revocation action", "Appeal"
   ],
   INDUSTRIAL_DESIGN: [
-    "Design search (ID)", "Filing preparation (ID)", "Application filing (ID)",
-    "Office action response (ID)", "Publication monitoring (ID)", "Registration processing (ID)",
-    "Renewal (ID)", "Recordal (ID)", 
-    "Design watch (ID)", "Infringement assessment (ID)"
+    "Design search", "Filing preparation", "Application filing",
+    "Office action response", "Publication monitoring", "Registration processing",
+    "Renewal", "Recordal", 
+    "Design watch", "Infringement assessment"
   ],
   PLANT_VARIETY: [
     "Plant variety search", "Application preparation", "Filing application",

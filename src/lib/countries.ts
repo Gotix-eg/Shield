@@ -243,18 +243,18 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "status", label: "Status", type: "text" },
   ],
   // INDUSTRIAL DESIGN ACTIONS
-  "Design search (ID)": [
+  "Design search": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "designTitle", label: "Design Title", type: "text" },
     { name: "applicant", label: "Applicant", type: "text" },
   ],
-  "Filing preparation (ID)": [
+  "Filing preparation": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "designTitle", label: "Design Title", type: "text" },
     { name: "applicant", label: "Applicant", type: "text" },
     { name: "locarnoClass", label: "Locarno Class", type: "text" },
   ],
-  "Application filing (ID)": [
+  "Application filing": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "designTitle", label: "Design Title", type: "text" },
     { name: "applicant", label: "Applicant", type: "text" },
@@ -270,7 +270,7 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "client", label: "Client", type: "text" },
     { name: "agent", label: "Agent", type: "text" },
   ],
-  "Office action response (ID)": [
+  "Office action response": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "design", label: "Design", type: "text" },
     { name: "applicationNumber", label: "Application Number", type: "text" },
@@ -278,20 +278,20 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "responseDeadline", label: "Response Deadline", type: "date" },
     { name: "responseFilingDate", label: "Response Filing Date", type: "date" },
   ],
-  "Publication monitoring (ID)": [
+  "Publication monitoring": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "design", label: "Design", type: "text" },
     { name: "applicationNumber", label: "Application Number", type: "text" },
     { name: "publicationDate", label: "Publication Date", type: "date" },
   ],
-  "Registration processing (ID)": [
+  "Registration processing": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "design", label: "Design", type: "text" },
     { name: "applicationNumber", label: "Application Number", type: "text" },
     { name: "registrationNumber", label: "Registration Number", type: "text" },
     { name: "registrationDate", label: "Registration Date", type: "date" },
   ],
-  "Renewal (ID)": [
+  "Renewal": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "design", label: "Design", type: "text" },
     { name: "registrationNumber", label: "Registration Number", type: "text" },
@@ -299,7 +299,7 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "renewalFilingDate", label: "Renewal Filing Date", type: "date" },
     { name: "nextRenewalDue", label: "Next Renewal Due", type: "date" },
   ],
-  "Recordal (ID)": [
+  "Recordal": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "design", label: "Design", type: "text" },
     { name: "applicationRegistrationNumber", label: "Registration / Application Number", type: "text" },
@@ -307,12 +307,12 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "newOwner", label: "New Owner / Party", type: "text" },
     { name: "recordalDate", label: "Recordal Date", type: "date" },
   ],
-  "Design watch (ID)": [
+  "Design watch": [
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "design", label: "Design", type: "text" },
     { name: "watchStartDate", label: "Watch Start Date", type: "date" },
   ],
-  "Infringement assessment (ID)": [
+  "Infringement assessment": [
     { name: "design", label: "Design", type: "text" },
     { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
     { name: "suspectedInfringer", label: "Suspected Infringer", type: "text" },
