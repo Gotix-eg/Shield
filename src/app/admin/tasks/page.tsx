@@ -431,6 +431,45 @@ export default function TasksPage() {
           <div className="bg-white w-full max-w-lg rounded-lg p-6 m-4">
             <h2 className="text-xl font-semibold mb-4">Add Task</h2>
             <div className="space-y-3">
+              <input
+                className="w-full border p-2"
+                placeholder="Title"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
+              <textarea
+                className="w-full border p-2"
+                placeholder="Description"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              ></textarea>
+
+              {form.taskType && form.taskType !== "" && (
+                <>
+                  <select
+                    className="w-full border p-2"
+                    value={form.clientId}
+                    onChange={e => setForm({ ...form, clientId: e.target.value, projectId: '' })}
+                  >
+                    <option value="">Select Client</option>
+                    {clients.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="w-full border p-2"
+                    value={form.projectId}
+                    onChange={e => setForm({ ...form, projectId: e.target.value })}
+                    disabled={!form.clientId}
+                  >
+                    <option value="">Select Project</option>
+                    {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
               <select
                 className="w-full border p-2"
                 value={form.taskType}
@@ -544,45 +583,6 @@ export default function TasksPage() {
                       })}
                     </div>
                   )}
-                </>
-              )}
-
-              <input
-                className="w-full border p-2"
-                placeholder="Title"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-              <textarea
-                className="w-full border p-2"
-                placeholder="Description"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              ></textarea>
-
-              {form.taskType && form.taskType !== "" && (
-                <>
-                  <select
-                    className="w-full border p-2"
-                    value={form.clientId}
-                    onChange={e => setForm({ ...form, clientId: e.target.value, projectId: '' })}
-                  >
-                    <option value="">Select Client</option>
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                  <select
-                    className="w-full border p-2"
-                    value={form.projectId}
-                    onChange={e => setForm({ ...form, projectId: e.target.value })}
-                    disabled={!form.clientId}
-                  >
-                    <option value="">Select Project</option>
-                    {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
                 </>
               )}
 
