@@ -63,9 +63,9 @@ const IP_ACTIONS_BY_TYPE: Record<string, string[]> = {
     "Office action response", "Grant processing", "Renewal", "Recordal"
   ],
   COPYRIGHT: [
-    "Copyright advisory", "Ownership verification", "Copyright registration",
+    "Copyright advisory", "Copyright registration",
     "Recordal (assignment / license)", "Copyright notice / documentation",
-    "Copyright monitoring", "Infringement assessment", "Takedown request"
+    "Infringement assessment (CR)", "Takedown request"
   ],
   SOFTWARE: [
     "Software search", "Clearance opinion", "Application preparation",

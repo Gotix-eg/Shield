@@ -318,4 +318,41 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "suspectedInfringer", label: "Suspected Infringer", type: "text" },
     { name: "assessmentDate", label: "Assessment Date", type: "date" },
   ],
+  // COPYRIGHT ACTIONS
+  "Copyright advisory": [
+    { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
+    { name: "workTitle", label: "Work Title", type: "text" },
+    { name: "client", label: "Client", type: "text" },
+    { name: "adviceDate", label: "Advice Date", type: "date" },
+  ],
+  "Copyright registration": [
+    { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
+    { name: "workTitle", label: "Work Title", type: "text" },
+    { name: "authorOwner", label: "Author / Owner", type: "text" },
+    { name: "registrationNumber", label: "Registration Number", type: "text" },
+    { name: "registrationDate", label: "Registration Date", type: "date" },
+  ],
+  "Recordal (assignment / license)": [
+    { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
+    { name: "workTitle", label: "Work Title", type: "text" },
+    { name: "parties", label: "Parties", type: "text" },
+    { name: "recordalDate", label: "Recordal Date", type: "date" },
+  ],
+  "Copyright notice / documentation": [
+    { name: "workTitle", label: "Work Title", type: "text" },
+    { name: "owner", label: "Owner", type: "text" },
+    { name: "noticeDate", label: "Notice Date", type: "date" },
+  ],
+  "Infringement assessment (CR)": [
+    { name: "workTitle", label: "Work Title", type: "text" },
+    { name: "country", label: "Country", type: "select", options: COUNTRIES.map(c => ({ value: c.code, label: c.name })) },
+    { name: "suspectedInfringer", label: "Suspected Infringer", type: "text" },
+    { name: "assessmentDate", label: "Assessment Date", type: "date" },
+  ],
+  "Takedown request": [
+    { name: "workTitle", label: "Work Title", type: "text" },
+    { name: "platformAuthority", label: "Platform / Authority", type: "text" },
+    { name: "requestDate", label: "Request Date", type: "date" },
+    { name: "status", label: "Status", type: "text" },
+  ],
 };
