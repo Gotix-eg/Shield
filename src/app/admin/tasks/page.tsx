@@ -17,11 +17,13 @@ function getCompanyId(): number | undefined {
 interface Task {
   id: number;
   title: string;
+  description?: string;
   status: string;
   dueDate: string;
   taskType?: string;
   ipType?: string;
   ipAction?: string;
+  actionDetails?: Record<string, any>;
   isAgent: boolean;
   agent?: { id: number; name: string } | null;
   defendantName?: string;
@@ -30,6 +32,7 @@ interface Task {
   client?: { id: number; name: string } | null;
   project?: { id: number; name: string } | null;
   assignees: { id: number; name: string }[];
+  createdAt?: string;
 }
 
 const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE", "ENFORCEMENT"] as const;
@@ -117,6 +120,7 @@ export default function TasksPage() {
   const [projects, setProjects] = useState<{ id: number; name: string; clientId: number }[]>([]);
   const [lawyers, setLawyers] = useState<{ id: number; name: string }[]>([]);
   const [agents, setAgents] = useState<{ id: number; name: string }[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   function buildAuth(): { [key: string]: string } {
     const t = getAuth();
@@ -402,7 +406,7 @@ export default function TasksPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredTasks.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50">
+                <tr key={t.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedTask(t)}>
                   <td className="px-3 py-2">{t.title}</td>
                   <td className="px-3 py-2 capitalize">{t.taskType?.toLowerCase() || "-"}</td>
                   <td className="px-3 py-2">{t.client?.name || "-"}</td>
@@ -669,6 +673,92 @@ export default function TasksPage() {
               >
                 Save
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto" onClick={() => setSelectedTask(null)}>
+          <div className="bg-white w-full max-w-2xl rounded-lg p-6 m-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Task Details</h2>
+              <button onClick={() => setSelectedTask(null)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium text-lg">{selectedTask.title}</h3>
+                <p className="text-gray-600">{selectedTask.description || "No description"}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Task Type</p>
+                  <p className="font-medium">{selectedTask.taskType || "-"}</p>
+                </div>
+                {selectedTask.ipType && (
+                  <div>
+                    <p className="text-sm text-gray-500">IP Type</p>
+                    <p className="font-medium">{selectedTask.ipType}</p>
+                  </div>
+                )}
+                {selectedTask.ipAction && (
+                  <div>
+                    <p className="text-sm text-gray-500">IP Action</p>
+                    <p className="font-medium">{selectedTask.ipAction}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="font-medium capitalize">{selectedTask.status.toLowerCase()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Due Date</p>
+                  <p className="font-medium">{new Date(selectedTask.dueDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Client</p>
+                  <p className="font-medium">{selectedTask.client?.name || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Project</p>
+                  <p className="font-medium">{selectedTask.project?.name || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Assignees</p>
+                  <p className="font-medium">{selectedTask.assignees?.map(a => a.name).join(", ") || "-"}</p>
+                </div>
+                {selectedTask.defendantName && (
+                  <div>
+                    <p className="text-sm text-gray-500">Defendant Name</p>
+                    <p className="font-medium">{selectedTask.defendantName}</p>
+                  </div>
+                )}
+                {selectedTask.opponent && (
+                  <div>
+                    <p className="text-sm text-gray-500">Opponent</p>
+                    <p className="font-medium">{selectedTask.opponent}</p>
+                  </div>
+                )}
+                {selectedTask.court && (
+                  <div>
+                    <p className="text-sm text-gray-500">Court</p>
+                    <p className="font-medium">{selectedTask.court}</p>
+                  </div>
+                )}
+              </div>
+              {selectedTask.actionDetails && Object.keys(selectedTask.actionDetails).length > 0 && (
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="font-medium mb-2">Action Details</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.entries(selectedTask.actionDetails).map(([key, value]) => (
+                      <div key={key}>
+                        <p className="text-sm text-gray-500">{key.replace(/([A-Z])/g, ' $1').replace(/^./g, s => s.toUpperCase())}</p>
+                        <p className="font-medium">{String(value) || "-"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
