@@ -467,8 +467,8 @@ export default function TasksPage() {
                     </select>
                   )}
                   {form.ipAction && ACTION_FIELDS[form.ipAction] && (
-                    <div className="border p-3 rounded mt-2 space-y-3">
-                      <p className="font-medium text-sm text-gray-700">{form.ipAction} Details</p>
+                    <div className="border p-3 rounded mt-2 space-y-3 max-h-60 overflow-y-auto">
+                      <p className="font-medium text-sm text-gray-700 sticky top-0 bg-white">{form.ipAction} Details</p>
                       {ACTION_FIELDS[form.ipAction].map(field => {
                         const shouldShow = !field.dependsOn || form.actionDetails[field.dependsOn.field] === field.dependsOn.value;
                         if (!shouldShow) return null;
