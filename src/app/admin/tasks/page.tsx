@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuth } from "@/lib/auth";
 import { Download, Filter, Upload } from "lucide-react";
+import { COUNTRIES, ACTION_FIELDS } from "@/lib/countries";
 function getCompanyId(): number | undefined {
   const t = getAuth();
   if (!t) return undefined;
@@ -31,7 +32,52 @@ interface Task {
   assignees: { id: number; name: string }[];
 }
 
-const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE"] as const;
+const IP_TYPES = ["TRADEMARK", "PATENT", "INDUSTRIAL_DESIGN", "PLANT_VARIETY", "COPYRIGHT", "SOFTWARE", "ENFORCEMENT"] as const;
+
+const IP_ACTIONS_BY_TYPE: Record<string, string[]> = {
+  TRADEMARK: [
+    "Trademark search", "Clearance opinion", "Application preparation", 
+    "Application filing", "Office action response", "Publication monitoring",
+    "Opposition filing", "Opposition defense", "Registration", 
+    "Renewal", "Recordal (assignment / license / change)",
+    "Coexistence agreement", "Trademark watch", "Infringement review",
+    "Cease & desist", "Customs recordal", "Cancellation / petition", "Appeal (before the trademark office)"
+  ],
+  PATENT: [
+    "Patentability search", "Prior art search", "Patent drafting", 
+    "Application preparation", "Application filing", "Formal examination response",
+    "Substantive examination response", "Amendment filing", "Grant processing",
+    "Validation (for regional patents)", "Annuity / maintenance fee payment",
+    "Recordal (assignment / license)", "Patent watch", 
+    "Freedom-to-operate analysis", "Patent infringement analysis",
+    "Patent opposition", "Revocation action", "Appeal"
+  ],
+  INDUSTRIAL_DESIGN: [
+    "Design search", "Filing preparation", "Application filing",
+    "Office action response", "Publication monitoring", "Registration processing",
+    "Renewal", "Recordal (assignment / license / change)", 
+    "Design watch", "Infringement assessment"
+  ],
+  PLANT_VARIETY: [
+    "Plant variety search", "Application preparation", "Filing application",
+    "Office action response", "Grant processing", "Renewal", "Recordal"
+  ],
+  COPYRIGHT: [
+    "Copyright advisory", "Ownership verification", "Copyright registration",
+    "Recordal (assignment / license)", "Copyright notice / documentation",
+    "Copyright monitoring", "Infringement assessment", "Takedown request"
+  ],
+  SOFTWARE: [
+    "Software search", "Clearance opinion", "Application preparation",
+    "Application filing", "Office action response", "Registration processing",
+    "Renewal", "Recordal", "Infringement analysis"
+  ],
+  ENFORCEMENT: [
+    "Investigation request", "Evidence collection", "Market investigation",
+    "Online monitoring", "Test purchase", "Infringement analysis",
+    "Cease & desist", "Settlement negotiation", "Complaint"
+  ]
+};
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -55,6 +101,7 @@ export default function TasksPage() {
     taskType: "",
     ipType: "",
     ipAction: "",
+    actionDetails: {} as Record<string, any>,
     isAgent: false,
     agentId: "",
     defendantName: "",
@@ -316,6 +363,7 @@ export default function TasksPage() {
               <option value="PLANT_VARIETY">Plant Variety</option>
               <option value="COPYRIGHT">Copyright</option>
               <option value="SOFTWARE">Software</option>
+              <option value="ENFORCEMENT">Enforcement</option>
             </select>
           )}
           <select value={filters.clientId} onChange={e => setFilters({ ...filters, clientId: e.target.value, projectId: "" })} className="border p-2 rounded">
@@ -410,13 +458,87 @@ export default function TasksPage() {
                     <select
                       className="w-full border p-2"
                       value={form.ipAction}
-                      onChange={e => setForm({ ...form, ipAction: e.target.value })}
+                      onChange={e => setForm({ ...form, ipAction: e.target.value, actionDetails: {} })}
                     >
                       <option value="">Select Action</option>
-                      {IP_ACTIONS.map(a => (
+                      {(IP_ACTIONS_BY_TYPE[form.ipType] || []).map(a => (
                         <option key={a} value={a}>{a}</option>
                       ))}
                     </select>
+                  )}
+                  {form.ipAction && ACTION_FIELDS[form.ipAction] && (
+                    <div className="border p-3 rounded mt-2 space-y-3">
+                      <p className="font-medium text-sm text-gray-700">{form.ipAction} Details</p>
+                      {ACTION_FIELDS[form.ipAction].map(field => (
+                        <div key={field.name}>
+                          {field.type === "select" && (
+                            <select
+                              className="w-full border p-2 text-sm"
+                              value={form.actionDetails[field.name] || ""}
+                              onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                            >
+                              <option value="">{field.label}</option>
+                              {field.options?.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          )}
+                          {field.type === "text" && (
+                            <input
+                              type="text"
+                              className="w-full border p-2 text-sm"
+                              placeholder={field.label}
+                              value={form.actionDetails[field.name] || ""}
+                              onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                            />
+                          )}
+                          {field.type === "date" && (
+                            <input
+                              type="date"
+                              className="w-full border p-2 text-sm"
+                              placeholder={field.label}
+                              value={form.actionDetails[field.name] || ""}
+                              onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                            />
+                          )}
+                          {field.type === "textarea" && (
+                            <textarea
+                              className="w-full border p-2 text-sm"
+                              placeholder={field.label}
+                              rows={2}
+                              value={form.actionDetails[field.name] || ""}
+                              onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                            />
+                          )}
+                          {field.type === "number" && (
+                            <input
+                              type="number"
+                              className="w-full border p-2 text-sm"
+                              placeholder={field.label}
+                              value={form.actionDetails[field.name] || ""}
+                              onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })}
+                            />
+                          )}
+                          {field.type === "boolean" && (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id={`${field.name}-${form.ipAction}`}
+                                checked={form.actionDetails[field.name] || false}
+                                onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.checked } })}
+                              />
+                              <label htmlFor={`${field.name}-${form.ipAction}`} className="text-sm">{field.label}</label>
+                            </div>
+                          )}
+                          {field.type === "file" && (
+                            <div>
+                              <label className="block text-sm text-gray-600 mb-1">{field.label}</label>
+                              <input type="file" className="w-full border p-2 text-sm" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </>
               )}
