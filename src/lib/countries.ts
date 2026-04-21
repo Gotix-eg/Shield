@@ -93,9 +93,13 @@ export const ACTION_FIELDS: Record<string, Array<{
     { name: "goodsServices", label: "Goods & Services", type: "textarea" },
     { name: "priorityClaim", label: "Priority claim", type: "text" },
     { name: "poaReceived", label: "POA Received", type: "boolean" },
+    { name: "poaReceivedDate", label: "POA Received Date", type: "date", dependsOn: { field: "poaReceived", value: "true" } },
     { name: "poaSubmitted", label: "POA Submitted", type: "boolean" },
+    { name: "poaSubmittedDate", label: "POA Submitted Date", type: "date", dependsOn: { field: "poaSubmitted", value: "true" } },
     { name: "crReceived", label: "CR Received", type: "boolean" },
+    { name: "crReceivedDate", label: "CR Received Date", type: "date", dependsOn: { field: "crReceived", value: "true" } },
     { name: "crSubmitted", label: "CR Submitted", type: "boolean" },
+    { name: "crSubmittedDate", label: "CR Submitted Date", type: "date", dependsOn: { field: "crSubmitted", value: "true" } },
   ],
   "Application filing": [
     { name: "trademarkKey", label: "Trademark Key", type: "text" },
