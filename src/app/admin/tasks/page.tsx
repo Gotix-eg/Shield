@@ -683,20 +683,18 @@ export default function TasksPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto" onClick={() => setSelectedTask(null)}>
           <div className="bg-white w-full max-w-2xl rounded-lg p-6 m-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Task Details - {selectedTask.taskType}</h2>
+              <h2 className="text-xl font-semibold">Task Details</h2>
               <div className="flex gap-2">
                 <button onClick={() => { setShowModal(true); setForm({ ...form, title: selectedTask.title, description: selectedTask.description || "", taskType: selectedTask.taskType || "", ipType: selectedTask.ipType || "", ipAction: selectedTask.ipAction || "", actionDetails: selectedTask.actionDetails || {}, isAgent: selectedTask.isAgent, agentId: "", assigneeIds: selectedTask.assignees?.map(a => a.id) || [], dueDate: selectedTask.dueDate.split("T")[0], clientId: String(selectedTask.client?.id || ""), projectId: String(selectedTask.project?.id || ""), defendantName: selectedTask.defendantName || "", opponent: selectedTask.opponent || "", court: selectedTask.court || "" }); }} className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Edit</button>
                 <button onClick={() => setSelectedTask(null)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
               </div>
             </div>
             
-            <div className="mb-4">
-              <div className="border-b flex gap-1">
-                <button onClick={() => setDetailTab("general")} className={`px-4 py-2 text-sm font-medium ${detailTab === "general" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>General</button>
-                <button onClick={() => setDetailTab("corporate")} className={`px-4 py-2 text-sm font-medium ${detailTab === "corporate" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>Corporate</button>
-                <button onClick={() => setDetailTab("ip")} className={`px-4 py-2 text-sm font-medium ${detailTab === "ip" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>IP</button>
-                <button onClick={() => setDetailTab("litigation")} className={`px-4 py-2 text-sm font-medium ${detailTab === "litigation" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>Litigation</button>
-              </div>
+            <div className="mb-4 flex gap-2">
+              <button onClick={() => setDetailTab("general")} className={`flex-1 px-4 py-3 text-sm font-medium rounded-t-lg ${detailTab === "general" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>General</button>
+              <button onClick={() => setDetailTab("corporate")} className={`flex-1 px-4 py-3 text-sm font-medium rounded-t-lg ${detailTab === "corporate" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>Corporate</button>
+              <button onClick={() => setDetailTab("ip")} className={`flex-1 px-4 py-3 text-sm font-medium rounded-t-lg ${detailTab === "ip" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>IP</button>
+              <button onClick={() => setDetailTab("litigation")} className={`flex-1 px-4 py-3 text-sm font-medium rounded-t-lg ${detailTab === "litigation" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>Litigation</button>
             </div>
 
             {detailTab === "general" && (
