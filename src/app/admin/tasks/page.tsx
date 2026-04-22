@@ -683,7 +683,10 @@ export default function TasksPage() {
           <div className="bg-white w-full max-w-2xl rounded-lg p-6 m-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Task Details</h2>
-              <button onClick={() => setSelectedTask(null)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              <div className="flex gap-2">
+                <button onClick={() => { setShowModal(true); setForm({ ...form, title: selectedTask.title, description: selectedTask.description || "", taskType: selectedTask.taskType || "", ipType: selectedTask.ipType || "", ipAction: selectedTask.ipAction || "", actionDetails: selectedTask.actionDetails || {}, isAgent: selectedTask.isAgent, agentId: "", assigneeIds: selectedTask.assignees?.map(a => a.id) || [], dueDate: selectedTask.dueDate.split("T")[0], clientId: String(selectedTask.client?.id || ""), projectId: String(selectedTask.project?.id || ""), defendantName: selectedTask.defendantName || "", opponent: selectedTask.opponent || "", court: selectedTask.court || "" }); }} className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Edit</button>
+                <button onClick={() => setSelectedTask(null)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
             </div>
             <div className="space-y-4">
               <div>
@@ -748,14 +751,27 @@ export default function TasksPage() {
               </div>
               {selectedTask.actionDetails && Object.keys(selectedTask.actionDetails).length > 0 && (
                 <div className="border-t pt-4 mt-4">
-                  <h4 className="font-medium mb-2">Action Details</h4>
+                  <h4 className="font-medium mb-2">{selectedTask.ipAction} Details</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(selectedTask.actionDetails).map(([key, value]) => (
-                      <div key={key}>
-                        <p className="text-sm text-gray-500">{key.replace(/([A-Z])/g, ' $1').replace(/^./g, s => s.toUpperCase())}</p>
-                        <p className="font-medium">{String(value) || "-"}</p>
-                      </div>
-                    ))}
+                    {Object.entries(selectedTask.actionDetails).map(([key, value]) => {
+                      const fieldDef = ACTION_FIELDS[selectedTask.ipAction || ""]?.find(f => f.name === key);
+                      const label = fieldDef?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./g, s => s.toUpperCase());
+                      let displayValue = String(value || "");
+                      if (fieldDef?.type === "date" && value) {
+                        displayValue = new Date(value).toLocaleDateString();
+                      } else if (fieldDef?.type === "boolean") {
+                        displayValue = value ? "Yes" : "No";
+                      } else if (fieldDef?.type === "select" && fieldDef.options) {
+                        const opt = fieldDef.options.find(o => o.value === value);
+                        displayValue = opt?.label || displayValue;
+                      }
+                      return (
+                        <div key={key}>
+                          <p className="text-sm text-gray-500">{label}</p>
+                          <p className="font-medium">{displayValue || "-"}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
