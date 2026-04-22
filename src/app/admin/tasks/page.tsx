@@ -121,6 +121,7 @@ export default function TasksPage() {
   const [lawyers, setLawyers] = useState<{ id: number; name: string }[]>([]);
   const [agents, setAgents] = useState<{ id: number; name: string }[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailTab, setDetailTab] = useState<"general" | "corporate" | "ip" | "litigation">("general");
 
   function buildAuth(): { [key: string]: string } {
     const t = getAuth();
@@ -688,94 +689,151 @@ export default function TasksPage() {
                 <button onClick={() => setSelectedTask(null)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
               </div>
             </div>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-medium text-lg">{selectedTask.title}</h3>
-                <p className="text-gray-600">{selectedTask.description || "No description"}</p>
+            
+            <div className="mb-4">
+              <div className="border-b flex gap-1">
+                <button onClick={() => setDetailTab("general")} className={`px-4 py-2 text-sm font-medium ${detailTab === "general" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>General</button>
+                <button onClick={() => setDetailTab("corporate")} className={`px-4 py-2 text-sm font-medium ${detailTab === "corporate" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>Corporate</button>
+                <button onClick={() => setDetailTab("ip")} className={`px-4 py-2 text-sm font-medium ${detailTab === "ip" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>IP</button>
+                <button onClick={() => setDetailTab("litigation")} className={`px-4 py-2 text-sm font-medium ${detailTab === "litigation" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>Litigation</button>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+            </div>
+
+            {detailTab === "general" && (
+              <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500">Task Type</p>
-                  <p className="font-medium">{selectedTask.taskType || "-"}</p>
+                  <p className="text-sm text-gray-500">Title</p>
+                  <p className="font-medium">{selectedTask.title}</p>
                 </div>
-                {selectedTask.ipType && (
+                <div>
+                  <p className="text-sm text-gray-500">Description</p>
+                  <p className="font-medium">{selectedTask.description || "-"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">IP Type</p>
-                    <p className="font-medium">{selectedTask.ipType}</p>
+                    <p className="text-sm text-gray-500">Client</p>
+                    <p className="font-medium">{selectedTask.client?.name || "-"}</p>
                   </div>
-                )}
-                {selectedTask.ipAction && (
                   <div>
-                    <p className="text-sm text-gray-500">IP Action</p>
-                    <p className="font-medium">{selectedTask.ipAction}</p>
+                    <p className="text-sm text-gray-500">Project</p>
+                    <p className="font-medium">{selectedTask.project?.name || "-"}</p>
                   </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Assignees</p>
+                    <p className="font-medium">{selectedTask.assignees?.map(a => a.name).join(", ") || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Due Date</p>
+                    <p className="font-medium">{new Date(selectedTask.dueDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className="font-medium capitalize">{selectedTask.status.toLowerCase()}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {detailTab === "corporate" && (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500">Title</p>
+                  <p className="font-medium">{selectedTask.title}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Description</p>
+                  <p className="font-medium">{selectedTask.description || "-"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Client</p>
+                    <p className="font-medium">{selectedTask.client?.name || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Project</p>
+                    <p className="font-medium">{selectedTask.project?.name || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Assignees</p>
+                    <p className="font-medium">{selectedTask.assignees?.map(a => a.name).join(", ") || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Due Date</p>
+                    <p className="font-medium">{new Date(selectedTask.dueDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className="font-medium capitalize">{selectedTask.status.toLowerCase()}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {detailTab === "ip" && (
+              <div className="space-y-4">
+                {selectedTask.ipType ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">IP Type</p>
+                        <p className="font-medium">{selectedTask.ipType}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">IP Action</p>
+                        <p className="font-medium">{selectedTask.ipAction || "-"}</p>
+                      </div>
+                    </div>
+                    {selectedTask.actionDetails && Object.keys(selectedTask.actionDetails).length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="font-medium mb-2">{selectedTask.ipAction} Details</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {Object.entries(selectedTask.actionDetails).map(([key, value]) => {
+                            const fieldDef = ACTION_FIELDS[selectedTask.ipAction || ""]?.find(f => f.name === key);
+                            const label = fieldDef?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./g, s => s.toUpperCase());
+                            let displayValue = String(value || "");
+                            if (fieldDef?.type === "date" && value) {
+                              displayValue = new Date(value).toLocaleDateString();
+                            } else if (fieldDef?.type === "boolean") {
+                              displayValue = value ? "Yes" : "No";
+                            } else if (fieldDef?.type === "select" && fieldDef.options) {
+                              const opt = fieldDef.options.find(o => o.value === value);
+                              displayValue = opt?.label || displayValue;
+                            }
+                            return (
+                              <div key={key}>
+                                <p className="text-sm text-gray-500">{label}</p>
+                                <p className="font-medium">{displayValue || "-"}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-gray-500">No IP details available</p>
                 )}
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <p className="font-medium capitalize">{selectedTask.status.toLowerCase()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Due Date</p>
-                  <p className="font-medium">{new Date(selectedTask.dueDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Client</p>
-                  <p className="font-medium">{selectedTask.client?.name || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Project</p>
-                  <p className="font-medium">{selectedTask.project?.name || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Assignees</p>
-                  <p className="font-medium">{selectedTask.assignees?.map(a => a.name).join(", ") || "-"}</p>
-                </div>
-                {selectedTask.defendantName && (
+              </div>
+            )}
+
+            {detailTab === "litigation" && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Defendant Name</p>
-                    <p className="font-medium">{selectedTask.defendantName}</p>
+                    <p className="font-medium">{selectedTask.defendantName || "-"}</p>
                   </div>
-                )}
-                {selectedTask.opponent && (
                   <div>
                     <p className="text-sm text-gray-500">Opponent</p>
-                    <p className="font-medium">{selectedTask.opponent}</p>
+                    <p className="font-medium">{selectedTask.opponent || "-"}</p>
                   </div>
-                )}
-                {selectedTask.court && (
                   <div>
                     <p className="text-sm text-gray-500">Court</p>
-                    <p className="font-medium">{selectedTask.court}</p>
-                  </div>
-                )}
-              </div>
-              {selectedTask.actionDetails && Object.keys(selectedTask.actionDetails).length > 0 && (
-                <div className="border-t pt-4 mt-4">
-                  <h4 className="font-medium mb-2">{selectedTask.ipAction} Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(selectedTask.actionDetails).map(([key, value]) => {
-                      const fieldDef = ACTION_FIELDS[selectedTask.ipAction || ""]?.find(f => f.name === key);
-                      const label = fieldDef?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./g, s => s.toUpperCase());
-                      let displayValue = String(value || "");
-                      if (fieldDef?.type === "date" && value) {
-                        displayValue = new Date(value).toLocaleDateString();
-                      } else if (fieldDef?.type === "boolean") {
-                        displayValue = value ? "Yes" : "No";
-                      } else if (fieldDef?.type === "select" && fieldDef.options) {
-                        const opt = fieldDef.options.find(o => o.value === value);
-                        displayValue = opt?.label || displayValue;
-                      }
-                      return (
-                        <div key={key}>
-                          <p className="text-sm text-gray-500">{label}</p>
-                          <p className="font-medium">{displayValue || "-"}</p>
-                        </div>
-                      );
-                    })}
+                    <p className="font-medium">{selectedTask.court || "-"}</p>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
