@@ -14,6 +14,7 @@ export default function ClientsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState('');
+  const [tempContactPerson, setTempContactPerson] = useState('');
   const [tempEmail, setTempEmail] = useState('');
   const [tempPhone, setTempPhone] = useState('');
   const [tempAddress, setTempAddress] = useState('');
@@ -69,6 +70,7 @@ export default function ClientsPage() {
   const saveEdit = async (id: string) => {
     if (!tempName.trim()) return;
     const payload: Record<string, string> = { name: tempName.trim() };
+    if (tempContactPerson.trim()) payload.contactPerson = tempContactPerson.trim();
     if (tempEmail.trim()) payload.contactEmail = tempEmail.trim();
     if (tempPhone.trim()) payload.phone = tempPhone.trim();
     if (tempAddress.trim()) payload.address = tempAddress.trim();
@@ -92,6 +94,7 @@ export default function ClientsPage() {
       setClients(prev => prev.map(c => c.id === id ? {
         ...c,
         name: tempName.trim(),
+        contactPerson: tempContactPerson.trim(),
         contactEmail: tempEmail.trim(),
         phone: tempPhone.trim(),
         address: tempAddress.trim(),
@@ -115,6 +118,7 @@ export default function ClientsPage() {
   const startEdit = (c: Client) => {
     setEditingId(c.id);
     setTempName(c.name);
+    setTempContactPerson(c.contactPerson || "");
     setTempEmail(c.contactEmail || "");
     setTempPhone(c.phone || "");
     setTempAddress(c.address || "");
@@ -126,6 +130,7 @@ export default function ClientsPage() {
   const cancelEdit = () => {
     setEditingId(null);
     setTempName('');
+    setTempContactPerson('');
     setTempEmail('');
     setTempPhone('');
     setTempAddress('');
@@ -245,6 +250,9 @@ export default function ClientsPage() {
                   Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact Person
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -287,6 +295,19 @@ export default function ClientsPage() {
                       />
                     ) : (
                       client.name
+                    )}
+                  </td>
+
+                  {/* Contact Person */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {editingId === client.id ? (
+                      <input
+                        value={tempContactPerson}
+                        onChange={(e) => setTempContactPerson(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm w-full"
+                      />
+                    ) : (
+                      client.contactPerson || 'N/A'
                     )}
                   </td>
 

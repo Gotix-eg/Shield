@@ -10,6 +10,7 @@ export default function NewClientPage() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    contactPerson: "",
     contactEmail: "",
     phone: "",
     vatCode: "",
@@ -68,6 +69,19 @@ export default function NewClientPage() {
                 className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
                 placeholder="e.g. Norton Rose Fulbright"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                Contact Person
+              </label>
+              <input
+                type="text"
+                value={formData.contactPerson}
+                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                placeholder="e.g. John Doe"
               />
             </div>
 

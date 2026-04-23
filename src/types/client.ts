@@ -9,6 +9,7 @@ export interface Client {
   country?: string;
   code?: string;
   contactEmail?: string;
+  contactPerson?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;

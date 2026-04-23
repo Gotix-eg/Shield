@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
                     where: { code }, // Assumes code is unique across system or handling collision
                     update: {
                         name: row.name,
+                        contactPerson: row.contactPerson || row['Contact Person'],
                         contactEmail: row.email,
                         phone: row.phone,
                         address: row.address,
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
                     create: {
                         name: row.name,
                         code,
+                        contactPerson: row.contactPerson || row['Contact Person'],
                         contactEmail: row.email,
                         phone: row.phone,
                         address: row.address,

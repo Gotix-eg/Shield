@@ -1,3 +1,3 @@
-name,code,email,phone,address,city,vatCode,country
-Acme Corp,C001,contact@acme.com,1.23E+09,"123 Acme St, NY",New York,123456789,USA
-Globex Inc,C002,info@globex.com,9.88E+08,"456 Globex Ave, CA",Los Angeles,987654321,USA
+name,code,contactPerson,email,phone,address,city,vatCode,country
+Acme Corp,C001,John Doe,contact@acme.com,1.23E+09,"123 Acme St, NY",New York,123456789,USA
+Globex Inc,C002,Jane Smith,info@globex.com,9.88E+08,"456 Globex Ave, CA",Los Angeles,987654321,USA

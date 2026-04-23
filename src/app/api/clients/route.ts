@@ -27,6 +27,7 @@ export const GET = withCompany(async (request: NextRequest, companyId?: number) 
         select: {
           id: true,
           name: true,
+          contactPerson: true,
           contactEmail: true,
           phone: true,
           address: true,
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest) {
     const client = await prisma.client.create({
       data: {
         name: data.name,
+        contactPerson: data.contactPerson || "",
         contactEmail: data.contactEmail,
         phone: data.phone,
         address: data.address || "",
