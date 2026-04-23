@@ -1,71 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { sendMail } from '@/lib/email';
 
-const CRON_SECRET = process.env.CRON_SECRET || 'cron-secret';
-
-async function sendReminder(task: any, type: '48h' | '24h', recipients: { email?: string | null; name?: string | null }[]) {
-  const timeLeft = type === '48h' ? 'يومين' : 'يوم واحد';
-  const subject = type === '48h' ? '⏰ تذكير مهمة تنتهي بعد يومين' : '⏰ تذكير مهمة تنتهي غداً';
-  for (const recipient of recipients) {
-    if (!recipient?.email) continue;
-    const html = `<p>مرحباً ${recipient.name},</p>
-<p>تبقّى ${timeLeft} على إنجاز المهمة: <strong>${task.title}</strong>.</p>
-<p>الموعد النهائي: ${task.dueDate.toLocaleDateString('ar-EG')}</p>
-<p>أنشأ هذه المهمة: ${task.assigner?.name || 'غير محدد'}</p>`;
-    try {
-      await sendMail(recipient.email, subject, html);
-    } catch {}
+// GET /api/tasks/reminders -> check and send reminders for upcoming hearings
+// This can be called via a cron job (e.g., Vercel Cron)
+export async function GET(req: NextRequest) {
+  // Verify cron secret if set
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const authHeader = req.headers.get('authorization');
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
-}
 
-export async function GET(req:NextRequest){
-  const auth = req.headers.get('authorization') || '';
-  const secretQs = new URL(req.url).searchParams.get('secret');
-  const valid = auth === `Bearer ${CRON_SECRET}` || secretQs === CRON_SECRET;
-  if (!valid) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   const now = new Date();
-  const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
+  // Find tasks with reminder dates that have passed but haven't been sent
   const tasks = await prisma.task.findMany({
     where: {
-      status: { not: 'DONE' },
-      dueDate: { gte: now, lte: in48h },
-    },
-    include: { 
-      assignee: { select: { email: true, name: true, id: true } },
-      assigner: { select: { email: true, name: true, id: true } }
+      reminderDate: { lte: now },
+      reminderSent: false,
+      nextHearingDate: { not: null },
     },
   });
 
-  let sent = 0;
-  for (const t of tasks) {
-    const hoursUntilDue = Math.round((t.dueDate.getTime() - now.getTime()) / (1000 * 60 * 60));
-    const sendToAssignee = t.assignee?.email && t.assignee?.id !== t.assigner?.id;
-    const sendToAssigner = t.assigner?.email && t.assigner?.email !== t.assignee?.email;
+  let sentCount = 0;
 
-    if (hoursUntilDue <= 24 && hoursUntilDue > 0) {
-      const recipients = [];
-      if (sendToAssignee) recipients.push(t.assignee);
-      if (sendToAssigner) recipients.push(t.assigner);
-      if (recipients.length > 0) {
-        await sendReminder(t, '24h', recipients);
-        await prisma.task.update({ where: { id: t.id }, data: { lastReminderAt: new Date() } });
-        sent++;
-      }
-    } else if (hoursUntilDue <= 48 && hoursUntilDue > 24) {
-      const recipients = [];
-      if (sendToAssignee) recipients.push(t.assignee);
-      if (sendToAssigner) recipients.push(t.assigner);
-      if (recipients.length > 0) {
-        await sendReminder(t, '48h', recipients);
-        await prisma.task.update({ where: { id: t.id }, data: { lastReminderAt: new Date() } });
-        sent++;
+  for (const task of tasks) {
+    const assigneeIds = task.assigneeIds.split(',').map(Number).filter(Boolean);
+    
+    for (const assigneeId of assigneeIds) {
+      // Create in-app notification
+      await prisma.notification.create({
+        data: {
+          userId: assigneeId,
+          type: 'HEARING_REMINDER',
+          message: `Reminder: Next hearing for "${task.title}" on ${task.nextHearingDate?.toLocaleDateString()}${task.nextHearingRemarks ? ` - ${task.nextHearingRemarks}` : ''}`,
+        },
+      });
+
+      // Send email
+      const user = await prisma.user.findUnique({ where: { id: assigneeId }, select: { email: true, name: true } });
+      if (user?.email) {
+        try {
+          await import('@/lib/email').then(m =>
+            m.sendMail(
+              user.email,
+              `Hearing Reminder: ${task.title}`,
+              `<div style="font-family: Arial, sans-serif;">
+                <h2>Hearing Reminder</h2>
+                <p>Dear ${user.name || 'Colleague'},</p>
+                <p>This is a reminder about an upcoming hearing:</p>
+                <table style="border-collapse: collapse; margin: 16px 0;">
+                  <tr><td style="padding: 8px; font-weight: bold;">Case:</td><td style="padding: 8px;">${task.title}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Case Number:</td><td style="padding: 8px;">${task.caseNumber || '-'}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Next Hearing:</td><td style="padding: 8px;">${task.nextHearingDate?.toLocaleDateString()}</td></tr>
+                  <tr><td style="padding: 8px; font-weight: bold;">Court:</td><td style="padding: 8px;">${task.courtAuthority || '-'}</td></tr>
+                  ${task.nextHearingRemarks ? `<tr><td style="padding: 8px; font-weight: bold;">Remarks:</td><td style="padding: 8px;">${task.nextHearingRemarks}</td></tr>` : ''}
+                </table>
+                <p>Please prepare accordingly.</p>
+              </div>`
+            )
+          );
+        } catch {}
       }
     }
+
+    // Mark reminder as sent
+    await prisma.task.update({
+      where: { id: task.id },
+      data: { reminderSent: true },
+    });
+
+    sentCount++;
   }
-  return NextResponse.json({sent});
+
+  return NextResponse.json({ ok: true, reminders_sent: sentCount });
 }

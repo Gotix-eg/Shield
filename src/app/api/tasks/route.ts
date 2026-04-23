@@ -9,7 +9,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 export async function GET(req: NextRequest) {
   let session = await getServerSession(authOptions);
   if (!session?.user) {
-    // try bearer / custom token
     const raw = getAuthServer(req);
     if (raw) {
       try {
@@ -25,7 +24,6 @@ export async function GET(req: NextRequest) {
   const role = session.user.role as string;
   const isManager = ['LAWYER_PARTNER','MANAGING_PARTNER','LAWYER_MANAGER','OWNER','ADMIN'].includes(role);
 
-  // base filter by company
   const companyId = (session.user as any).companyId;
   const companyFilter = companyId
     ? {
@@ -36,14 +34,17 @@ export async function GET(req: NextRequest) {
       }
     : {};
 
-  // user-level filter (non-managers see their tasks)
   const userId = session.user.id;
   const userFilter = isManager ? {} : { 
     assigneeIds: { contains: String(userId) }
   };
 
+  // optional taskType filter from query string
+  const taskType = req.nextUrl.searchParams.get('taskType');
+  const taskTypeFilter = taskType ? { taskType } : {};
+
   const tasks = await prisma.task.findMany({
-    where: { ...companyFilter, ...userFilter },
+    where: { ...companyFilter, ...userFilter, ...taskTypeFilter },
     include: {
       client: { select: { name: true, id: true } },
       project: { select: { name: true, id: true } },
@@ -53,7 +54,6 @@ export async function GET(req: NextRequest) {
     orderBy: { dueDate: 'asc' }
   });
 
-  // Fetch assignee users for each task
   const tasksWithAssignees = await Promise.all(tasks.map(async (task) => {
     const assigneeIds = task.assigneeIds.split(',').map(Number).filter(Boolean);
     const assignees = await prisma.user.findMany({
@@ -70,8 +70,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let session = await getServerSession(authOptions);
   if (!session?.user) {
-    // try bearer/JWT token
-    // attempt custom JWT cookie "token"
     const raw = getAuthServer(req as any);
     if (raw) {
       try {
@@ -84,11 +82,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
   }
   const role = (session.user as any).role as string;
-  if (!['LAWYER_PARTNER','MANAGING_PARTNER','MANAGING_PARTNER','OWNER','ADMIN'].includes(role)) {
+  if (!['LAWYER_PARTNER','MANAGING_PARTNER','OWNER','ADMIN'].includes(role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const data = await req.json();
-  const { title, description, taskType, ipType, isAgent, agentId, defendantName, opponent, court, clientId, projectId, assigneeIds, dueDate } = data;
+  const {
+    title, description, taskType, ipType, ipAction, actionDetails,
+    isAgent, agentId, defendantName, opponent, court,
+    clientId, projectId, assigneeIds, dueDate,
+    // Litigation fields
+    litigationCategory, litigationType, caseType, parties, courtAuthority,
+    caseNumber, importantDates, filings, hearingDate, hearingRemarks,
+    nextHearingDate, nextHearingRemarks, reminderDate,
+    decisions, appeals, enforcement,
+  } = data;
   
   if (!title || !assigneeIds || !dueDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -103,6 +110,8 @@ export async function POST(req: NextRequest) {
       description,
       taskType,
       ipType,
+      ipAction,
+      actionDetails: actionDetails ?? undefined,
       isAgent: isAgent ?? false,
       agentId: agentId ? Number(agentId) : null,
       defendantName,
@@ -113,6 +122,23 @@ export async function POST(req: NextRequest) {
       assignerId: session.user.id,
       assigneeIds: assigneeIdsStr,
       dueDate: new Date(dueDate),
+      // Litigation fields
+      litigationCategory: litigationCategory || null,
+      litigationType: litigationType || null,
+      caseType: caseType || null,
+      parties: parties ?? undefined,
+      courtAuthority: courtAuthority || null,
+      caseNumber: caseNumber || null,
+      importantDates: importantDates ?? undefined,
+      filings: filings ?? undefined,
+      hearingDate: hearingDate ? new Date(hearingDate) : null,
+      hearingRemarks: hearingRemarks || null,
+      nextHearingDate: nextHearingDate ? new Date(nextHearingDate) : null,
+      nextHearingRemarks: nextHearingRemarks || null,
+      reminderDate: reminderDate ? new Date(reminderDate) : null,
+      decisions: decisions ?? undefined,
+      appeals: appeals ?? undefined,
+      enforcement: enforcement ?? undefined,
     }
   });
 

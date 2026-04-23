@@ -749,6 +749,27 @@ model Task {
   dueDate     DateTime
   status      TaskStatus @default(PENDING)
   createdAt   DateTime   @default(now())
+
+  // ─── Litigation-specific fields ────────────────────────────
+  litigationCategory  String?    // IP_LITIGATION or CORPORATE_LITIGATION
+  litigationType      String?    // CIVIL_COMMERCIAL, ADMINISTRATIVE, CRIMINAL, ARBITRATION
+  caseType            String?
+  parties             Json?      // { plaintiff: "", defendant: "", agents: [] }
+  courtAuthority      String?
+  caseNumber          String?
+  importantDates      Json?      // [{ label: "", date: "" }]
+  filings             Json?      // [{ title: "", date: "", fileUrl: "" }]
+  hearingDate         DateTime?
+  hearingRemarks      String?
+  nextHearingDate     DateTime?
+  nextHearingRemarks  String?
+  reminderDate        DateTime?
+  reminderSent        Boolean    @default(false)
+  decisions           Json?      // [{ date: "", summary: "" }]
+  appeals             Json?      // [{ date: "", type: "", status: "" }]
+  enforcement         Json?      // { status: "", details: "" }
+  // ───────────────────────────────────────────────────────────
+
   assigner    User       @relation("taskAssigner", fields: [assignerId], references: [id])
   client      Client?    @relation("ClientTasks", fields: [clientId], references: [id])
   project     Project?   @relation("ProjectTasks", fields: [projectId], references: [id])
