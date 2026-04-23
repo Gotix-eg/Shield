@@ -33,8 +33,9 @@ function getUserId(request: NextRequest): number | null {
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  console.log('GET client request:', params.id);
+export async function GET(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id: idStr } = await ctx.params;
+  console.log('GET client request:', idStr);
 
   // تجاهل التحقق من التوكن مؤقتاً
   // const userId = getUserId(request);
