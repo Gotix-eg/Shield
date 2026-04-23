@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
                         country: row.country,
                         companyId,
                         ownerId: userId,
-                        account: { connect: { id: arAccount.id } }
+                        accountId: arAccount.id
                     },
                 });
                 successCount++;
