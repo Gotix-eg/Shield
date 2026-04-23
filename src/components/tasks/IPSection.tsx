@@ -151,9 +151,12 @@ export default function IPSection({
                             onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })} />
                         )}
                         {field.type === "date" && (
-                          <input type="date" className="w-full rounded-lg px-3 py-2 text-sm" placeholder={field.label}
-                            value={form.actionDetails[field.name] || ""}
-                            onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })} />
+                          <div>
+                            <label className="block text-xs text-slate-400 mb-1">{field.label}</label>
+                            <input type="date" className="w-full rounded-lg px-3 py-2 text-sm"
+                              value={form.actionDetails[field.name] || ""}
+                              onChange={e => setForm({ ...form, actionDetails: { ...form.actionDetails, [field.name]: e.target.value } })} />
+                          </div>
                         )}
                         {field.type === "textarea" && (
                           <textarea className="w-full rounded-lg px-3 py-2 text-sm" placeholder={field.label} rows={2}
