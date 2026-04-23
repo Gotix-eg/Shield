@@ -61,12 +61,27 @@ export async function POST(request: NextRequest) {
         let successCount = 0;
         let errorCount = 0;
 
+        // Get the current max sequence to generate sequential codes
+        const lastClient = await prisma.client.findFirst({ orderBy: { id: 'desc' }, select: { code: true } });
+        const lastAccount = await prisma.account.findFirst({
+            where: { code: { startsWith: 'AR-C' } },
+            orderBy: { id: 'desc' },
+            select: { code: true },
+        });
+        const seqFromClient = lastClient?.code ? parseInt(lastClient.code.replace(/^C/, '')) : 0;
+        const seqFromAccount = lastAccount?.code ? parseInt(lastAccount.code.replace(/^AR-C/, '')) : 0;
+        let nextSeq = Math.max(isNaN(seqFromClient) ? 0 : seqFromClient, isNaN(seqFromAccount) ? 0 : seqFromAccount) + 1;
+
         for (const row of results) {
             try {
                 if (!row.name) continue;
 
-                // Generate a code if missing
-                const code = row.code || (row.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase() + Math.floor(Math.random() * 1000));
+                // Generate a sequential code if missing
+                let code = row.code;
+                if (!code) {
+                    code = `C${nextSeq.toString().padStart(4, '0')}`;
+                    nextSeq++;
+                }
 
                 // Find or create AR account (similar to creating new client logic)
                 let arAccount = await prisma.account.findFirst({ where: { code: `AR-${code}`, companyId } });
