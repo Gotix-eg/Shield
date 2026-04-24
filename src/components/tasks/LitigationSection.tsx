@@ -229,14 +229,18 @@ export default function LitigationSection({
               </div>
             </div>
 
-            {/* Sub-tabs */}
-            <div className="flex gap-1 flex-wrap mb-4 border-b border-white/10 pb-2">
-              {LITIGATION_TABS.map((tab, i) => (
-                <button key={tab} onClick={() => setActiveTab(i)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    activeTab === i ? 'bg-rose-500/20 text-rose-400' : 'text-slate-500 hover:text-white hover:bg-white/5'
-                  }`}>{tab}</button>
-              ))}
+            {/* Sub-tabs Dropdown */}
+            <div className="mb-4 border-b border-white/10 pb-4">
+              <label className="block text-xs text-slate-400 mb-1">Section</label>
+              <select 
+                value={activeTab} 
+                onChange={e => setActiveTab(Number(e.target.value))}
+                className="w-full rounded-lg px-3 py-2 text-sm"
+              >
+                {LITIGATION_TABS.map((tab, i) => (
+                  <option key={tab} value={i}>{i + 1}. {tab}</option>
+                ))}
+              </select>
             </div>
 
             {/* Tab content */}
