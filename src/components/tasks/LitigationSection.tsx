@@ -462,14 +462,13 @@ export default function LitigationSection({
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end items-center mt-4 pt-4 border-t border-white/10">
-                <button onClick={() => { resetForm(); setShowForm(false); }} className="btn-legal-outline px-5 py-2">Cancel</button>
-                <button onClick={handleSubmit}
-                  disabled={!form.title.trim() || form.assigneeIds.length === 0 || !form.dueDate}
-                  className="btn-legal px-5 py-2 disabled:opacity-40">
-                  Create Case
-                </button>
-              </div>
+            <div className="flex justify-end items-center mt-4 pt-4 border-t border-white/10 gap-3">
+              <button onClick={() => { resetForm(); setShowForm(false); }} className="btn-legal-outline px-5 py-2">Cancel</button>
+              <button onClick={handleSubmit}
+                disabled={!form.title.trim() || form.assigneeIds.length === 0 || !form.dueDate}
+                className="btn-legal px-5 py-2 disabled:opacity-40">
+                Create Case
+              </button>
             </div>
           </div>
         </div>
