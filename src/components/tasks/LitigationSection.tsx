@@ -24,7 +24,6 @@ export default function LitigationSection({
   const [litCat, setLitCat] = useState<string>("");
   const [litType, setLitType] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
   const [search, setSearch] = useState("");
 
   // Form state for litigation task
@@ -68,7 +67,6 @@ export default function LitigationSection({
       appeals: [{ date: "", type: "", status: "" }],
       enforcement: { status: "", details: "" },
     });
-    setActiveTab(0);
   };
 
   const handleSubmit = async () => {
@@ -229,31 +227,37 @@ export default function LitigationSection({
               </div>
             </div>
 
-            {/* Sub-tabs Dropdown */}
-            <div className="mb-4 border-b border-white/10 pb-4">
-              <label className="block text-xs text-slate-400 mb-1">Section</label>
-              <select 
-                value={activeTab} 
-                onChange={e => setActiveTab(Number(e.target.value))}
-                className="w-full rounded-lg px-3 py-2 text-sm"
-              >
-                {LITIGATION_TABS.map((tab, i) => (
-                  <option key={tab} value={i}>{i + 1}. {tab}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Tab content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 min-h-[200px]">
-              {activeTab === 0 && (
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Case Type</label>
-                  <input value={form.caseType} onChange={e => setForm({ ...form, caseType: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-sm" placeholder="e.g. Contract Dispute" />
+            {/* Form content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-8 pr-2 min-h-[200px]">
+              
+              {/* 1. Case Details */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">1. Case Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Case Type</label>
+                    <input value={form.caseType} onChange={e => setForm({ ...form, caseType: e.target.value })}
+                      className="w-full rounded-lg px-3 py-2 text-sm" placeholder="e.g. Contract Dispute" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Court / Authority</label>
+                    <input value={form.courtAuthority}
+                      onChange={e => setForm({ ...form, courtAuthority: e.target.value })}
+                      className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Court name" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Case Number</label>
+                    <input value={form.caseNumber}
+                      onChange={e => setForm({ ...form, caseNumber: e.target.value })}
+                      className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Case #" />
+                  </div>
                 </div>
-              )}
-              {activeTab === 1 && (
-                <div className="space-y-3">
+              </div>
+
+              {/* 2. Parties */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">2. Parties</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Plaintiff</label>
                     <input value={form.parties.plaintiff}
@@ -267,31 +271,17 @@ export default function LitigationSection({
                       className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Defendant name" />
                   </div>
                 </div>
-              )}
-              {activeTab === 2 && (
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Court / Authority</label>
-                  <input value={form.courtAuthority}
-                    onChange={e => setForm({ ...form, courtAuthority: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Court name" />
-                </div>
-              )}
-              {activeTab === 3 && (
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Case Number</label>
-                  <input value={form.caseNumber}
-                    onChange={e => setForm({ ...form, caseNumber: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Case #" />
-                </div>
-              )}
-              {activeTab === 4 && (
+              </div>
+
+              {/* 3. Important Dates */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">3. Important Dates</h4>
                 <div className="space-y-3">
-                  <label className="block text-xs text-slate-400">Important Dates</label>
                   {form.importantDates.map((d, i) => (
                     <div key={i} className="grid grid-cols-2 gap-2">
                       <input value={d.label}
                         onChange={e => { const arr = [...form.importantDates]; arr[i] = { ...arr[i], label: e.target.value }; setForm({ ...form, importantDates: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" placeholder="Label" />
+                        className="rounded-lg px-3 py-2 text-sm" placeholder="Label (e.g. Filing Deadline)" />
                       <input type="date" value={d.date}
                         onChange={e => { const arr = [...form.importantDates]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, importantDates: arr }); }}
                         className="rounded-lg px-3 py-2 text-sm" />
@@ -300,26 +290,12 @@ export default function LitigationSection({
                   <button onClick={() => setForm({ ...form, importantDates: [...form.importantDates, { label: "", date: "" }] })}
                     className="text-xs text-rose-400 hover:text-rose-300">+ Add Date</button>
                 </div>
-              )}
-              {activeTab === 5 && (
-                <div className="space-y-3">
-                  <label className="block text-xs text-slate-400">Filings</label>
-                  {form.filings.map((f, i) => (
-                    <div key={i} className="grid grid-cols-2 gap-2">
-                      <input value={f.title}
-                        onChange={e => { const arr = [...form.filings]; arr[i] = { ...arr[i], title: e.target.value }; setForm({ ...form, filings: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" placeholder="Filing title" />
-                      <input type="date" value={f.date}
-                        onChange={e => { const arr = [...form.filings]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, filings: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                  ))}
-                  <button onClick={() => setForm({ ...form, filings: [...form.filings, { title: "", date: "", fileUrl: "" }] })}
-                    className="text-xs text-rose-400 hover:text-rose-300">+ Add Filing</button>
-                </div>
-              )}
-              {activeTab === 6 && (
-                <div className="space-y-3">
+              </div>
+
+              {/* 4. Hearings & Reminders */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">4. Hearings & Reminders</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Hearing Date</label>
                     <input type="date" value={form.hearingDate}
@@ -328,14 +304,12 @@ export default function LitigationSection({
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Hearing Remarks</label>
-                    <textarea value={form.hearingRemarks}
+                    <input value={form.hearingRemarks}
                       onChange={e => setForm({ ...form, hearingRemarks: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-sm" rows={2} />
+                      className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Remarks..." />
                   </div>
                 </div>
-              )}
-              {activeTab === 7 && (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Next Hearing Date</label>
                     <input type="date" value={form.nextHearingDate}
@@ -344,57 +318,94 @@ export default function LitigationSection({
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Next Hearing Remarks</label>
-                    <textarea value={form.nextHearingRemarks}
+                    <input value={form.nextHearingRemarks}
                       onChange={e => setForm({ ...form, nextHearingRemarks: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-sm" rows={2} />
+                      className="w-full rounded-lg px-3 py-2 text-sm" placeholder="Remarks..." />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Reminder Date (notification + email)</label>
+                  <input type="date" value={form.reminderDate}
+                    onChange={e => setForm({ ...form, reminderDate: e.target.value })}
+                    className="w-full sm:w-1/2 rounded-lg px-3 py-2 text-sm" />
+                  <p className="text-xs text-slate-600 mt-1">A notification and email will be sent to all assignees on this date</p>
+                </div>
+              </div>
+
+              {/* 5. Filings & Documents */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">5. Filings & Documents</h4>
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <label className="block text-xs text-slate-400">Filings Log</label>
+                    {form.filings.map((f, i) => (
+                      <div key={i} className="grid grid-cols-2 gap-2">
+                        <input value={f.title}
+                          onChange={e => { const arr = [...form.filings]; arr[i] = { ...arr[i], title: e.target.value }; setForm({ ...form, filings: arr }); }}
+                          className="rounded-lg px-3 py-2 text-sm" placeholder="Filing title" />
+                        <input type="date" value={f.date}
+                          onChange={e => { const arr = [...form.filings]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, filings: arr }); }}
+                          className="rounded-lg px-3 py-2 text-sm" />
+                      </div>
+                    ))}
+                    <button onClick={() => setForm({ ...form, filings: [...form.filings, { title: "", date: "", fileUrl: "" }] })}
+                      className="text-xs text-rose-400 hover:text-rose-300">+ Add Filing</button>
+                  </div>
+                  
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Reminder Date (notification + email)</label>
-                    <input type="date" value={form.reminderDate}
-                      onChange={e => setForm({ ...form, reminderDate: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-sm" />
-                    <p className="text-xs text-slate-600 mt-1">A notification and email will be sent to all assignees on this date</p>
+                    <label className="block text-xs text-slate-400 mb-1">Upload Documents</label>
+                    <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center">
+                      <input type="file" multiple className="w-full" />
+                      <p className="text-xs text-slate-500 mt-2">Drag & drop files or click to browse</p>
+                    </div>
                   </div>
                 </div>
-              )}
-              {activeTab === 8 && (
-                <div className="space-y-3">
-                  <label className="block text-xs text-slate-400">Decisions</label>
-                  {form.decisions.map((d, i) => (
-                    <div key={i} className="grid grid-cols-3 gap-2">
-                      <input type="date" value={d.date}
-                        onChange={e => { const arr = [...form.decisions]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, decisions: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" />
-                      <input value={d.summary} className="col-span-2 rounded-lg px-3 py-2 text-sm" placeholder="Summary"
-                        onChange={e => { const arr = [...form.decisions]; arr[i] = { ...arr[i], summary: e.target.value }; setForm({ ...form, decisions: arr }); }} />
-                    </div>
-                  ))}
-                  <button onClick={() => setForm({ ...form, decisions: [...form.decisions, { date: "", summary: "" }] })}
-                    className="text-xs text-rose-400 hover:text-rose-300">+ Add Decision</button>
+              </div>
+
+              {/* 6. Decisions & Appeals */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">6. Decisions & Appeals</h4>
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="block text-xs text-slate-400">Decisions</label>
+                    {form.decisions.map((d, i) => (
+                      <div key={i} className="grid grid-cols-3 gap-2">
+                        <input type="date" value={d.date}
+                          onChange={e => { const arr = [...form.decisions]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, decisions: arr }); }}
+                          className="rounded-lg px-3 py-2 text-sm" />
+                        <input value={d.summary} className="col-span-2 rounded-lg px-3 py-2 text-sm" placeholder="Decision Summary"
+                          onChange={e => { const arr = [...form.decisions]; arr[i] = { ...arr[i], summary: e.target.value }; setForm({ ...form, decisions: arr }); }} />
+                      </div>
+                    ))}
+                    <button onClick={() => setForm({ ...form, decisions: [...form.decisions, { date: "", summary: "" }] })}
+                      className="text-xs text-rose-400 hover:text-rose-300">+ Add Decision</button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-xs text-slate-400">Appeals</label>
+                    {form.appeals.map((a, i) => (
+                      <div key={i} className="grid grid-cols-3 gap-2">
+                        <input type="date" value={a.date}
+                          onChange={e => { const arr = [...form.appeals]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, appeals: arr }); }}
+                          className="rounded-lg px-3 py-2 text-sm" />
+                        <input value={a.type} placeholder="Appeal Type"
+                          onChange={e => { const arr = [...form.appeals]; arr[i] = { ...arr[i], type: e.target.value }; setForm({ ...form, appeals: arr }); }}
+                          className="rounded-lg px-3 py-2 text-sm" />
+                        <input value={a.status} placeholder="Status"
+                          onChange={e => { const arr = [...form.appeals]; arr[i] = { ...arr[i], status: e.target.value }; setForm({ ...form, appeals: arr }); }}
+                          className="rounded-lg px-3 py-2 text-sm" />
+                      </div>
+                    ))}
+                    <button onClick={() => setForm({ ...form, appeals: [...form.appeals, { date: "", type: "", status: "" }] })}
+                      className="text-xs text-rose-400 hover:text-rose-300">+ Add Appeal</button>
+                  </div>
                 </div>
-              )}
-              {activeTab === 9 && (
-                <div className="space-y-3">
-                  <label className="block text-xs text-slate-400">Appeals</label>
-                  {form.appeals.map((a, i) => (
-                    <div key={i} className="grid grid-cols-3 gap-2">
-                      <input type="date" value={a.date}
-                        onChange={e => { const arr = [...form.appeals]; arr[i] = { ...arr[i], date: e.target.value }; setForm({ ...form, appeals: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" />
-                      <input value={a.type} placeholder="Type"
-                        onChange={e => { const arr = [...form.appeals]; arr[i] = { ...arr[i], type: e.target.value }; setForm({ ...form, appeals: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" />
-                      <input value={a.status} placeholder="Status"
-                        onChange={e => { const arr = [...form.appeals]; arr[i] = { ...arr[i], status: e.target.value }; setForm({ ...form, appeals: arr }); }}
-                        className="rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                  ))}
-                  <button onClick={() => setForm({ ...form, appeals: [...form.appeals, { date: "", type: "", status: "" }] })}
-                    className="text-xs text-rose-400 hover:text-rose-300">+ Add Appeal</button>
-                </div>
-              )}
-              {activeTab === 10 && (
-                <div className="space-y-3">
+              </div>
+
+              {/* 7. Enforcement */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">7. Enforcement</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Enforcement Status</label>
                     <input value={form.enforcement.status}
@@ -405,22 +416,14 @@ export default function LitigationSection({
                     <label className="block text-xs text-slate-400 mb-1">Details</label>
                     <textarea value={form.enforcement.details}
                       onChange={e => setForm({ ...form, enforcement: { ...form.enforcement, details: e.target.value } })}
-                      className="w-full rounded-lg px-3 py-2 text-sm" rows={3} />
+                      className="w-full rounded-lg px-3 py-2 text-sm" rows={2} placeholder="Enforcement details..." />
                   </div>
                 </div>
-              )}
-              {activeTab === 11 && (
-                <div className="space-y-3">
-                  <label className="block text-xs text-slate-400 mb-1">Upload Documents</label>
-                  <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center">
-                    <input type="file" multiple className="w-full" />
-                    <p className="text-xs text-slate-500 mt-2">Drag & drop files or click to browse</p>
-                  </div>
-                </div>
-              )}
+              </div>
 
-              {/* Assignees - always visible at bottom */}
-              <div className="border-t border-white/10 pt-4 mt-4">
+              {/* 8. Assignments */}
+              <div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1 mt-4">8. Assignments</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Client</label>
@@ -442,7 +445,7 @@ export default function LitigationSection({
                 </div>
                 <div className="mt-3">
                   <label className="block text-xs text-slate-400 mb-2">Assign Lawyers *</label>
-                  <div className="max-h-28 overflow-y-auto space-y-1 border border-white/10 rounded-lg p-2">
+                  <div className="max-h-32 overflow-y-auto space-y-1 border border-white/10 rounded-lg p-2 bg-black/20">
                     {lawyers.map(l => (
                       <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/5 p-1 rounded">
                         <input type="checkbox" checked={form.assigneeIds.includes(l.id)}
@@ -459,16 +462,7 @@ export default function LitigationSection({
             </div>
 
             {/* Footer */}
-            <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/10">
-              <div className="flex gap-2">
-                {activeTab > 0 && (
-                  <button onClick={() => setActiveTab(activeTab - 1)} className="btn-legal-outline px-4 py-2 text-xs">← Previous</button>
-                )}
-                {activeTab < LITIGATION_TABS.length - 1 && (
-                  <button onClick={() => setActiveTab(activeTab + 1)} className="btn-legal-outline px-4 py-2 text-xs">Next →</button>
-                )}
-              </div>
-              <div className="flex gap-3">
+            <div className="flex justify-end items-center mt-4 pt-4 border-t border-white/10">
                 <button onClick={() => { resetForm(); setShowForm(false); }} className="btn-legal-outline px-5 py-2">Cancel</button>
                 <button onClick={handleSubmit}
                   disabled={!form.title.trim() || form.assigneeIds.length === 0 || !form.dueDate}
