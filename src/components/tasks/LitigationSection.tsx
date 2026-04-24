@@ -233,7 +233,26 @@ export default function LitigationSection({
               {/* 1. Case Details */}
               <div>
                 <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1">1. Case Details</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Client</label>
+                    <select value={form.clientId} onChange={e => setForm({ ...form, clientId: e.target.value, projectId: "" })}
+                      className="w-full rounded-lg px-3 py-2 text-sm">
+                      <option value="">Select Client</option>
+                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Project</label>
+                    <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })}
+                      className="w-full rounded-lg px-3 py-2 text-sm" disabled={!form.clientId}>
+                      <option value="">Select Project</option>
+                      {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p =>
+                        <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Case Type</label>
                     <input value={form.caseType} onChange={e => setForm({ ...form, caseType: e.target.value })}
@@ -421,28 +440,9 @@ export default function LitigationSection({
                 </div>
               </div>
 
-              {/* 8. Assignments */}
+              {/* 8. Assign Lawyers */}
               <div>
-                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1 mt-4">8. Assignments</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Client</label>
-                    <select value={form.clientId} onChange={e => setForm({ ...form, clientId: e.target.value, projectId: "" })}
-                      className="w-full rounded-lg px-3 py-2 text-sm">
-                      <option value="">Select Client</option>
-                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Project</label>
-                    <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-sm" disabled={!form.clientId}>
-                      <option value="">Select Project</option>
-                      {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p =>
-                        <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                  </div>
-                </div>
+                <h4 className="text-sm font-semibold text-rose-400 mb-3 border-b border-white/10 pb-1 mt-4">8. Assign Lawyers</h4>
                 <div className="mt-3">
                   <label className="block text-xs text-slate-400 mb-2">Assign Lawyers *</label>
                   <div className="max-h-32 overflow-y-auto space-y-1 border border-white/10 rounded-lg p-2 bg-black/20">
