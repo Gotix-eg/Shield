@@ -34,10 +34,13 @@ export default function NewProjectPage() {
   const [selectedLawyerId, setSelectedLawyerId] = useState<number | "">("");
 
   // Billing
-  const [billingType, setBillingType] = useState<"HOURS" | "FIXED">("HOURS");
+  const [billingType, setBillingType] = useState<"HOURS" | "FIXED" | "CAPPED_RETAINER" | "OPEN_RETAINER">("HOURS");
   const [rateSource, setRateSource] = useState<"LAWYER" | "PROJECT">("LAWYER");
   const [hourlyRate, setHourlyRate] = useState("");
   const [fixedFee, setFixedFee] = useState("");
+  const [retainerFee, setRetainerFee] = useState("");
+  const [retainerHours, setRetainerHours] = useState("");
+  const [overtimeRate, setOvertimeRate] = useState("");
   const [billingCurrency, setBillingCurrency] = useState("USD");
 
   // Advance payments (set at create time)
@@ -151,9 +154,12 @@ export default function NewProjectPage() {
           hourlyRate: billingType === "HOURS" && rateSource === "PROJECT" && hourlyRate ? parseFloat(hourlyRate) : null,
           fixedFee: billingType === "FIXED" && fixedFee ? parseFloat(fixedFee) : null,
           billingCurrency:
-            (billingType === "HOURS" && rateSource === "PROJECT") || billingType === "FIXED"
+            (billingType === "HOURS" && rateSource === "PROJECT") || billingType === "FIXED" || billingType.includes("RETAINER")
               ? billingCurrency
               : null,
+          retainerFee: billingType.includes("RETAINER") && retainerFee ? parseFloat(retainerFee) : null,
+          retainerHours: billingType.includes("RETAINER") && retainerHours ? parseFloat(retainerHours) : null,
+          overtimeRate: billingType === "CAPPED_RETAINER" && overtimeRate ? parseFloat(overtimeRate) : null,
           assigneeType,
           agentFees: agentFees ? parseFloat(agentFees) : null,
           agentCurrency,
@@ -444,6 +450,8 @@ export default function NewProjectPage() {
                 >
                   <option value="HOURS">By Hours</option>
                   <option value="FIXED">Fixed Fee</option>
+                  <option value="CAPPED_RETAINER">Capped Retainer</option>
+                  <option value="OPEN_RETAINER">Open Retainer</option>
                 </select>
               </div>
 
@@ -511,6 +519,83 @@ export default function NewProjectPage() {
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Currency
+                  </label>
+                  <select
+                    value={billingCurrency}
+                    onChange={(e) => setBillingCurrency(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                  >
+                    {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {billingType.includes("RETAINER") && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Retainer Fee
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={retainerFee}
+                    onChange={(e) => setRetainerFee(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                    Included Hours
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={retainerHours}
+                    onChange={(e) => setRetainerHours(e.target.value)}
+                    className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                    placeholder="e.g. 20"
+                    required
+                  />
+                </div>
+                {billingType === "CAPPED_RETAINER" && (
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                      Overtime Hourly Rate
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={overtimeRate}
+                      onChange={(e) => setOvertimeRate(e.target.value)}
+                      className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                )}
+                {billingType === "OPEN_RETAINER" && (
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
+                      Hourly Rate (After Retainer)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={hourlyRate}
+                      onChange={(e) => setHourlyRate(e.target.value)}
+                      className="w-full rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-legal-gold"
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest text-legal-gold font-bold mb-2">
                     Currency

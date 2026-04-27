@@ -162,6 +162,10 @@ model Project {
   rateSource         RateSource?
   billingCurrency    CurrencyCode?
   budget             Decimal?
+  /// Retainer fields
+  retainerFee        Decimal?
+  retainerHours      Decimal?
+  overtimeRate       Decimal?
   endDate            DateTime?
   startDate          DateTime?
   /// Who is handling the project: LAWYER, AGENT, or BOTH
@@ -808,6 +812,8 @@ enum ProjectStatus {
 enum BillingType {
   HOURS
   FIXED
+  CAPPED_RETAINER
+  OPEN_RETAINER
 }
 
 enum RateSource {

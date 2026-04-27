@@ -12,8 +12,25 @@ function getUserId(request: NextRequest): number | null {
     const decoded = jwt.verify(token, JWT_SECRET) as { sub: number };
     return Number(decoded.sub);
   } catch {
-    return null;
   }
+}
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const id = Number(params.id);
+  const project = await prisma.project.findUnique({
+    where: { id },
+    include: {
+      timeEntries: {
+        where: { billable: true, invoiced: false }
+      }
+    }
+  });
+  if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  
+  // Calculate used hours
+  const usedHours = project.timeEntries.reduce((sum, te) => sum + (te.durationMins / 60), 0);
+  
+  return NextResponse.json({ ...project, usedHours });
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {

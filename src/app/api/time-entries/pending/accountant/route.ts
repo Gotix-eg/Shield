@@ -74,7 +74,7 @@ export async function PUT(req: NextRequest) {
         accountantId: user.id,
       },
       include: {
-        project: { select: { id: true, clientId: true, companyId: true, name: true, rateSource: true, hourlyRate: true, billingCurrency: true, client: { select: { name: true } } } },
+        project: { select: { id: true, clientId: true, companyId: true, name: true, rateSource: true, hourlyRate: true, billingCurrency: true, billingType: true, retainerHours: true, overtimeRate: true, client: { select: { name: true } } } },
         user: { select: { id: true, name: true, positionId: true } },
       },
     });
@@ -117,10 +117,40 @@ export async function PUT(req: NextRequest) {
       // helper to convert Prisma Decimal to JS number
       const toNum = (d: any): number => d ? parseFloat(d.toString()) : 0;
 
+      // ensure duration present
+      let quantity = approved.durationMins ? approved.durationMins / 60 : 0;
+      if (quantity === 0 && approved.startTs && approved.endTs) {
+        quantity = ( (approved.endTs as any as Date).getTime() - (approved.startTs as any as Date).getTime() ) / 3600000;
+      }
+
       // determine rate hierarchy: project fixed rate -> assignment -> lawyer default/position
       let rate = 0;
       let rateCurrency: string = 'USD';
-      if (approved.project && approved.project.rateSource === 'PROJECT' && approved.project.hourlyRate) {
+      let isRetainerCovered = false;
+
+      if (approved.project && approved.project.billingType?.includes('RETAINER')) {
+        const priorEntries = await prisma.timeEntry.findMany({
+          where: { projectId: approved.project.id, accountantApproved: true, id: { lt: approved.id } }
+        });
+        const usedHours = priorEntries.reduce((sum, te) => sum + ((te.durationMins||0) / 60), 0);
+        const retainerHours = toNum(approved.project.retainerHours);
+        
+        if (usedHours >= retainerHours) {
+          // Fully overtime
+          rate = approved.project.billingType === 'CAPPED_RETAINER' ? toNum(approved.project.overtimeRate) : toNum(approved.project.hourlyRate);
+          rateCurrency = approved.project.billingCurrency || 'USD';
+        } else if (usedHours + quantity > retainerHours) {
+          // Partially overtime - bill only the excess
+          quantity = (usedHours + quantity) - retainerHours;
+          rate = approved.project.billingType === 'CAPPED_RETAINER' ? toNum(approved.project.overtimeRate) : toNum(approved.project.hourlyRate);
+          rateCurrency = approved.project.billingCurrency || 'USD';
+        } else {
+          // Fully covered
+          rate = 0;
+          isRetainerCovered = true;
+          rateCurrency = approved.project.billingCurrency || 'USD';
+        }
+      } else if (approved.project && approved.project.rateSource === 'PROJECT' && approved.project.hourlyRate) {
         rate = toNum(approved.project.hourlyRate);
         rateCurrency = approved.project.billingCurrency || 'USD';
       } else {
@@ -134,12 +164,6 @@ export async function PUT(req: NextRequest) {
           const pos = await prisma.position.findUnique({ where: { id: approved.user.positionId } });
           rate = pos?.defaultRate ? toNum(pos.defaultRate) : 0;
         }
-      }
-
-      // ensure duration present
-      let quantity = approved.durationMins ? approved.durationMins / 60 : 0;
-      if (quantity === 0 && approved.startTs && approved.endTs) {
-        quantity = ( (approved.endTs as any as Date).getTime() - (approved.startTs as any as Date).getTime() ) / 3600000;
       }
       // convert rate if needed
       let unitPrice = rate;
@@ -177,7 +201,7 @@ export async function PUT(req: NextRequest) {
             invoiceId: invoice.id,
             itemType: 'TIME',
             refId: approved.id,
-            description: approved.notes || `Time entry #${approved.id}`,
+            description: isRetainerCovered ? `${approved.notes || `Time entry #${approved.id}`} (Covered by Retainer)` : (approved.notes || `Time entry #${approved.id}`),
             quantity,
             unitPrice,
             lineTotal,

@@ -55,8 +55,20 @@ export default function ProjectDetailPage() {
   );
   const [accountType, setAccountType] = useState<"TRUST" | "EXPENSE">("TRUST");
   const [editId, setEditId] = useState<number | null>(null);
+  const [project, setProject] = useState<any>(null);
 
   /* ---------- helpers ---------- */
+  const fetchProject = async () => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (res.ok) setProject(await res.json());
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchPayments = async () => {
     try {
       const res = await fetch(`/api/advance-payments?projectId=${projectId}`, {
@@ -141,6 +153,7 @@ export default function ProjectDetailPage() {
   /* -------------------------------- */
 
   useEffect(() => {
+    fetchProject();
     fetchPayments();
     fetchAttachments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,8 +162,61 @@ export default function ProjectDetailPage() {
   return (
     <div className="container mx-auto p-6 max-w-3xl">
       <Toaster />
-      <h1 className="text-2xl font-bold mb-4">Advance Payments</h1>
-      <p className="mb-6 text-sm text-gray-600">Project ID: {projectId}</p>
+      <h1 className="text-2xl font-bold mb-4">Advance Payments & Details</h1>
+      <p className="mb-6 text-sm text-gray-600">Project ID: {projectId} {project && `| Name: ${project.name}`}</p>
+
+      {/* Retainer Dashboard Widget */}
+      {project && project.billingType && project.billingType.includes("RETAINER") && (
+        <div className="bg-white p-6 rounded-lg border border-legal-gold/30 shadow-sm mb-8">
+          <h2 className="font-semibold text-lg mb-4 text-legal-gold uppercase tracking-wider flex items-center gap-2">
+            <span>Retainer Status</span>
+            <span className="text-xs bg-legal-gold/10 text-legal-gold px-2 py-1 rounded-full">
+              {project.billingType.replace("_", " ")}
+            </span>
+          </h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-gray-50 p-3 rounded border border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Fee</p>
+              <p className="font-semibold text-lg">{project.retainerFee} <span className="text-sm font-normal text-gray-400">{project.billingCurrency}</span></p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded border border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Hours</p>
+              <p className="font-semibold text-lg">{project.retainerHours} <span className="text-sm font-normal text-gray-400">hrs</span></p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded border border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Used</p>
+              <p className="font-semibold text-lg text-blue-600">{project.usedHours?.toFixed(2) || 0} <span className="text-sm font-normal text-gray-400">hrs</span></p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded border border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Overtime Rate</p>
+              <p className="font-semibold text-lg text-rose-600">
+                {project.billingType === "CAPPED_RETAINER" ? project.overtimeRate : project.hourlyRate} 
+                <span className="text-sm font-normal text-gray-400"> {project.billingCurrency}/hr</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-2 flex justify-between text-sm">
+            <span className="font-medium text-gray-700">Hours Usage</span>
+            <span className={`font-bold ${project.usedHours > project.retainerHours ? 'text-rose-600' : 'text-emerald-600'}`}>
+              {project.usedHours?.toFixed(1) || 0} / {project.retainerHours}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <div 
+              className={`h-2.5 rounded-full ${project.usedHours > project.retainerHours ? 'bg-rose-500' : 'bg-emerald-500'}`} 
+              style={{ width: `${Math.min((project.usedHours / project.retainerHours) * 100, 100)}%` }}
+            ></div>
+          </div>
+          {project.usedHours > project.retainerHours && (
+            <p className="mt-3 text-sm text-rose-600 flex items-center gap-1 font-medium bg-rose-50 p-2 rounded">
+              ⚠️ Warning: Retainer exceeded by {(project.usedHours - project.retainerHours).toFixed(2)} hours. Additional billing will apply.
+            </p>
+          )}
+        </div>
+      )}
+
 
       {/* Add Payment */}
       <div className="bg-gray-50 p-4 rounded border mb-8">

@@ -75,7 +75,7 @@ export const POST = withCompany(async (request: NextRequest) => {
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, agentCurrency = null, clientWillPay = false, officePercentage = null, agentId = null, lawyerId = null } = await request.json();
+  const { name, clientId, description, advanceAmount, advanceCurrency, status, billingType = 'HOURS', rateSource = null, hourlyRate = null, fixedFee = null, billingCurrency = null, assigneeType = 'LAWYER', agentFees = null, agentCurrency = null, clientWillPay = false, officePercentage = null, agentId = null, lawyerId = null, retainerFee = null, retainerHours = null, overtimeRate = null } = await request.json();
   if (!name || !clientId)
     return NextResponse.json({ error: "name and clientId required" }, { status: 400 });
   if (advanceAmount !== undefined && advanceAmount !== null && typeof advanceAmount !== "number")
@@ -93,6 +93,14 @@ export const POST = withCompany(async (request: NextRequest) => {
       return NextResponse.json({ error: 'fixedFee required when billingType=FIXED' }, { status: 400 });
     if (!billingCurrency)
       return NextResponse.json({ error: 'billingCurrency required for fixed fee' }, { status: 400 });
+  }
+  if (billingType === 'CAPPED_RETAINER' || billingType === 'OPEN_RETAINER') {
+    if (!retainerFee || !retainerHours)
+      return NextResponse.json({ error: 'retainerFee and retainerHours required for retainer billing' }, { status: 400 });
+    if (billingType === 'CAPPED_RETAINER' && !overtimeRate)
+      return NextResponse.json({ error: 'overtimeRate required for capped retainer' }, { status: 400 });
+    if (!billingCurrency)
+      return NextResponse.json({ error: 'billingCurrency required for retainer billing' }, { status: 400 });
   }
 
   // Verify client belongs to user unless user is OWNER (admin)
@@ -169,6 +177,9 @@ export const POST = withCompany(async (request: NextRequest) => {
       agentId: agentId ? Number(agentId) : null,
       clientWillPay,
       officePercentage: officePercentage ? Number(officePercentage) : null,
+      retainerFee: retainerFee ? Number(retainerFee) : null,
+      retainerHours: retainerHours ? Number(retainerHours) : null,
+      overtimeRate: overtimeRate ? Number(overtimeRate) : null,
     },
   });
 
