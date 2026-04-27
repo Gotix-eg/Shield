@@ -27,7 +27,7 @@ const ROLE_PAGES: Record<string,string[]> = {
     { href: "/projects", label: "Projects", key:"projects" },
     { href: "/agents", label: "Agents", key:"agents" },
     { href: "/agent-process", label: "Agent Process", key:"agent-process" },
-    { href: "/admin/tasks", label: "Tasks", key:"tasks" },
+    { href: "/admin/tasks", label: "Matters", key:"tasks" },
     { href: "/time", label: "Time", key:"time" },
     { href: "/expenses", label: "Expenses", key:"expenses" },
     { href: "/leaves", label: "Leaves", key:"leaves" },
