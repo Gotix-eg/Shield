@@ -49,8 +49,7 @@ interface Props {
 export default function TaskLanding({ onSelect, taskCounts }: Props) {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-serif font-bold mb-2 text-center">Task Management</h1>
-      <p className="text-slate-400 text-sm mb-10 text-center">Select a category to manage tasks</p>
+      <h1 className="text-3xl font-serif font-bold mb-10 text-center">Matters</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl">
         {CARDS.map(({ key, label, desc, icon: Icon, gradient, border, iconColor }) => (
           <button
@@ -67,7 +66,7 @@ export default function TaskLanding({ onSelect, taskCounts }: Props) {
               <p className="text-slate-500 text-xs leading-relaxed">{desc}</p>
               <div className="mt-4 flex items-center gap-2">
                 <span className="text-2xl font-bold text-white">{taskCounts[key] || 0}</span>
-                <span className="text-slate-500 text-xs">tasks</span>
+                <span className="text-slate-500 text-xs">matters</span>
               </div>
             </div>
           </button>
