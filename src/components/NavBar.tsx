@@ -119,7 +119,7 @@ export default function NavBar() {
     { href: "/projects", label: "Projects", key: "projects", icon: FolderKanban },
     { href: "/agents", label: "Agents", key: "agents", icon: Users },
     { href: "/agent-process", label: "Agent Process", key: "agent-process", icon: Users },
-    { href: "/admin/tasks", label: "Tasks", key: "tasks", icon: CheckSquare },
+    { href: "/admin/tasks", label: "Matters", key: "tasks", icon: CheckSquare },
     { href: "/time", label: "Time Entries", key: "time", icon: Clock },
     { href: "/expenses", label: "Expenses", key: "expenses", icon: CreditCard },
     { href: "/leaves", label: "Leaves", key: "leaves", icon: Calendar },
