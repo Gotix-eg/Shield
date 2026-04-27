@@ -660,6 +660,7 @@ model Account {
   company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   clients   Client[]          @relation("ClientAccount")
   projects  Project[]         @relation("ProjectAccount")
+  tasks     Task[]            @relation("TaskAccount")
   lines     TransactionLine[]
 
   @@unique([companyId, code])
@@ -749,6 +750,7 @@ model Task {
   court       String?
   clientId    Int?
   projectId   Int?
+  accountId   Int?
   assignerId  Int
   assigneeIds String   @default("") // comma-separated user IDs for multiple assignees
   dueDate     DateTime
@@ -778,6 +780,7 @@ model Task {
   assigner    User       @relation("taskAssigner", fields: [assignerId], references: [id])
   client      Client?    @relation("ClientTasks", fields: [clientId], references: [id])
   project     Project?   @relation("ProjectTasks", fields: [projectId], references: [id])
+  account     Account?   @relation("TaskAccount", fields: [accountId], references: [id])
   agent       Agent?     @relation(fields: [agentId], references: [id])
 
   @@index([assigneeIds, dueDate])

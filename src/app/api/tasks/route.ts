@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
     caseNumber, importantDates, filings, hearingDate, hearingRemarks,
     nextHearingDate, nextHearingRemarks, reminderDate,
     decisions, appeals, enforcement,
+    separateAccount,
   } = data;
   
   if (!title || !assigneeIds || !dueDate) {
@@ -103,6 +104,34 @@ export async function POST(req: NextRequest) {
 
   const assigneeIdArray = Array.isArray(assigneeIds) ? assigneeIds.map(Number) : [Number(assigneeIds)];
   const assigneeIdsStr = assigneeIdArray.join(',');
+
+  let accountIdToUse: number | null = null;
+  if (clientId) {
+    if (!projectId || separateAccount) {
+      // Create separate account
+      const client = await prisma.client.findUnique({ where: { id: Number(clientId) } });
+      if (client) {
+        const clientCode = client.code || `C${client.id.toString().padStart(4,'0')}`;
+        // Add random component to ensure unique code across rapid submissions
+        const matterCode = `M${Date.now().toString().slice(-4)}${Math.floor(Math.random()*100)}`;
+        const revCode = `REV-${clientCode}-MATTER-${matterCode}`;
+        
+        const newAccount = await prisma.account.create({
+          data: {
+            code: revCode,
+            name: `${clientCode}-Matter-${title.substring(0,10)} Rev`,
+            type: 'INCOME',
+            companyId: client.companyId,
+          }
+        });
+        accountIdToUse = newAccount.id;
+      }
+    } else if (projectId && !separateAccount) {
+      // Use project's account
+      const project = await prisma.project.findUnique({ where: { id: Number(projectId) } });
+      if (project) accountIdToUse = project.accountId;
+    }
+  }
 
   const task = await prisma.task.create({
     data: {
@@ -119,6 +148,7 @@ export async function POST(req: NextRequest) {
       court,
       clientId: clientId ? Number(clientId) : null,
       projectId: projectId ? Number(projectId) : null,
+      accountId: accountIdToUse,
       assignerId: session.user.id,
       assigneeIds: assigneeIdsStr,
       dueDate: new Date(dueDate),

@@ -40,6 +40,7 @@ export default function LitigationSection({
     decisions: [{ date: "", summary: "" }],
     appeals: [{ date: "", type: "", status: "" }],
     enforcement: { status: "", details: "" },
+    separateAccount: false,
   });
 
   const litTasks = useMemo(() => {
@@ -66,6 +67,7 @@ export default function LitigationSection({
       decisions: [{ date: "", summary: "" }],
       appeals: [{ date: "", type: "", status: "" }],
       enforcement: { status: "", details: "" },
+      separateAccount: false,
     });
   };
 
@@ -96,6 +98,7 @@ export default function LitigationSection({
       dueDate: form.dueDate,
       isAgent: form.isAgent,
       agentId: form.isAgent && form.agentId ? parseInt(form.agentId) : undefined,
+      separateAccount: form.separateAccount,
     });
     resetForm();
     setShowForm(false);
@@ -251,6 +254,21 @@ export default function LitigationSection({
                         <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   </div>
+                  {form.clientId && (
+                    <div className="col-span-1 sm:col-span-2 bg-white/5 border border-white/10 p-3 rounded-lg flex items-center gap-2 mb-2">
+                      <input 
+                        type="checkbox" 
+                        id="separateAccountLit" 
+                        checked={form.separateAccount || !form.projectId} 
+                        disabled={!form.projectId}
+                        onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
+                        className="accent-legal-gold w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor="separateAccountLit" className="text-sm text-slate-300 cursor-pointer">
+                        {!form.projectId ? "An independent revenue account will be created automatically" : "Create a separate independent revenue account for this matter"}
+                      </label>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>

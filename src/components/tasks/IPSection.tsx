@@ -28,7 +28,7 @@ export default function IPSection({
     title: "", description: "", ipType: "", ipAction: "",
     actionDetails: {} as Record<string, any>,
     clientId: "", projectId: "", dueDate: "",
-    assigneeIds: [] as number[], isAgent: false, agentId: "",
+    assigneeIds: [] as number[], isAgent: false, agentId: "", separateAccount: false,
   });
 
   const ipTasks = useMemo(() => {
@@ -45,9 +45,10 @@ export default function IPSection({
       clientId: form.clientId ? parseInt(form.clientId) : undefined,
       projectId: form.projectId ? parseInt(form.projectId) : undefined,
       agentId: form.isAgent && form.agentId ? parseInt(form.agentId) : undefined,
+      separateAccount: form.separateAccount,
     });
     setForm({ title: "", description: "", ipType: "", ipAction: "", actionDetails: {},
-      clientId: "", projectId: "", dueDate: "", assigneeIds: [], isAgent: false, agentId: "" });
+      clientId: "", projectId: "", dueDate: "", assigneeIds: [], isAgent: false, agentId: "", separateAccount: false });
     setShowForm(false);
   };
 
@@ -204,6 +205,21 @@ export default function IPSection({
                       <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
+                {form.clientId && (
+                  <div className="col-span-2 bg-white/5 border border-white/10 p-3 rounded-lg flex items-center gap-2">
+                    <input 
+                      type="checkbox" 
+                      id="separateAccountIP" 
+                      checked={form.separateAccount || !form.projectId} 
+                      disabled={!form.projectId}
+                      onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
+                      className="accent-legal-gold w-4 h-4 cursor-pointer"
+                    />
+                    <label htmlFor="separateAccountIP" className="text-sm text-slate-300 cursor-pointer">
+                      {!form.projectId ? "An independent revenue account will be created automatically" : "Create a separate independent revenue account for this matter"}
+                    </label>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs text-slate-400 mb-1">Due Date *</label>
