@@ -179,7 +179,7 @@ export default function TaskDetailModal({ task, onClose }: Props) {
                 <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">{task.ipAction} Details</p>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(task.actionDetails).map(([key, value]) => {
-                    const fieldDef = ACTION_FIELDS[task.ipAction || ""]?.find((f: any) => f.name === key);
+                    const fieldDef = task.ipType && task.ipAction ? ACTION_FIELDS[task.ipType]?.[task.ipAction]?.find((f: any) => f.name === key) : null;
                     const label = fieldDef?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./g, (s: string) => s.toUpperCase());
                     let displayValue = String(value || "");
                     if (fieldDef?.type === "date" && value) displayValue = new Date(value).toLocaleDateString();

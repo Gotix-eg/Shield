@@ -129,10 +129,10 @@ export default function IPSection({
                   </select>
                 </div>
               )}
-              {form.ipAction && ACTION_FIELDS[form.ipAction] && (
+              {form.ipAction && form.ipType && ACTION_FIELDS[form.ipType]?.[form.ipAction] && (
                 <div className="border border-white/10 p-3 rounded-lg space-y-3 max-h-48 overflow-y-auto custom-scrollbar">
                   <p className="font-medium text-sm text-slate-300 sticky top-0">{form.ipAction} Details</p>
-                  {ACTION_FIELDS[form.ipAction].map((field: any) => {
+                  {ACTION_FIELDS[form.ipType][form.ipAction].map((field: any) => {
                     const shouldShow = !field.dependsOn || form.actionDetails[field.dependsOn.field] === field.dependsOn.value;
                     if (!shouldShow) return null;
                     return (
