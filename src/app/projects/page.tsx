@@ -277,7 +277,7 @@ export default function ProjectsPage() {
 
       toast.success(`Imported ${data.count} projects successfully.`);
       if (data.errors > 0) {
-        toast.error(`${data.errors} rows failed to import. Check console.`);
+        toast.error(`${data.errors} rows failed. Error: ${data.firstError || 'Check console'}`);
       }
       fetchProjects();
     } catch (error: any) {

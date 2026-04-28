@@ -157,13 +157,19 @@ export async function POST(request: NextRequest) {
                     },
                 });
                 successCount++;
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`Import error for row:`, row, error);
+                if (!firstError) firstError = error.message;
                 errorCount++;
             }
         }
 
-        return NextResponse.json({ success: true, count: successCount, errors: errorCount });
+        return NextResponse.json({ 
+            success: true, 
+            count: successCount, 
+            errors: errorCount,
+            firstError: firstError 
+        });
 
     } catch (error: any) {
         console.error("Import failed:", error);
