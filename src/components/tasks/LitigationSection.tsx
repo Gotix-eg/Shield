@@ -41,6 +41,8 @@ export default function LitigationSection({
     appeals: [{ date: "", type: "", status: "" }],
     enforcement: { status: "", details: "" },
     separateAccount: false,
+    billingType: "HOURS", billingCurrency: "USD",
+    hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
   });
 
   const litTasks = useMemo(() => {
@@ -68,6 +70,7 @@ export default function LitigationSection({
       appeals: [{ date: "", type: "", status: "" }],
       enforcement: { status: "", details: "" },
       separateAccount: false,
+      billingType: "HOURS", billingCurrency: "USD", hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
     });
   };
 
@@ -99,6 +102,12 @@ export default function LitigationSection({
       isAgent: form.isAgent,
       agentId: form.isAgent && form.agentId ? parseInt(form.agentId) : undefined,
       separateAccount: form.separateAccount,
+      billingType: form.billingType,
+      billingCurrency: form.billingCurrency,
+      hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : undefined,
+      retainerHours: form.retainerHours ? parseFloat(form.retainerHours) : undefined,
+      retainerFee: form.retainerFee ? parseFloat(form.retainerFee) : undefined,
+      overtimeRate: form.overtimeRate ? parseFloat(form.overtimeRate) : undefined,
     });
     resetForm();
     setShowForm(false);
@@ -254,19 +263,69 @@ export default function LitigationSection({
                         <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   </div>
-                  {form.clientId && (
-                    <div className="col-span-1 sm:col-span-2 bg-white/5 border border-white/10 p-3 rounded-lg flex items-center gap-2 mb-2">
-                      <input 
-                        type="checkbox" 
-                        id="separateAccountLit" 
-                        checked={form.separateAccount || !form.projectId} 
-                        disabled={!form.projectId}
-                        onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
-                        className="accent-legal-gold w-4 h-4 cursor-pointer"
-                      />
-                      <label htmlFor="separateAccountLit" className="text-sm text-slate-300 cursor-pointer">
-                        {!form.projectId ? "An independent revenue account will be created automatically" : "Create a separate independent revenue account for this matter"}
-                      </label>
+                    </div>
+                  )}
+
+                  {/* Billing Options for separate account */}
+                  {(form.separateAccount || !form.projectId) && form.clientId && (
+                    <div className="col-span-1 sm:col-span-2 space-y-4 border-t border-white/10 pt-4 mt-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-slate-400 mb-1">Billing Type</label>
+                          <select value={form.billingType} onChange={e => setForm({ ...form, billingType: e.target.value })}
+                            className="w-full rounded-lg px-3 py-2 text-sm bg-slate-800">
+                            <option value="HOURS">Hourly Rate</option>
+                            <option value="FIXED">Fixed Fee</option>
+                            <option value="CAPPED_RETAINER">Capped Retainer</option>
+                            <option value="OPEN_RETAINER">Open Retainer</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-slate-400 mb-1">Currency</label>
+                          <select value={form.billingCurrency} onChange={e => setForm({ ...form, billingCurrency: e.target.value })}
+                            className="w-full rounded-lg px-3 py-2 text-sm bg-slate-800">
+                            <option value="USD">USD</option>
+                            <option value="EGP">EGP</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="SAR">SAR</option>
+                            <option value="AED">AED</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {(form.billingType === 'HOURS' || form.billingType === 'FIXED' || form.billingType === 'OPEN_RETAINER') && (
+                        <div>
+                          <label className="block text-xs text-slate-400 mb-1">
+                            {form.billingType === 'HOURS' ? 'Hourly Rate' : form.billingType === 'FIXED' ? 'Fixed Amount' : 'Standard Hourly Rate (After Retainer)'}
+                          </label>
+                          <input type="number" value={form.hourlyRate} onChange={e => setForm({ ...form, hourlyRate: e.target.value })}
+                            className="w-full rounded-lg px-3 py-2 text-sm bg-slate-800" placeholder="0.00" />
+                        </div>
+                      )}
+
+                      {(form.billingType === 'CAPPED_RETAINER' || form.billingType === 'OPEN_RETAINER') && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-400 mb-1">Retainer Fee</label>
+                            <input type="number" value={form.retainerFee} onChange={e => setForm({ ...form, retainerFee: e.target.value })}
+                              className="w-full rounded-lg px-3 py-2 text-sm bg-slate-800" placeholder="0.00" />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-400 mb-1">Included Hours</label>
+                            <input type="number" value={form.retainerHours} onChange={e => setForm({ ...form, retainerHours: e.target.value })}
+                              className="w-full rounded-lg px-3 py-2 text-sm bg-slate-800" placeholder="0" />
+                          </div>
+                        </div>
+                      )}
+
+                      {form.billingType === 'CAPPED_RETAINER' && (
+                        <div>
+                          <label className="block text-xs text-slate-400 mb-1">Overtime Hourly Rate</label>
+                          <input type="number" value={form.overtimeRate} onChange={e => setForm({ ...form, overtimeRate: e.target.value })}
+                            className="w-full rounded-lg px-3 py-2 text-sm bg-slate-800" placeholder="0.00" />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

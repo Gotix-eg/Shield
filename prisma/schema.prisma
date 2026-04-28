@@ -757,6 +757,14 @@ model Task {
   status      TaskStatus @default(PENDING)
   createdAt   DateTime   @default(now())
 
+  // Billing fields
+  billingType     BillingType  @default(HOURS)
+  billingCurrency CurrencyCode @default(USD)
+  hourlyRate      Decimal?
+  retainerHours   Decimal?
+  retainerFee     Decimal?
+  overtimeRate    Decimal?
+
   // ─── Litigation-specific fields ────────────────────────────
   litigationCategory  String?    // IP_LITIGATION or CORPORATE_LITIGATION
   litigationType      String?    // CIVIL_COMMERCIAL, ADMINISTRATIVE, CRIMINAL, ARBITRATION

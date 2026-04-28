@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
     nextHearingDate, nextHearingRemarks, reminderDate,
     decisions, appeals, enforcement,
     separateAccount,
+    billingType, billingCurrency, hourlyRate, retainerHours, retainerFee, overtimeRate
   } = data;
   
   if (!title || !assigneeIds || !dueDate) {
@@ -149,6 +150,12 @@ export async function POST(req: NextRequest) {
       clientId: clientId ? Number(clientId) : null,
       projectId: projectId ? Number(projectId) : null,
       accountId: accountIdToUse,
+      billingType: billingType || 'HOURS',
+      billingCurrency: billingCurrency || 'USD',
+      hourlyRate: hourlyRate ? Number(hourlyRate) : null,
+      retainerHours: retainerHours ? Number(retainerHours) : null,
+      retainerFee: retainerFee ? Number(retainerFee) : null,
+      overtimeRate: overtimeRate ? Number(overtimeRate) : null,
       assignerId: session.user.id,
       assigneeIds: assigneeIdsStr,
       dueDate: new Date(dueDate),
