@@ -25,7 +25,7 @@ export default function GeneralTaskSection({
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     dueDate: "", assigneeIds: [] as number[],
-    isAgent: false, agentId: "", separateAccount: true,
+    isAgent: false, agentId: "", separateAccount: false,
     billingType: "HOURS", billingCurrency: "USD",
     hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
   });
@@ -186,7 +186,7 @@ export default function GeneralTaskSection({
                 )}
 
                 {/* Billing Options for separate account */}
-                {(form.separateAccount || !form.projectId) && form.clientId && (
+                {form.separateAccount && form.clientId && (
                   <div className="col-span-2 space-y-4 border-t border-white/10 pt-4 mt-2">
                     <div className="grid grid-cols-2 gap-3">
                       <div>

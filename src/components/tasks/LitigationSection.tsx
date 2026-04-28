@@ -31,7 +31,7 @@ export default function LitigationSection({
     title: "", description: "", clientId: "", projectId: "",
     dueDate: "", assigneeIds: [] as number[],
     isAgent: false, agentId: "",
-    separateAccount: true,
+    separateAccount: false,
     caseType: "", parties: { plaintiff: "", defendant: "", agents: [] as string[] },
     courtAuthority: "", caseNumber: "",
     importantDates: [{ label: "", date: "" }],
@@ -292,7 +292,7 @@ export default function LitigationSection({
                 )}
 
                 {/* Billing Options for separate account */}
-                {(form.separateAccount || !form.projectId) && form.clientId && (
+                {form.separateAccount && form.clientId && (
                     <div className="col-span-1 sm:col-span-2 space-y-4 border-t border-white/10 pt-4 mt-2">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
