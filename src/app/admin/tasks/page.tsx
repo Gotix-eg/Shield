@@ -63,13 +63,22 @@ export default function TasksPage() {
 
   const taskCounts = useMemo(() => {
     const counts: Record<string, number> = { GENERAL: 0, CORPORATE: 0, LITIGATION: 0, IP: 0 };
+    if (!Array.isArray(tasks)) return counts;
     tasks.forEach(t => {
       if (!t) return;
-      const type = t.taskType || "GENERAL";
+      const type = (t.taskType || "GENERAL") as string;
       if (counts[type] !== undefined) counts[type]++;
     });
     return counts;
   }, [tasks]);
+
+  const safeDate = (d: any) => {
+    if (!d) return "-";
+    try {
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? "-" : dt.toLocaleDateString();
+    } catch { return "-"; }
+  };
 
   const createTask = async (data: any) => {
     try {
@@ -113,8 +122,8 @@ export default function TasksPage() {
     const headers = ["Title", "Type", "IP Type", "Client", "Project", "Assignees", "Agent", "Due Date", "Status", "Description"];
     const rows = tasks.map(t => [
       t.title, t.taskType || "", t.ipType || "", t.client?.name || "", t.project?.name || "",
-      t.assignees?.map(a => a.name).join(", ") || "", t.agent?.name || "",
-      new Date(t.dueDate).toLocaleDateString(), t.status, t.description || "",
+      t.assignees?.map(a => a?.name).filter(Boolean).join(", ") || "", t.agent?.name || "",
+      safeDate(t.dueDate), t.status, t.description || "",
     ]);
     const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });

@@ -51,7 +51,7 @@ export default function LitigationSection({
       if (litCat && t.litigationCategory !== litCat) return false;
       if (litType && t.litigationType !== litType) return false;
       const s = search.toLowerCase();
-      if (s && !t.title.toLowerCase().includes(s)) return false;
+      if (s && !t.title?.toLowerCase()?.includes(s)) return false;
       return true;
     });
   }, [tasks, litCat, litType, search]);

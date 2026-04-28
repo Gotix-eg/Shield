@@ -13,6 +13,14 @@ interface Props {
 export default function TaskDetailModal({ task, onClose }: Props) {
   const [tab, setTab] = useState<"info" | "litigation" | "ip">("info");
 
+  const safeDate = (d: any) => {
+    if (!d) return "-";
+    try {
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? "-" : dt.toLocaleDateString();
+    } catch { return "-"; }
+  };
+
   const isLitigation = task.taskType === "LITIGATION";
   const isIP = task.taskType === "IP";
 
@@ -86,7 +94,7 @@ export default function TaskDetailModal({ task, onClose }: Props) {
               </div>
               <div>
                 <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Due Date</p>
-                <p>{new Date(task.dueDate).toLocaleDateString()}</p>
+                <p>{safeDate(task.dueDate)}</p>
               </div>
               {task.agent && (
                 <div>
@@ -129,19 +137,19 @@ export default function TaskDetailModal({ task, onClose }: Props) {
                 </div>
               </div>
             )}
-            {task.hearingDate && <InfoRow label="Hearing Date" value={new Date(task.hearingDate).toLocaleDateString()} />}
+            {task.hearingDate && <InfoRow label="Hearing Date" value={safeDate(task.hearingDate)} />}
             {task.hearingRemarks && <InfoRow label="Hearing Remarks" value={task.hearingRemarks} />}
-            {task.nextHearingDate && <InfoRow label="Next Hearing" value={new Date(task.nextHearingDate).toLocaleDateString()} />}
+            {task.nextHearingDate && <InfoRow label="Next Hearing" value={safeDate(task.nextHearingDate)} />}
             {task.nextHearingRemarks && <InfoRow label="Next Hearing Remarks" value={task.nextHearingRemarks} />}
-            {task.reminderDate && <InfoRow label="Reminder Date" value={new Date(task.reminderDate).toLocaleDateString()} />}
+            {task.reminderDate && <InfoRow label="Reminder Date" value={safeDate(task.reminderDate)} />}
             {task.importantDates && task.importantDates.length > 0 && (
               <div>
                 <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Important Dates</p>
                 <div className="space-y-1">
                   {task.importantDates.map((d: any, i: number) => (
                     <div key={i} className="flex justify-between text-sm bg-white/5 rounded px-3 py-2">
-                      <span>{d.label}</span>
-                      <span className="text-slate-400">{d.date ? new Date(d.date).toLocaleDateString() : "-"}</span>
+                      <span>{d?.label}</span>
+                      <span className="text-slate-400">{safeDate(d?.date)}</span>
                     </div>
                   ))}
                 </div>
@@ -152,8 +160,8 @@ export default function TaskDetailModal({ task, onClose }: Props) {
                 <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Decisions</p>
                 {(task.decisions as any[]).map((d, i) => (
                   <div key={i} className="bg-white/5 rounded px-3 py-2 mb-1 text-sm">
-                    <span className="text-slate-400 mr-2">{d.date ? new Date(d.date).toLocaleDateString() : ""}</span>
-                    {d.summary}
+                    <span className="text-slate-400 mr-2">{safeDate(d?.date)}</span>
+                    {d?.summary}
                   </div>
                 ))}
               </div>
@@ -178,11 +186,11 @@ export default function TaskDetailModal({ task, onClose }: Props) {
               <div>
                 <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">{task.ipAction} Details</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(task.actionDetails).map(([key, value]) => {
+                  {task.actionDetails && Object.entries(task.actionDetails).map(([key, value]) => {
                     const fieldDef = task.ipType && task.ipAction ? ACTION_FIELDS[task.ipType]?.[task.ipAction]?.find((f: any) => f.name === key) : null;
                     const label = fieldDef?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./g, (s: string) => s.toUpperCase());
                     let displayValue = String(value || "");
-                    if (fieldDef?.type === "date" && value) displayValue = new Date(value).toLocaleDateString();
+                    if (fieldDef?.type === "date" && value) displayValue = safeDate(value);
                     else if (fieldDef?.type === "boolean") displayValue = value ? "Yes" : "No";
                     else if (fieldDef?.type === "select" && fieldDef.options) {
                       const opt = fieldDef.options.find((o: any) => o.value === value);

@@ -34,7 +34,7 @@ export default function GeneralTaskSection({
     const s = search.toLowerCase();
     return tasks.filter(t =>
       t.taskType === category &&
-      (t.title.toLowerCase().includes(s) || 
+      (t.title?.toLowerCase()?.includes(s) || 
        t.client?.name?.toLowerCase()?.includes(s) || 
        t.project?.name?.toLowerCase()?.includes(s))
     );
