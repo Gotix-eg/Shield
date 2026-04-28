@@ -1,10 +1,11 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Table } from "lucide-react";
 import type { Task, SelectOption } from "./types";
 import { IP_TYPES, IP_ACTIONS_BY_TYPE } from "./types";
 import { BackButton } from "./TaskLanding";
 import { ACTION_FIELDS } from "@/lib/countries";
+import BulkTaskModal from "./BulkTaskModal";
 
 interface Props {
   tasks: Task[];
@@ -23,6 +24,7 @@ export default function IPSection({
   onBack, onCreateTask, onSelectTask, onUpdateStatus
 }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const [showBulk, setShowBulk] = useState(false);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     title: "", description: "", ipType: "", ipAction: "",
@@ -66,9 +68,14 @@ export default function IPSection({
       <BackButton onClick={onBack} label="Categories" />
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-serif font-bold">Intellectual Property</h2>
-        <button onClick={() => setShowForm(true)} className="btn-legal flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New IP Task
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowBulk(true)} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm">
+            <Table className="w-4 h-4" /> Bulk Add
+          </button>
+          <button onClick={() => setShowForm(true)} className="btn-legal flex items-center gap-2">
+            <Plus className="w-4 h-4" /> New IP Task
+          </button>
+        </div>
       </div>
 
       <div className="relative mb-6">
@@ -115,6 +122,21 @@ export default function IPSection({
           </div>
         ))}
       </div>
+
+      {showBulk && (
+        <BulkTaskModal
+          clients={clients}
+          projects={projects}
+          lawyers={lawyers}
+          onClose={() => setShowBulk(false)}
+          onSave={async (tasksToCreate) => {
+            for (const t of tasksToCreate) {
+              await onCreateTask(t);
+            }
+            setShowBulk(false);
+          }}
+        />
+      )}
 
       {showForm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowForm(false)}>
