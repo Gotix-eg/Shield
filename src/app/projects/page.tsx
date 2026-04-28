@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast, Toaster } from "react-hot-toast";
@@ -60,6 +60,8 @@ export default function ProjectsPage() {
   const [projectDocs, setProjectDocs] = useState<any[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
   const token  = getAuth();
@@ -241,6 +243,82 @@ export default function ProjectsPage() {
     return '📎';
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a CSV file');
+      return;
+    }
+
+    setIsImporting(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/projects/import', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Import failed');
+      }
+
+      toast.success(`Imported ${data.count} projects successfully.`);
+      if (data.errors > 0) {
+        toast.error(`${data.errors} rows failed to import. Check console.`);
+      }
+      fetchProjects();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Failed to import');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const exportToCSV = () => {
+    if (projects.length === 0) {
+      toast.error("No projects to export");
+      return;
+    }
+
+    const headers = ["Client", "Code", "Project Name", "Status", "Advance Payment"];
+    const rows = projects.map(p => [
+      p.client.name,
+      p.code,
+      p.name,
+      p.status,
+      formatAdv(p).replace(/,/g, ';') // avoid CSV comma issues
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `projects_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const visible = projects.filter(p =>
     (!filterCode || p.code.toLowerCase().includes(filterCode.toLowerCase())) &&
@@ -264,9 +342,42 @@ export default function ProjectsPage() {
             <h1 className="text-4xl font-serif text-white tracking-tight mb-1">Projects</h1>
             <p className="text-slate-400 font-light text-sm">Manage your projects</p>
           </div>
-          <button onClick={() => router.push("/projects/new")} className="btn-legal">
-            New Project
-          </button>
+          <div className="flex gap-2">
+            <a
+              href={`/templates/projects_import_template.csv?v=${Date.now()}`}
+              download
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded text-xs inline-flex items-center"
+            >
+              Template
+            </a>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept=".csv"
+            />
+
+            <button
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs"
+            >
+              {isImporting ? 'Importing...' : 'Import CSV'}
+            </button>
+
+            <button
+              onClick={exportToCSV}
+              className="bg-slate-700 hover:bg-slate-800 text-white font-bold py-2 px-4 rounded text-xs"
+            >
+              Export CSV
+            </button>
+
+            <button onClick={() => router.push("/projects/new")} className="btn-legal">
+              New Project
+            </button>
+          </div>
         </div>
 
         {loading && <p className="text-slate-400">Loading…</p>}
