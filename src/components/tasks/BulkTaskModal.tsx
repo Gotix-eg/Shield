@@ -42,28 +42,36 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      const lines = text.split("\n").filter(l => l.trim());
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
       if (lines.length < 2) return;
       
-      const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim().toLowerCase().replace(/\s/g, ""));
+      // Auto-detect separator: comma or semicolon
+      const firstLine = lines[0];
+      const separator = firstLine.includes(';') ? ';' : ',';
+      console.log(`Detected separator: "${separator}"`);
+
+      const headers = firstLine.split(separator).map(h => h.replace(/"/g, "").trim().toLowerCase().replace(/\s/g, ""));
+      console.log(`Headers:`, headers);
+
       const newRows: any[] = [];
       
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(",").map(v => v.replace(/"/g, "").trim());
+        const values = lines[i].split(separator).map(v => v.replace(/"/g, "").trim());
         const row: any = {};
         headers.forEach((h, idx) => { row[h] = values[idx]; });
         
         newRows.push({
           id: Date.now() + i,
-          country: row.country || row.jurisdiction || "",
-          trademark: row.trademark || row.name || row.mark || "",
-          appNo: row.applicationno || row.appno || row.filenumber || "",
-          filingDate: row.filingdate || row.date || "",
-          classes: row.classes || row.class || "",
-          status: row.status || "Under examination",
-          applicant: row.applicantname || row.applicant || ""
+          country: row.country || row.jurisdiction || row["الدولة"] || "",
+          trademark: row.trademark || row.name || row.mark || row["العلامة"] || row["اسم العلامة"] || "",
+          appNo: row.applicationno || row.appno || row.filenumber || row["رقم الطلب"] || "",
+          filingDate: row.filingdate || row.date || row["تاريخ الإيداع"] || "",
+          classes: row.classes || row.class || row["الفئات"] || "",
+          status: row.status || row["الحالة"] || "Under examination",
+          applicant: row.applicantname || row.applicant || row["الموكل"] || ""
         });
       }
+      console.log(`Imported rows:`, newRows);
       setRows(newRows);
       toast.success(`Imported ${newRows.length} rows from file`);
     };
