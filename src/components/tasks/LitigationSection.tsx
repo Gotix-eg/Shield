@@ -31,6 +31,7 @@ export default function LitigationSection({
     title: "", description: "", clientId: "", projectId: "",
     dueDate: "", assigneeIds: [] as number[],
     isAgent: false, agentId: "",
+    separateAccount: true,
     caseType: "", parties: { plaintiff: "", defendant: "", agents: [] as string[] },
     courtAuthority: "", caseNumber: "",
     importantDates: [{ label: "", date: "" }],
@@ -40,7 +41,6 @@ export default function LitigationSection({
     decisions: [{ date: "", summary: "" }],
     appeals: [{ date: "", type: "", status: "" }],
     enforcement: { status: "", details: "" },
-    separateAccount: false,
     billingType: "HOURS", billingCurrency: "USD",
     hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
   });
@@ -280,8 +280,7 @@ export default function LitigationSection({
                     <input 
                       type="checkbox" 
                       id="separateAccount" 
-                      checked={form.separateAccount || !form.projectId} 
-                      disabled={!form.projectId}
+                      checked={form.separateAccount} 
                       onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
                       className="accent-legal-gold w-4 h-4 cursor-pointer"
                     />

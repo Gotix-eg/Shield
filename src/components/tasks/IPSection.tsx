@@ -28,7 +28,7 @@ export default function IPSection({
     title: "", description: "", ipType: "", ipAction: "",
     actionDetails: {} as Record<string, any>,
     clientId: "", projectId: "", dueDate: "",
-    assigneeIds: [] as number[], isAgent: false, agentId: "", separateAccount: false,
+    assigneeIds: [] as number[], isAgent: false, agentId: "", separateAccount: true,
     billingType: "HOURS", billingCurrency: "USD",
     hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
   });
@@ -230,8 +230,7 @@ export default function IPSection({
                     <input 
                       type="checkbox" 
                       id="separateAccount" 
-                      checked={form.separateAccount || !form.projectId} 
-                      disabled={!form.projectId}
+                      checked={form.separateAccount} 
                       onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
                       className="accent-legal-gold w-4 h-4 cursor-pointer"
                     />

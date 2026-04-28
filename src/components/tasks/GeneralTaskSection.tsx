@@ -25,7 +25,7 @@ export default function GeneralTaskSection({
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     dueDate: "", assigneeIds: [] as number[],
-    isAgent: false, agentId: "", separateAccount: false,
+    isAgent: false, agentId: "", separateAccount: true,
     billingType: "HOURS", billingCurrency: "USD",
     hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
   });
@@ -174,8 +174,7 @@ export default function GeneralTaskSection({
                     <input 
                       type="checkbox" 
                       id="separateAccount" 
-                      checked={form.separateAccount || !form.projectId} 
-                      disabled={!form.projectId}
+                      checked={form.separateAccount} 
                       onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
                       className="accent-legal-gold w-4 h-4 cursor-pointer"
                     />
