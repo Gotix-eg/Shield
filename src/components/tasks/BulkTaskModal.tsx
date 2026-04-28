@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { X, Plus, Trash2, Save, Copy } from "lucide-react";
+import { X, Plus, Trash2, Save, Upload, Info } from "lucide-react";
 import type { SelectOption } from "./types";
+import toast from "react-hot-toast";
 
 interface Props {
   clients: SelectOption[];
@@ -35,6 +36,41 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
     setRows(rows.map(r => r.id === id ? { ...r, [field]: value } : r));
   };
 
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const lines = text.split("\n").filter(l => l.trim());
+      if (lines.length < 2) return;
+      
+      const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim().toLowerCase().replace(/\s/g, ""));
+      const newRows: any[] = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(",").map(v => v.replace(/"/g, "").trim());
+        const row: any = {};
+        headers.forEach((h, idx) => { row[h] = values[idx]; });
+        
+        newRows.push({
+          id: Date.now() + i,
+          country: row.country || row.jurisdiction || "",
+          trademark: row.trademark || row.name || row.mark || "",
+          appNo: row.applicationno || row.appno || row.filenumber || "",
+          filingDate: row.filingdate || row.date || "",
+          classes: row.classes || row.class || "",
+          status: row.status || "Under examination",
+          applicant: row.applicantname || row.applicant || ""
+        });
+      }
+      setRows(newRows);
+      toast.success(`Imported ${newRows.length} rows from file`);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
   const handleSave = async () => {
     const tasks = rows.map(r => ({
       title: `${r.trademark} - ${r.country || 'New Application'}`,
@@ -64,9 +100,15 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
       <div className="bg-[#0a0f1a] border border-white/10 rounded-2xl w-full max-w-6xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
-          <div>
-            <h2 className="text-2xl font-serif font-bold text-white">Bulk Matter Entry</h2>
-            <p className="text-sm text-slate-400 mt-1">Add multiple trademark applications at once</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-white">Bulk Matter Entry</h2>
+              <p className="text-sm text-slate-400 mt-1">Add multiple trademark applications at once</p>
+            </div>
+            <label className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 cursor-pointer text-sm text-slate-300 transition-all ml-4">
+              <Upload className="w-4 h-4 text-legal-gold" /> Upload Excel/CSV
+              <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
+            </label>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <X className="w-6 h-6 text-slate-400" />
