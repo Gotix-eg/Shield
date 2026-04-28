@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 
         let successCount = 0;
         let errorCount = 0;
+        let firstError: string | null = null;
 
         // Get the current max sequence to generate sequential codes
         const lastProject = await prisma.project.findFirst({
