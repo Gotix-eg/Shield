@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 import type { Task, SelectOption } from "./types";
 import { BackButton } from "./TaskLanding";
 
@@ -112,6 +112,15 @@ export default function GeneralTaskSection({
                 t.status === 'IN_PROGRESS' ? 'bg-amber-500/20 text-amber-400' :
                 'bg-slate-500/20 text-slate-400'
               }`}>{t.status.replace('_', ' ')}</span>
+              {t.accountId && (
+                <button 
+                  onClick={e => { e.stopPropagation(); window.location.href = `/dashboard/invoices/new?matterId=${t.id}`; }}
+                  className="bg-amber-500/10 text-amber-500 p-1.5 rounded-lg hover:bg-amber-500/20 transition-all border border-amber-500/20"
+                  title="Generate Invoice"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                </button>
+              )}
               {t.status === 'PENDING' && (
                 <button onClick={e => { e.stopPropagation(); onUpdateStatus(t.id, 'IN_PROGRESS'); }}
                   className="text-xs text-amber-400 hover:text-amber-300">Start</button>
@@ -170,8 +179,9 @@ export default function GeneralTaskSection({
                       onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
                       className="accent-legal-gold w-4 h-4 cursor-pointer"
                     />
-                    <label htmlFor="separateAccount" className="text-sm text-slate-300 cursor-pointer">
-                      {!form.projectId ? "An independent revenue account will be created automatically" : "Create a separate independent revenue account for this matter"}
+                    <label htmlFor="separateAccount" className="text-sm font-bold text-amber-500 cursor-pointer flex items-center gap-2">
+                      <FileText className="w-4 h-4 shrink-0" />
+                      <span>{!form.projectId ? "Independent billing account will be created" : "Enable independent billing for this matter?"}</span>
                     </label>
                   </div>
                 )}

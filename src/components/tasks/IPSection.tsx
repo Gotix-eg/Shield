@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 import type { Task, SelectOption } from "./types";
 import { IP_TYPES, IP_ACTIONS_BY_TYPE } from "./types";
 import { BackButton } from "./TaskLanding";
@@ -96,11 +96,22 @@ export default function IPSection({
                 <span>{new Date(t.dueDate).toLocaleDateString()}</span>
               </div>
             </div>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${
-              t.status === 'DONE' ? 'bg-emerald-500/20 text-emerald-400' :
-              t.status === 'IN_PROGRESS' ? 'bg-amber-500/20 text-amber-400' :
-              'bg-slate-500/20 text-slate-400'
-            }`}>{t.status.replace('_', ' ')}</span>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${
+                t.status === 'DONE' ? 'bg-emerald-500/20 text-emerald-400' :
+                t.status === 'IN_PROGRESS' ? 'bg-amber-500/20 text-amber-400' :
+                'bg-slate-500/20 text-slate-400'
+              }`}>{t.status.replace('_', ' ')}</span>
+              {t.accountId && (
+                <button 
+                  onClick={e => { e.stopPropagation(); window.location.href = `/dashboard/invoices/new?matterId=${t.id}`; }}
+                  className="bg-amber-500/10 text-amber-500 p-1.5 rounded-lg hover:bg-amber-500/20 transition-all border border-amber-500/20"
+                  title="Generate Invoice"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -218,14 +229,15 @@ export default function IPSection({
                   <div className="col-span-2 bg-white/5 border border-white/10 p-3 rounded-lg flex items-center gap-2">
                     <input 
                       type="checkbox" 
-                      id="separateAccountIP" 
+                      id="separateAccount" 
                       checked={form.separateAccount || !form.projectId} 
                       disabled={!form.projectId}
                       onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
                       className="accent-legal-gold w-4 h-4 cursor-pointer"
                     />
-                    <label htmlFor="separateAccountIP" className="text-sm text-slate-300 cursor-pointer">
-                      {!form.projectId ? "An independent revenue account will be created automatically" : "Create a separate independent revenue account for this matter"}
+                    <label htmlFor="separateAccount" className="text-sm font-bold text-amber-500 cursor-pointer flex items-center gap-2">
+                      <FileText className="w-4 h-4 shrink-0" />
+                      <span>{!form.projectId ? "Independent billing account will be created" : "Enable independent billing for this matter?"}</span>
                     </label>
                   </div>
                 )}
