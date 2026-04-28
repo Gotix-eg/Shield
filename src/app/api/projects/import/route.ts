@@ -75,11 +75,17 @@ export async function POST(request: NextRequest) {
 
         for (const row of results) {
             try {
-                const projectName = row.name || row.ProjectName || row.projectName;
-                const clientIdentifier = row.clientCode || row.clientName || row.client || row.Client;
+                // Normalize keys to handle spaces and casing
+                const normalizedRow: any = {};
+                for (const key of Object.keys(row)) {
+                    normalizedRow[key.toLowerCase().replace(/\s/g, "")] = row[key];
+                }
+
+                const projectName = normalizedRow.name || normalizedRow.projectname || row["Project Name"] || row["projectName"];
+                const clientIdentifier = normalizedRow.clientcode || normalizedRow.clientname || normalizedRow.client || row["Client"];
                 
                 if (!projectName || !clientIdentifier) {
-                    console.warn("Skipping row due to missing required fields:", row);
+                    console.warn("Skipping row due to missing required fields:", { projectName, clientIdentifier, row });
                     continue;
                 }
 
@@ -101,23 +107,25 @@ export async function POST(request: NextRequest) {
                 }
 
                 // Generate code if missing
-                let code = row.code || row.projectCode;
+                let code = normalizedRow.code || normalizedRow.projectcode || row.code;
                 if (!code) {
                     code = `P${nextSeq.toString().padStart(4, '0')}`;
                     nextSeq++;
                 }
 
+                const status = (normalizedRow.status || row.status || 'OPEN').toUpperCase();
+
                 await prisma.project.upsert({
                     where: { code_companyId: { code, companyId } },
                     update: {
                         name: projectName,
-                        status: row.status || 'OPEN',
+                        status: status,
                         clientId: client.id,
                     },
                     create: {
                         name: projectName,
                         code,
-                        status: row.status || 'OPEN',
+                        status: status,
                         clientId: client.id,
                         companyId,
                     },
