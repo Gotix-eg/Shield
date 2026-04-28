@@ -148,32 +148,57 @@ export default function TasksPage() {
     reader.onload = async (event) => {
       const text = event.target?.result as string;
       const lines = text.split("\n").filter(l => l.trim());
-      const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim());
+      const headerRow = lines[0].split(",").map(h => h.replace(/"/g, "").trim().toLowerCase().replace(/\s/g, ""));
+      
+      let success = 0;
+      let failed = 0;
+
+      toast.loading("Importing tasks...", { id: "import-tasks" });
+
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(",").map(v => v.replace(/"/g, "").trim());
         const row: any = {};
-        headers.forEach((h, idx) => { row[h] = values[idx]; });
-        const client = clients.find(c => c.name === row.Client);
-        const project = projects.find(p => p.name === row.Project);
-        const assigneeNames = row.Assignees?.split(";").map((n: string) => n.trim()) || [];
-        const assigneeIds = assigneeNames.map((name: string) => lawyers.find(l => l.name === name)?.id).filter(Boolean);
-        const agent = row.Agent ? agents.find(a => a.name === row.Agent) : null;
-        if (row.Title && assigneeIds.length > 0 && row["Due Date"]) {
+        headerRow.forEach((h, idx) => { row[h] = values[idx]; });
+        
+        const title = row.title || row.tasktitle || row.name;
+        const type = row.type || row.tasktype || "GENERAL";
+        const clientName = row.client || row.clientname;
+        const projectName = row.project || row.projectname || row.projectcode;
+        const assigneeStr = row.assignees || row.lawyers || row.lawyer;
+        const dueDateStr = row.duedate || row.date;
+
+        const client = clients.find(c => c.name.toLowerCase() === clientName?.toLowerCase());
+        const project = projects.find(p => p.name.toLowerCase() === projectName?.toLowerCase() || p.label?.toLowerCase().includes(projectName?.toLowerCase()));
+        
+        const assigneeNames = assigneeStr?.split(";").map((n: string) => n.trim()) || [];
+        const assigneeIds = assigneeNames.map((name: string) => lawyers.find(l => l.name.toLowerCase() === name.toLowerCase())?.id).filter(Boolean);
+        const agent = row.agent ? agents.find(a => a.name.toLowerCase() === row.agent.toLowerCase()) : null;
+
+        if (title && (client || project)) {
           try {
-            await fetch("/api/tasks", {
+            const res = await fetch("/api/tasks", {
               method: "POST",
               headers: { "Content-Type": "application/json", ...buildAuth() },
               body: JSON.stringify({
-                title: row.Title, description: row.Description, taskType: row.Type || null,
-                ipType: row["IP Type"] || null, clientId: client?.id, projectId: project?.id,
-                assigneeIds, agentId: agent?.id, dueDate: new Date(row["Due Date"]).toISOString(),
+                title, 
+                description: row.description || "", 
+                taskType: type.toUpperCase(),
+                ipType: row.iptype || null, 
+                clientId: client?.id || project?.clientId, 
+                projectId: project?.id,
+                assigneeIds: assigneeIds.length > 0 ? assigneeIds : undefined, 
+                agentId: agent?.id, 
+                dueDate: dueDateStr ? new Date(dueDateStr).toISOString() : null,
                 isAgent: !!agent,
               }),
             });
-          } catch {}
-        }
+            if (res.ok) success++; else failed++;
+          } catch { failed++; }
+        } else { failed++; }
       }
-      toast.success("Import completed");
+      
+      toast.dismiss("import-tasks");
+      toast.success(`Import completed: ${success} success, ${failed} failed.`);
       load();
     };
     reader.readAsText(file);
@@ -197,19 +222,27 @@ export default function TasksPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <Toaster />
 
-      {/* Import/Export toolbar - only on landing */}
-      {category === "landing" && (
-        <div className="flex justify-end gap-2 mb-4">
-          <label className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-lg hover:bg-white/5 cursor-pointer text-sm text-slate-400 transition-colors">
-            <Upload className="w-4 h-4" /> Import
+      {/* Import/Export toolbar */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-serif text-white">Matters Management</h1>
+        <div className="flex gap-2">
+          <a
+            href={`/templates/tasks_import_template.csv?v=${Date.now()}`}
+            download
+            className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-lg hover:bg-white/5 text-xs text-slate-400 transition-colors"
+          >
+            Template
+          </a>
+          <label className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-lg hover:bg-white/5 cursor-pointer text-xs text-slate-400 transition-colors">
+            <Upload className="w-4 h-4" /> Import CSV
             <input type="file" accept=".csv" onChange={importFromCSV} className="hidden" />
           </label>
           <button onClick={exportToExcel}
-            className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-lg hover:bg-white/5 text-sm text-slate-400 transition-colors">
-            <Download className="w-4 h-4" /> Export
+            className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-lg hover:bg-white/5 text-xs text-slate-400 transition-colors">
+            <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
-      )}
+      </div>
 
       {/* Category sections */}
       {category === "landing" && (
