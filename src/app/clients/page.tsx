@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { getAuth } from '@/lib/auth';
 import { Client } from '@/types/client';
@@ -11,6 +12,7 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState('');
@@ -185,6 +187,16 @@ export default function ClientsPage() {
     }
   };
 
+  const filteredClients = clients.filter(c => {
+    const s = searchTerm.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(s) ||
+      (c.code || "").toLowerCase().includes(s) ||
+      (c.contactPerson || "").toLowerCase().includes(s) ||
+      (c.contactEmail || "").toLowerCase().includes(s)
+    );
+  });
+
   return (
     <div className="container mx-auto p-6">
       <Toaster />
@@ -222,6 +234,20 @@ export default function ClientsPage() {
           >
             Add New Client
           </button>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, code, or contact person..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white/50 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+          />
         </div>
       </div>
 
@@ -279,7 +305,7 @@ export default function ClientsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {clients.map((client) => (
+              {filteredClients.map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50">
                   {/* Code */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
@@ -439,9 +465,9 @@ export default function ClientsPage() {
             </tbody>
           </table>
 
-          {clients.length === 0 && (
+          {filteredClients.length === 0 && (
             <p className="text-center py-6 text-sm text-gray-600">
-              No clients found.
+              No clients found matching your search.
             </p>
           )}
         </div>
