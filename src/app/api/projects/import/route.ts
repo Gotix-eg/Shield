@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
                 const status = (normalizedRow.status || row.status || 'OPEN').toUpperCase();
 
                 await prisma.project.upsert({
-                    where: { code_companyId: { code, companyId } },
+                    where: { companyId_code: { code, companyId } },
                     update: {
                         name: projectName,
                         status: status,
@@ -155,6 +155,7 @@ export async function POST(request: NextRequest) {
                         status: status,
                         clientId: client.id,
                         companyId,
+                        ownerId: userId,
                     },
                 });
                 successCount++;
