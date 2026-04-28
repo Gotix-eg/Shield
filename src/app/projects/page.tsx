@@ -30,6 +30,7 @@ export default function ProjectsPage() {
   const [error, setError]         = useState<string | null>(null);
   const [filterCode, setFilterCode] = useState("");
   const [filterName, setFilterName] = useState("");
+  const [filterClient, setFilterClient] = useState("");
 
   // inline edit (name + status only)
   const [editingId, setEditingId]   = useState<number | null>(null);
@@ -322,7 +323,8 @@ export default function ProjectsPage() {
 
   const visible = projects.filter(p =>
     (!filterCode || p.code.toLowerCase().includes(filterCode.toLowerCase())) &&
-    (!filterName || p.name.toLowerCase().includes(filterName.toLowerCase()))
+    (!filterName || p.name.toLowerCase().includes(filterName.toLowerCase())) &&
+    (!filterClient || p.client.name.toLowerCase().includes(filterClient.toLowerCase()))
   );
 
   const formatAdv = (p: Project) => {
@@ -395,6 +397,11 @@ export default function ProjectsPage() {
               <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Filter by Name</label>
               <input value={filterName} onChange={e => setFilterName(e.target.value)}
                 className="rounded px-3 py-2 text-sm w-52" placeholder="Project name" />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Filter by Client</label>
+              <input value={filterClient} onChange={e => setFilterClient(e.target.value)}
+                className="rounded px-3 py-2 text-sm w-52" placeholder="Client name" />
             </div>
           </div>
         )}
