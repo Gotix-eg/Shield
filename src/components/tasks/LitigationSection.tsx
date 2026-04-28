@@ -262,12 +262,26 @@ export default function LitigationSection({
                       {projects.filter(p => !form.clientId || p.clientId === parseInt(form.clientId)).map(p =>
                         <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
-                  </div>
-                    </div>
-                  )}
+                </div>
 
-                  {/* Billing Options for separate account */}
-                  {(form.separateAccount || !form.projectId) && form.clientId && (
+                {form.clientId && (
+                  <div className="col-span-1 sm:col-span-2 bg-white/5 border border-white/10 p-3 rounded-lg flex items-center gap-2 mb-2">
+                    <input 
+                      type="checkbox" 
+                      id="separateAccountLit" 
+                      checked={form.separateAccount || !form.projectId} 
+                      disabled={!form.projectId}
+                      onChange={e => setForm({ ...form, separateAccount: e.target.checked })} 
+                      className="accent-legal-gold w-4 h-4 cursor-pointer"
+                    />
+                    <label htmlFor="separateAccountLit" className="text-sm text-slate-300 cursor-pointer">
+                      {!form.projectId ? "An independent revenue account will be created automatically" : "Create a separate independent revenue account for this matter"}
+                    </label>
+                  </div>
+                )}
+
+                {/* Billing Options for separate account */}
+                {(form.separateAccount || !form.projectId) && form.clientId && (
                     <div className="col-span-1 sm:col-span-2 space-y-4 border-t border-white/10 pt-4 mt-2">
                       <div className="grid grid-cols-2 gap-3">
                         <div>

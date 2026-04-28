@@ -24,6 +24,10 @@ export default function IPSection({
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
+  const [form, setForm] = useState({
+    title: "", description: "", ipType: "", ipAction: "",
+    actionDetails: {} as Record<string, any>,
+    clientId: "", projectId: "", dueDate: "",
     assigneeIds: [] as number[], isAgent: false, agentId: "", separateAccount: false,
     billingType: "HOURS", billingCurrency: "USD",
     hourlyRate: "", retainerHours: "", retainerFee: "", overtimeRate: "",
