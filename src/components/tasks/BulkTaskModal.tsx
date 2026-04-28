@@ -104,7 +104,7 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[200] p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[200] p-4 pl-[calc(var(--sidebar-width)+1rem)]">
       <div className="bg-[#0a0f1a] border border-white/10 rounded-2xl w-full max-w-6xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
