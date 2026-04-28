@@ -13,7 +13,13 @@ import TaskDetailModal from "@/components/tasks/TaskDetailModal";
 function getCompanyId(): number | undefined {
   const t = getAuth();
   if (!t) return undefined;
-  try { return JSON.parse(atob(t.split('.')[1])).companyId; } catch { return undefined; }
+  try {
+    const part = t.split('.')[1];
+    if (!part) return undefined;
+    const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+    return JSON.parse(atob(padded)).companyId;
+  } catch { return undefined; }
 }
 
 export default function TasksPage() {
