@@ -64,6 +64,7 @@ export default function TasksPage() {
   const taskCounts = useMemo(() => {
     const counts: Record<string, number> = { GENERAL: 0, CORPORATE: 0, LITIGATION: 0, IP: 0 };
     tasks.forEach(t => {
+      if (!t) return;
       const type = t.taskType || "GENERAL";
       if (counts[type] !== undefined) counts[type]++;
     });

@@ -36,6 +36,13 @@ export interface Task {
   decisions?: { date: string; summary: string }[];
   appeals?: { date: string; type: string; status: string }[];
   enforcement?: { status: string; details: string };
+  accountId?: number;
+  billingType?: string;
+  billingCurrency?: string;
+  hourlyRate?: number;
+  retainerHours?: number;
+  retainerFee?: number;
+  overtimeRate?: number;
 }
 
 export type TaskCategory = 'landing' | 'GENERAL' | 'CORPORATE' | 'LITIGATION' | 'IP';

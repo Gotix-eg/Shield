@@ -36,7 +36,7 @@ export default function IPSection({
   const ipTasks = useMemo(() => {
     const s = search.toLowerCase();
     return tasks.filter(t => t.taskType === "IP" &&
-      (!s || t.title.toLowerCase().includes(s) || t.ipType?.toLowerCase().includes(s))
+      (!s || t.title.toLowerCase().includes(s) || t.ipType?.toLowerCase()?.includes(s))
     );
   }, [tasks, search]);
 
