@@ -46,8 +46,16 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
       if (lines.length < 2) return;
       
       const firstLine = lines[0];
-      const separator = firstLine.includes(';') ? ';' : ',';
+      const separators = [',', ';', '\t'];
+      let separator = ',';
+      let maxCols = 0;
+      separators.forEach(s => {
+        const cols = firstLine.split(s).length;
+        if (cols > maxCols) { maxCols = cols; separator = s; }
+      });
+
       const headers = firstLine.split(separator).map(h => h.replace(/"/g, "").trim().toLowerCase());
+      console.log(`Detected separator: "${separator}"`, headers);
       
       const findIdx = (keywords: string[]) => headers.findIndex(h => keywords.some(k => h.includes(k)));
 
@@ -61,14 +69,21 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
         applicant: findIdx(['applicant', 'client', 'owner', 'الموكل', 'صاحب', 'مقدم'])
       };
 
-      console.log('Column mapping indices:', idx);
+      // Fallback: if no keywords matched at all, try mapping by index for common layouts
+      if (idx.country === -1 && headers.length > 0) idx.country = 0;
+      if (idx.trademark === -1 && headers.length > 1) idx.trademark = 1;
+      if (idx.appNo === -1 && headers.length > 2) idx.appNo = 2;
+      if (idx.date === -1 && headers.length > 3) idx.date = 3;
+      if (idx.classes === -1 && headers.length > 4) idx.classes = 4;
+      if (idx.status === -1 && headers.length > 5) idx.status = 5;
+      if (idx.applicant === -1 && headers.length > 7) idx.applicant = 7;
 
       const newRows: any[] = [];
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(separator).map(v => v.replace(/"/g, "").trim());
-        if (values.length < 2) continue;
+        if (values.length < 1) continue;
 
-        const val = (index: number) => index > -1 ? values[index] : "";
+        const val = (index: number) => (index > -1 && index < values.length) ? values[index] : "";
 
         newRows.push({
           id: Date.now() + i,
@@ -84,9 +99,9 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
       
       if (newRows.length > 0) {
         setRows(newRows);
-        toast.success(`Successfully imported ${newRows.length} rows`);
+        toast.success(`Imported ${newRows.length} rows. Mapping: ${headers.slice(0,3).join(',')}...`);
       } else {
-        toast.error("Could not find any data rows in the file");
+        toast.error("No data found");
       }
     };
     reader.readAsText(file);
