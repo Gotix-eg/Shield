@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 // Find client
-                const client = await prisma.client.findFirst({
+                let client = await prisma.client.findFirst({
                     where: {
                         companyId,
                         OR: [
@@ -101,9 +101,35 @@ export async function POST(request: NextRequest) {
                 });
 
                 if (!client) {
-                    console.error(`Client not found for identifier: ${clientIdentifier}`);
-                    errorCount++;
-                    continue;
+                    console.log(`Client not found for "${clientIdentifier}". Creating new client in company ${companyId}...`);
+                    
+                    // Generate a new client code
+                    const lastC = await prisma.client.findFirst({ orderBy: { id: 'desc' }, select: { code: true } });
+                    const lastA = await prisma.account.findFirst({ where: { code: { startsWith: 'AR-C' } }, orderBy: { id: 'desc' }, select: { code: true } });
+                    const sC = lastC?.code ? parseInt(lastC.code.replace(/^C/, '')) : 0;
+                    const sA = lastA?.code ? parseInt(lastA.code.replace(/^AR-C/, '')) : 0;
+                    let nC = Math.max(isNaN(sC)?0:sC, isNaN(sA)?0:sA) + 1;
+                    const newCode = `C${nC.toString().padStart(4, '0')}`;
+
+                    // Create AR account for client
+                    const arAcc = await prisma.account.create({
+                        data: {
+                            code: `AR-${newCode}`,
+                            name: `${projectName} Receivable`,
+                            type: 'ASSET',
+                            companyId,
+                        }
+                    });
+
+                    client = await prisma.client.create({
+                        data: {
+                            name: String(clientIdentifier),
+                            code: newCode,
+                            companyId,
+                            ownerId: userId,
+                            accountId: arAcc.id
+                        }
+                    });
                 }
 
                 // Generate code if missing
