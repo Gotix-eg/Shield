@@ -17,7 +17,7 @@ function decode(req: NextRequest): { id: number; role: string } | null {
 }
 
 function isAdmin(role: string) {
-  return role === 'ADMIN' || role === 'ACCOUNTANT_MASTER';
+  return role === 'ADMIN' || role === 'ACCOUNTANT_MASTER' || role === 'MANAGING_PARTNER';
 }
 
 // GET /api/payroll/runs?year=&month=

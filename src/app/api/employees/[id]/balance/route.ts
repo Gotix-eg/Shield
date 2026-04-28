@@ -17,7 +17,7 @@ function getUserRole(req: NextRequest): string | null {
 }
 
 function isHR(role: string | null) {
-  return role === 'ADMIN' || role === 'HR_MANAGER';
+  return role === 'ADMIN' || role === 'HR_MANAGER' || role === 'MANAGING_PARTNER';
 }
 
 // GET leave balance

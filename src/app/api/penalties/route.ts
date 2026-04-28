@@ -18,7 +18,7 @@ function getUser(req: NextRequest) {
 function isHR(role: string | null) {
   if(!role) return false;
   const r = role.toUpperCase();
-  if (r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER') return true;
+  if (r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER' || r === 'MANAGING_PARTNER') return true;
   if (r === 'ADMIN_REPORTS' || r === 'ACCOUNTANT_MASTER') return true;
   return r === 'HR' || r.startsWith('HR_') || r === 'HRMANAGER' || r.startsWith('HR');
 }

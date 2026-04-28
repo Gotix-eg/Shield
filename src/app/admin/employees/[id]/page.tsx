@@ -131,7 +131,7 @@ export default function EmployeeDetailPage() {
     fetchPositions();
     const tok=getAuth();
     const dec:any = tok ? JSON.parse(atob(tok.split('.')[1])):{};
-    setIsHR(dec.role==='ADMIN'||dec.role==='HR_MANAGER'||dec.role==='OWNER');
+    setIsHR(dec.role==='ADMIN'||dec.role==='HR_MANAGER'||dec.role==='OWNER'||dec.role==='MANAGING_PARTNER');
   }, [id]);
 
   const handleUpdateEmail = async (e: React.FormEvent) => {

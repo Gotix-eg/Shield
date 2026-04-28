@@ -18,7 +18,7 @@ function getUserRole(req: NextRequest): string | null {
 }
 
 function isHR(role: string | null) {
-  return role === 'ADMIN' || role === 'OWNER' || (role?.startsWith('HR') ?? false);
+  return role === 'ADMIN' || role === 'OWNER' || role === 'MANAGING_PARTNER' || (role?.startsWith('HR') ?? false);
 }
 
 export async function GET(req: NextRequest, context: Promise<{ params: { id: string } }>) {

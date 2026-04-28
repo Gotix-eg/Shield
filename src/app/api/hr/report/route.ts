@@ -20,7 +20,7 @@ function getRole(req: NextRequest): string | null {
 function isHR(role: string | null) {
   if (!role) return false;
   const r = role.toUpperCase();
-  return r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER' || r === 'HR';
+  return r === 'ADMIN' || r === 'OWNER' || r === 'HR_MANAGER' || r === 'HR' || r === 'MANAGING_PARTNER';
 }
 
 export const GET = withCompany(async (req: NextRequest, companyId?: number) => {

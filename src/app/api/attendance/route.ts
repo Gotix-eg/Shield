@@ -18,7 +18,7 @@ function decode(req: NextRequest): Decoded | null {
 }
 
 function isHR(role: string | null) {
-  return role === 'ADMIN' || role === 'HR_MANAGER' || role === 'OWNER';
+  return role === 'ADMIN' || role === 'HR_MANAGER' || role === 'OWNER' || role === 'MANAGING_PARTNER';
 }
 
 // GET /api/attendance?from=&to=&employeeId=

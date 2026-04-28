@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest, ctx: { params: { id: string } | Prom
   if (!currentUser) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
-  const isSuper = currentUser.role === 'OWNER' || currentUser.role === 'ADMIN';
+  const isSuper = currentUser.role === 'OWNER' || currentUser.role === 'ADMIN' || currentUser.role === 'MANAGING_PARTNER';
   let hasManage = false;
   if (!isSuper) {
     const perm = await prisma.userPermission.findFirst({

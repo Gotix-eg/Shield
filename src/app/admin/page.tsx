@@ -55,6 +55,12 @@ export default function AdminSettingsPage() {
       description: "Assign lawyers to projects and set rates.",
     },
     {
+      href: "/admin/employees",
+      title: "Employees",
+      perm: "employees",
+      description: "Manage firm workforce, roles, and records.",
+    },
+    {
       href: "/manager/time/pending",
       title: "Pending Time (Manager)",
       perm: "approve_time",

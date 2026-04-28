@@ -8,7 +8,7 @@ function isAdmin(token: string | null): boolean {
   if (!token) return false;
   try {
     const payload = jwt.verify(token, JWT_SECRET) as any;
-    return payload?.role === 'ADMIN' || payload?.role === 'ACCOUNTANT_MASTER';
+    return payload?.role === 'ADMIN' || payload?.role === 'ACCOUNTANT_MASTER' || payload?.role === 'MANAGING_PARTNER';
   } catch {
     return false;
   }

@@ -21,7 +21,7 @@ function decode(req: NextRequest): Auth | null {
 }
 
 function canCreateBatch(role: string) {
-  return role === 'ADMIN' || role === 'OWNER' || role.startsWith('HR');
+  return role === 'ADMIN' || role === 'OWNER' || role === 'MANAGING_PARTNER' || role.startsWith('HR');
 }
 
 // GET list batches

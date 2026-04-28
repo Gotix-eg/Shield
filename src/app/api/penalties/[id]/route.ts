@@ -16,7 +16,13 @@ function getUser(req: NextRequest) {
 }
 
 function isHR(role: string | null) {
-  return role === 'ADMIN' || role === 'HR_MANAGER';
+  return (
+    role === 'ADMIN' ||
+    role === 'HR_MANAGER' ||
+    role === 'OWNER' ||
+    role === 'HR' ||
+    role === 'MANAGING_PARTNER'
+  );
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
