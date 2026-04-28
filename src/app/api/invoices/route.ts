@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       }
     };
     if (data.projectId) dataToCreate.projectId = data.projectId;
+    if (data.matterId) dataToCreate.matterId = data.matterId;
 
     const invoice = await prisma.invoice.create({ data: dataToCreate, include: { items: true, client: true } });
 
@@ -125,7 +126,15 @@ export async function GET(req: NextRequest) {
         where.createdById = { in: up.lawyerIds } as any;
       }
     }
-    const invoices = await prisma.invoice.findMany({ where, include: { client: true, project: { select: { name: true } }, bank: { select: { name: true } } } });
+    const invoices = await prisma.invoice.findMany({ 
+      where, 
+      include: { 
+        client: true, 
+        project: { select: { name: true } }, 
+        matter: { select: { title: true } },
+        bank: { select: { name: true } } 
+      } 
+    });
     return NextResponse.json(invoices);
   } catch (error: any) {
     console.error("Failed to fetch invoices:", error);

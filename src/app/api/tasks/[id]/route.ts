@@ -6,6 +6,30 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 import { authOptions } from '@/lib/auth';
 
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  let session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const raw = getAuthServer(req);
+    if (raw) {
+      try { session = { user: jwt.verify(raw, JWT_SECRET) as any } as any; } catch {}
+    }
+  }
+  if (!session?.user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+
+  const id = parseInt(params.id, 10);
+  const task = await prisma.task.findUnique({
+    where: { id },
+    include: {
+      client: true,
+      project: true,
+      agent: true,
+    }
+  });
+
+  if (!task) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  return NextResponse.json(task);
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   let session = await getServerSession(authOptions);
   if (!session?.user) {

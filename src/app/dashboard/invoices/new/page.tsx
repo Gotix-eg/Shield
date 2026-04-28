@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Invoice, InvoiceItem } from '@/types/invoice';
 import { formatMoney } from '@/lib/i18n';
 import { format } from 'date-fns';
@@ -21,6 +21,7 @@ export default function NewInvoicePage() {
     projectId: '',
     client: null,
     project: null,
+    matterId: '',
     issueDate: '',
     dueDate: '',
     status: 'DRAFT',
@@ -30,6 +31,10 @@ export default function NewInvoicePage() {
     tax: 0,
     total: 0
   });
+
+  const searchParams = useSearchParams();
+  const matterIdFromUrl = searchParams.get('matterId');
+  const [matter, setMatter] = useState<any>(null);
 
   // State for client and project selections
   const [clients, setClients] = useState<ClientSelectOption[]>([]);
@@ -117,7 +122,46 @@ export default function NewInvoicePage() {
 
     fetchClients();
     fetchProjects();
-  }, []);
+
+    if (matterIdFromUrl) {
+      const fetchMatter = async () => {
+        try {
+          const token = getAuth();
+          const res = await fetch(`/api/tasks/${matterIdFromUrl}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const m = await res.json();
+            setMatter(m);
+            setInvoice(prev => ({
+              ...prev,
+              clientId: String(m.clientId),
+              projectId: m.projectId ? String(m.projectId) : '',
+              matterId: String(m.id),
+              currency: m.billingCurrency || prev.currency,
+            }));
+            setSelectedClient(String(m.clientId));
+            if (m.projectId) setSelectedProject(String(m.projectId));
+            
+            // Auto-fill item if it's FIXED fee or RETAINER
+            if (m.billingType === 'FIXED' && m.retainerFee) {
+              setInvoice(prev => ({
+                ...prev,
+                items: [{
+                  id: Date.now(),
+                  description: `${m.title} - Fixed Fee`,
+                  quantity: 1,
+                  unitPrice: parseFloat(m.retainerFee),
+                  lineTotal: parseFloat(m.retainerFee)
+                }]
+              }));
+            }
+          }
+        } catch (e) { console.error(e); }
+      };
+      fetchMatter();
+    }
+  }, [matterIdFromUrl]);
 
   // Handle client selection
   const handleClientSelect = (clientId: string) => {
@@ -165,6 +209,8 @@ export default function NewInvoicePage() {
       // Create the invoice object with proper types
       const invoiceData: Partial<Invoice> = {
         clientId: parseInt(invoice.clientId),
+        projectId: invoice.projectId ? parseInt(invoice.projectId) : null,
+        matterId: invoice.matterId ? parseInt(invoice.matterId) : null,
         invoiceNumber: invoice.invoiceNumber,
         issueDate: invoice.issueDate,
         dueDate: invoice.dueDate || null,
@@ -316,6 +362,12 @@ export default function NewInvoicePage() {
               </select>
             </div>
           </div>
+          {matter && (
+            <div className="mt-4 p-3 bg-amber-500/5 border border-amber-500/10 rounded-md">
+              <p className="text-sm font-medium text-amber-600">Generating Invoice for Matter:</p>
+              <p className="text-sm text-slate-600">{matter.title}</p>
+            </div>
+          )}
         </div>
 
         {/* Language & Currency */}

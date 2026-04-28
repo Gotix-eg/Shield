@@ -280,6 +280,8 @@ model Invoice {
   client            Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
   company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   project           Project?           @relation(fields: [projectId], references: [id])
+  matterId          Int?
+  matter            Task?              @relation(fields: [matterId], references: [id])
   items             InvoiceItem[]
   payments          Payment[]
   timeEntries       TimeEntry[]
@@ -790,6 +792,7 @@ model Task {
   project     Project?   @relation("ProjectTasks", fields: [projectId], references: [id])
   account     Account?   @relation("TaskAccount", fields: [accountId], references: [id])
   agent       Agent?     @relation(fields: [agentId], references: [id])
+  invoices    Invoice[]
 
   @@index([assigneeIds, dueDate])
 }

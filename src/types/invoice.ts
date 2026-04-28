@@ -17,6 +17,8 @@ export interface Invoice {
   projectId: string;
   client: Client | null;
   project: Project | null;
+  matterId?: string;
+  matter?: any | null;
   issueDate: string;
   dueDate: string | null;
   status: 'DRAFT' | 'SENT' | 'PAID';

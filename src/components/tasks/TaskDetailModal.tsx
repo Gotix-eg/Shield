@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, FileText } from "lucide-react";
 import type { Task } from "./types";
 import { LITIGATION_CATEGORIES, LITIGATION_TYPES, LITIGATION_TABS } from "./types";
 import { ACTION_FIELDS } from "@/lib/countries";
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function TaskDetailModal({ task, onClose }: Props) {
-  const [tab, setTab] = useState<"info" | "litigation" | "ip">("info");
+  const [tab, setTab] = useState<"info" | "litigation" | "ip" | "billing">("info");
 
   const safeDate = (d: any) => {
     if (!d) return "-";
@@ -52,6 +52,10 @@ export default function TaskDetailModal({ task, onClose }: Props) {
                 tab === "ip" ? "bg-violet-500/20 text-violet-400" : "text-slate-500 hover:text-white"
               }`}>IP Details</button>
           )}
+          <button onClick={() => setTab("billing")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === "billing" ? "bg-amber-500/20 text-amber-400" : "text-slate-500 hover:text-white"
+            }`}>Billing</button>
         </div>
 
         {/* Info Tab */}
@@ -199,6 +203,33 @@ export default function TaskDetailModal({ task, onClose }: Props) {
                     return <InfoRow key={key} label={label} value={displayValue || "-"} />;
                   })}
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Billing Tab */}
+        {tab === "billing" && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-5">
+              <InfoRow label="Billing Type" value={task.billingType || "HOURS"} />
+              <InfoRow label="Currency" value={task.billingCurrency || "USD"} />
+              {task.hourlyRate && <InfoRow label="Hourly Rate" value={`${task.hourlyRate} ${task.billingCurrency}`} />}
+              {task.retainerFee && <InfoRow label="Retainer Fee" value={`${task.retainerFee} ${task.billingCurrency}`} />}
+              {task.retainerHours && <InfoRow label="Retainer Hours" value={`${task.retainerHours} hrs`} />}
+              {task.overtimeRate && <InfoRow label="Overtime Rate" value={`${task.overtimeRate} ${task.billingCurrency}`} />}
+            </div>
+            
+            {task.accountId && (
+              <div className="pt-4 border-t border-white/5 flex flex-col items-center gap-3">
+                <p className="text-xs text-slate-500 italic">Separate accounting is enabled for this matter.</p>
+                <button 
+                  onClick={() => window.location.href = `/dashboard/invoices/new?matterId=${task.id}`}
+                  className="bg-legal-gold text-slate-900 font-bold px-6 py-3 rounded-xl flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-legal-gold/10"
+                >
+                  <FileText className="w-5 h-5" />
+                  Generate Invoice for Matter
+                </button>
               </div>
             )}
           </div>
