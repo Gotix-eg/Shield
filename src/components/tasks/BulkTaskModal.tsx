@@ -45,35 +45,49 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
       const lines = text.split(/\r?\n/).filter(l => l.trim());
       if (lines.length < 2) return;
       
-      // Auto-detect separator: comma or semicolon
       const firstLine = lines[0];
       const separator = firstLine.includes(';') ? ';' : ',';
-      console.log(`Detected separator: "${separator}"`);
+      const headers = firstLine.split(separator).map(h => h.replace(/"/g, "").trim().toLowerCase());
+      
+      const findIdx = (keywords: string[]) => headers.findIndex(h => keywords.some(k => h.includes(k)));
 
-      const headers = firstLine.split(separator).map(h => h.replace(/"/g, "").trim().toLowerCase().replace(/\s/g, ""));
-      console.log(`Headers:`, headers);
+      const idx = {
+        country: findIdx(['country', 'jurisdiction', 'الدولة', 'الولاية']),
+        trademark: findIdx(['trademark', 'name', 'mark', 'العلامة', 'اسم العلامة', 'الاسم']),
+        appNo: findIdx(['app', 'number', 'filing no', 'رقم الطلب', 'رقم الملف']),
+        date: findIdx(['date', 'filing', 'تاريخ', 'الإيداع', 'إيداع']),
+        classes: findIdx(['class', 'nice', 'الفئات', 'فئات', 'فئة']),
+        status: findIdx(['status', 'state', 'الحالة', 'حالة']),
+        applicant: findIdx(['applicant', 'client', 'owner', 'الموكل', 'صاحب', 'مقدم'])
+      };
+
+      console.log('Column mapping indices:', idx);
 
       const newRows: any[] = [];
-      
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(separator).map(v => v.replace(/"/g, "").trim());
-        const row: any = {};
-        headers.forEach((h, idx) => { row[h] = values[idx]; });
-        
+        if (values.length < 2) continue;
+
+        const val = (index: number) => index > -1 ? values[index] : "";
+
         newRows.push({
           id: Date.now() + i,
-          country: row.country || row.jurisdiction || row["الدولة"] || "",
-          trademark: row.trademark || row.name || row.mark || row["العلامة"] || row["اسم العلامة"] || "",
-          appNo: row.applicationno || row.appno || row.filenumber || row["رقم الطلب"] || "",
-          filingDate: row.filingdate || row.date || row["تاريخ الإيداع"] || "",
-          classes: row.classes || row.class || row["الفئات"] || "",
-          status: row.status || row["الحالة"] || "Under examination",
-          applicant: row.applicantname || row.applicant || row["الموكل"] || ""
+          country: val(idx.country),
+          trademark: val(idx.trademark),
+          appNo: val(idx.appNo),
+          filingDate: val(idx.date),
+          classes: val(idx.classes),
+          status: val(idx.status) || "Under examination",
+          applicant: val(idx.applicant)
         });
       }
-      console.log(`Imported rows:`, newRows);
-      setRows(newRows);
-      toast.success(`Imported ${newRows.length} rows from file`);
+      
+      if (newRows.length > 0) {
+        setRows(newRows);
+        toast.success(`Successfully imported ${newRows.length} rows`);
+      } else {
+        toast.error("Could not find any data rows in the file");
+      }
     };
     reader.readAsText(file);
     e.target.value = "";
