@@ -277,7 +277,7 @@ export default function GeneralTaskSection({
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => setShowForm(false)} className="btn-legal-outline px-5 py-2">Cancel</button>
               <button onClick={handleSubmit}
-                disabled={!form.title.trim() || form.assigneeIds.length === 0 || !form.dueDate}
+                disabled={!form.title?.trim() || form.assigneeIds.length === 0 || !form.dueDate}
                 className="btn-legal px-5 py-2 disabled:opacity-40">
                 Create Task
               </button>
