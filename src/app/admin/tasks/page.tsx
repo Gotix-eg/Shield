@@ -125,18 +125,54 @@ export default function TasksPage() {
   };
 
   const exportToExcel = () => {
-    const headers = ["Title", "Type", "IP Type", "Client", "Project", "Assignees", "Agent", "Due Date", "Status", "Description"];
+    if (tasks.length === 0) {
+      toast.error("No tasks to export");
+      return;
+    }
+
+    // Identify all unique keys in actionDetails to create columns for them
+    const actionDetailKeys = new Set<string>();
+    tasks.forEach(t => {
+      if (t.actionDetails) {
+        Object.keys(t.actionDetails).forEach(k => actionDetailKeys.add(k));
+      }
+    });
+    const detailKeysList = Array.from(actionDetailKeys);
+
+    const headers = [
+      "Title", "Type", "IP Type", "IP Action", "Client", "Project", 
+      "Assignees", "Agent", "Due Date", "Status", "Description",
+      ...detailKeysList.map(k => `Detail: ${k}`)
+    ];
+
     const rows = tasks.map(t => [
-      t.title, t.taskType || "", t.ipType || "", t.client?.name || "", t.project?.name || "",
-      t.assignees?.map(a => a?.name).filter(Boolean).join(", ") || "", t.agent?.name || "",
-      safeDate(t.dueDate), t.status, t.description || "",
+      t.title, 
+      t.taskType || "", 
+      t.ipType || "", 
+      t.ipAction || "",
+      t.client?.name || "", 
+      t.project?.name || "", 
+      t.assignees?.map(a => a?.name).filter(Boolean).join("; ") || "", 
+      t.agent?.name || "", 
+      safeDate(t.dueDate), 
+      t.status, 
+      (t.description || "").replace(/\n/g, " "),
+      ...detailKeysList.map(k => {
+        const val = t.actionDetails?.[k];
+        if (typeof val === 'object') return JSON.stringify(val);
+        return val || "";
+      })
     ]);
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+
+    const csv = [headers, ...rows].map(row => 
+      row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(",")
+    ).join("\n");
+
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `tasks_${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `matters_export_${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
