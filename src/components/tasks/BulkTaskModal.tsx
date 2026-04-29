@@ -3,6 +3,7 @@ import { useState } from "react";
 import { X, Plus, Trash2, Save, Upload, Info } from "lucide-react";
 import type { SelectOption } from "./types";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
 
 interface Props {
   clients: SelectOption[];
@@ -36,59 +37,67 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
     setRows(rows.map(r => r.id === id ? { ...r, [field]: value } : r));
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) return;
-      
-      const firstLine = lines[0];
-      const separators = [',', ';', '\t'];
-      let separator = ',';
-      let maxCols = 0;
-      separators.forEach(s => {
-        const cols = firstLine.split(s).length;
-        if (cols > maxCols) { maxCols = cols; separator = s; }
-      });
 
-      const headers = firstLine.split(separator).map(h => h.replace(/"/g, "").trim().toLowerCase());
-      console.log(`Detected separator: "${separator}"`, headers);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
       
-      const findIdx = (keywords: string[]) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+      const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+      
+      if (!jsonData || jsonData.length === 0) return;
+
+      let headerRowIndex = -1;
+      let headers: string[] = [];
+      const keywords = ['country', 'trademark', 'name', 'status', 'date', 'app', 'class', 'applicant', 'jurisdiction', 'علامة', 'دولة'];
+      
+      for (let i = 0; i < Math.min(20, jsonData.length); i++) {
+        const row = jsonData[i] || [];
+        const rowStr = row.map(cell => String(cell).toLowerCase());
+        const matchCount = rowStr.filter(cell => keywords.some(k => cell.includes(k))).length;
+        if (matchCount >= 2) { 
+          headerRowIndex = i;
+          headers = rowStr;
+          break;
+        }
+      }
+
+      if (headerRowIndex === -1) {
+        toast.error("Could not find table headers in the file.");
+        return;
+      }
+
+      const findIdx = (kws: string[]) => headers.findIndex(h => h && kws.some(k => h.includes(k)));
 
       const idx = {
         country: findIdx(['country', 'jurisdiction', 'الدولة', 'الولاية']),
         trademark: findIdx(['trademark', 'name', 'mark', 'العلامة', 'اسم العلامة', 'الاسم']),
-        appNo: findIdx(['app', 'number', 'filing no', 'رقم الطلب', 'رقم الملف']),
+        appNo: findIdx(['app', 'number', 'filing no', 'رقم الطلب', 'رقم الملف', 'application no.']),
         date: findIdx(['date', 'filing', 'تاريخ', 'الإيداع', 'إيداع']),
-        classes: findIdx(['class', 'nice', 'الفئات', 'فئات', 'فئة']),
+        classes: findIdx(['class', 'nice', 'الفئات', 'فئات', 'فئة', 'class/es']),
         status: findIdx(['status', 'state', 'الحالة', 'حالة']),
-        applicant: findIdx(['applicant', 'client', 'owner', 'الموكل', 'صاحب', 'مقدم'])
+        applicant: findIdx(['applicant', 'client', 'owner', 'الموكل', 'صاحب', 'مقدم', 'applicant name'])
       };
 
-      // Fallback: if no keywords matched at all, try mapping by index for common layouts
-      if (idx.country === -1 && headers.length > 0) idx.country = 0;
-      if (idx.trademark === -1 && headers.length > 1) idx.trademark = 1;
-      if (idx.appNo === -1 && headers.length > 2) idx.appNo = 2;
-      if (idx.date === -1 && headers.length > 3) idx.date = 3;
-      if (idx.classes === -1 && headers.length > 4) idx.classes = 4;
-      if (idx.status === -1 && headers.length > 5) idx.status = 5;
-      if (idx.applicant === -1 && headers.length > 7) idx.applicant = 7;
-
       const newRows: any[] = [];
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(separator).map(v => v.replace(/"/g, "").trim());
-        if (values.length < 1) continue;
+      for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+        const row = jsonData[i] || [];
+        if (row.filter((c: any) => c !== undefined && c !== "").length === 0) continue;
 
-        const val = (index: number) => (index > -1 && index < values.length) ? values[index] : "";
+        const val = (index: number) => (index > -1 && index < row.length) ? (row[index] ? String(row[index]).trim() : "") : "";
+
+        const country = val(idx.country);
+        const trademark = val(idx.trademark);
+        if (!country && !trademark && newRows.length > 0) continue;
 
         newRows.push({
           id: Date.now() + i,
-          country: val(idx.country),
-          trademark: val(idx.trademark),
+          country: country,
+          trademark: trademark,
           appNo: val(idx.appNo),
           filingDate: val(idx.date),
           classes: val(idx.classes),
@@ -96,15 +105,48 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
           applicant: val(idx.applicant)
         });
       }
-      
+
       if (newRows.length > 0) {
         setRows(newRows);
-        toast.success(`Imported ${newRows.length} rows. Mapping: ${headers.slice(0,3).join(',')}...`);
+        toast.success(`Imported ${newRows.length} rows.`);
+
+        let foundClient = false;
+        if (idx.applicant > -1) {
+          const firstApplicant = newRows[0].applicant;
+          if (firstApplicant) {
+            const matchedClient = clients.find(c => c.name.toLowerCase().includes(firstApplicant.toLowerCase()) || firstApplicant.toLowerCase().includes(c.name.toLowerCase()));
+            if (matchedClient) {
+              setCommon(prev => ({ ...prev, clientId: String(matchedClient.id) }));
+              toast.success(`Auto-selected client: ${matchedClient.name}`);
+              foundClient = true;
+            }
+          }
+        }
+        
+        if (!foundClient) {
+          for (let i = 0; i < headerRowIndex; i++) {
+             const row = jsonData[i] || [];
+             for (const cell of row) {
+               if (cell && typeof cell === 'string') {
+                 const matchedClient = clients.find(c => c.name.toLowerCase().includes(cell.toLowerCase()) || cell.toLowerCase().includes(c.name.toLowerCase()));
+                 if (matchedClient) {
+                    setCommon(prev => ({ ...prev, clientId: String(matchedClient.id) }));
+                    toast.success(`Auto-selected client from header: ${matchedClient.name}`);
+                    foundClient = true;
+                    break;
+                 }
+               }
+             }
+             if (foundClient) break;
+          }
+        }
       } else {
-        toast.error("No data found");
+        toast.error("No valid data found under the headers.");
       }
-    };
-    reader.readAsText(file);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error reading file.");
+    }
     e.target.value = "";
   };
 
@@ -144,7 +186,7 @@ export default function BulkTaskModal({ clients, projects, lawyers, onClose, onS
             </div>
             <label className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 cursor-pointer text-sm text-slate-300 transition-all ml-4">
               <Upload className="w-4 h-4 text-legal-gold" /> Upload Excel/CSV
-              <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
+              <input type="file" accept=".csv, .xlsx, .xls" onChange={handleImport} className="hidden" />
             </label>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
