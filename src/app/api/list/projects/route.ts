@@ -1,31 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions, getAuthServer } from '@/lib/auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
 const ADMIN_ROLES = ['OWNER', 'ADMIN', 'MANAGING_PARTNER', 'ACCOUNTANT_MASTER', 'ACCOUNTANT_ASSISTANT', 'LAWYER_PARTNER', 'HR_MANAGER', 'HR', 'ADMIN_REPORTS'];
 
-function decodeToken(req: NextRequest): { userId: number; role: string; companyId?: number } | null {
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return null;
-  try {
-    const dec: any = jwt.verify(token, JWT_SECRET);
-    const userId = Number(dec.sub ?? dec.id);
-    const role = dec.role ?? 'LAWYER';
-    const companyId = dec.companyId ? Number(dec.companyId) : undefined;
-    return { userId, role, companyId };
-  } catch {
-    return null;
-  }
-}
-
 export async function GET(req: NextRequest) {
-  const user = decodeToken(req);
-  if (!user) return NextResponse.json([], { status: 200 });
+  let session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const raw = getAuthServer(req);
+    if (raw) {
+      try {
+        const decoded = jwt.verify(raw, JWT_SECRET) as any;
+        session = { user: decoded } as any;
+      } catch {}
+    }
+  }
 
-  const { userId, role, companyId } = user;
+  if (!session?.user) return NextResponse.json([], { status: 200 });
+
+  const userId = Number(session.user.id);
+  const role = (session.user as any).role as string || 'LAWYER';
+  const companyId = (session.user as any).companyId ? Number((session.user as any).companyId) : undefined;
 
   let where: any = {};
   if (companyId) where.companyId = companyId;
