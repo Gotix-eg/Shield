@@ -1056,3 +1056,21 @@ model WebsiteScheduleSlot {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 }
+
+model WebsitePortalDemo {
+  id                Int      @id @default(autoincrement())
+  companyId         Int
+  title             String   @default("Shield Advocates Client Portal Preview")
+  subtitle          String   @db.Text
+  clientName        String
+  matterName        String
+  caseNumber        String
+  clientEmail       String
+  courtName         String
+  currentStatus     String
+  assignedAttorneys String   // Comma-separated list of attorneys
+  milestones        Json     // Array of milestones: [{ title, date, status, description }]
+  documents         Json     // Array of documents: [{ name, size, type, date, url }]
+  updatedAt         DateTime @updatedAt
+}
+

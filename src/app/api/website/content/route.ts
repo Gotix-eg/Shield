@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const companyId = await getWebsiteCompanyId();
 
-    const [hero, about, team, practices, awards, contact, faq, slots] = 
+    const [hero, about, team, practices, awards, contact, faq, slots, portalDemo] = 
       await Promise.all([
         prisma.websiteHero.findFirst({ where: { companyId } }),
         prisma.websiteAbout.findFirst({ where: { companyId } }),
@@ -31,6 +31,7 @@ export async function GET() {
           where: { companyId, active: true },
           orderBy: { sortOrder: "asc" },
         }),
+        prisma.websitePortalDemo.findFirst({ where: { companyId } }),
       ]);
 
     return NextResponse.json({
@@ -42,6 +43,7 @@ export async function GET() {
       contact,
       faq,
       scheduleSlots: slots,
+      portalDemo,
     });
   } catch (error: any) {
     console.error("GET /api/website/content error:", error);

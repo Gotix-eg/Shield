@@ -9,9 +9,9 @@ type UserRole = string; // roles now dynamic
 interface NavLink { href:string; label:string; key:string }
 const ADMIN_ROLES = ["ADMIN","MANAGING_PARTNER","ACCOUNTANT_MASTER","ACCOUNTANT_ASSISTANT","LAWYER_PARTNER","LAWYER_MANAGER"];
 const ROLE_PAGES: Record<string,string[]> = {
-  OWNER:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks","website"],
-  MANAGING_PARTNER:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks","website"],
-  ADMIN:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks","website"],
+  OWNER:["website"],
+  MANAGING_PARTNER:["website"],
+  ADMIN:["website"],
   ACCOUNTANT_MASTER:["invoices","reports","accounts","trust","leaves","payroll","notifications"],
   ACCOUNTANT_ASSISTANT:["invoices","accounts","leaves","notifications"],
   LAWYER_PARTNER:["clients","projects","time","reports","leaves","settings"],

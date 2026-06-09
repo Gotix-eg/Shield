@@ -13,31 +13,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing case number or email" }, { status: 400 });
     }
 
-    // Find a project with matching project code (caseNumber)
-    const project = await prisma.project.findFirst({
+    // Find matching case tracker demo
+    const portalDemo = await prisma.websitePortalDemo.findFirst({
       where: {
-        code: caseNumber,
-        client: {
-          contactEmail: {
-            equals: email,
-            mode: "insensitive"
-          }
+        caseNumber: caseNumber,
+        clientEmail: {
+          equals: email,
+          mode: "insensitive"
         }
-      },
-      include: {
-        client: true
       }
     });
 
-    if (!project) {
+    if (!portalDemo) {
       return NextResponse.json({ error: "Invalid case number or email address" }, { status: 401 });
     }
 
     // Sign a short-lived token for this case
     const token = jwt.sign(
       {
-        projectId: project.id,
-        clientId: project.clientId,
+        portalDemoId: portalDemo.id,
         email: email,
         role: "CLIENT_PORTAL"
       },
@@ -45,7 +39,7 @@ export async function POST(req: NextRequest) {
       { expiresIn: "15m" }
     );
 
-    return NextResponse.json({ token, projectId: project.id });
+    return NextResponse.json({ token, projectId: portalDemo.id });
   } catch (error) {
     console.error("POST /api/website/portal/login error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

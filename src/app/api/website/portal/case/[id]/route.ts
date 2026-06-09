@@ -6,8 +6,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
-  const projectId = parseInt(rawId);
-  if (isNaN(projectId)) {
+  const portalDemoId = parseInt(rawId);
+  if (isNaN(portalDemoId)) {
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    if (decoded.role !== "CLIENT_PORTAL" || decoded.projectId !== projectId) {
+    if (decoded.role !== "CLIENT_PORTAL" || decoded.portalDemoId !== portalDemoId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   } catch (err) {
@@ -28,72 +28,39 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   try {
-    // Fetch project details
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      include: {
-        client: true,
-        assignments: {
-          include: {
-            user: {
-              select: { name: true, role: true }
-            }
-          }
-        },
-        attachments: {
-          select: {
-            id: true,
-            label: true,
-            url: true,
-            createdAt: true,
-            type: true
-          }
-        },
-        tasks: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            status: true,
-            dueDate: true,
-            createdAt: true
-          },
-          orderBy: {
-            dueDate: "asc"
-          }
-        }
-      }
+    // Fetch portal demo details
+    const portalDemo = await prisma.websitePortalDemo.findUnique({
+      where: { id: portalDemoId }
     });
 
-    if (!project) {
+    if (!portalDemo) {
       return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
 
-    // Map tasks to milestones
-    const milestones = project.tasks.map(t => ({
-      id: t.id,
-      title: t.title,
-      description: t.description || "",
-      status: t.status, // e.g. PENDING, IN_PROGRESS, DONE
-      date: t.dueDate.toISOString().split("T")[0]
-    }));
+    // Parse attorneys (comma-separated to array)
+    const attorneys = portalDemo.assignedAttorneys
+      ? portalDemo.assignedAttorneys.split(",").map(a => a.trim())
+      : [];
 
-    // Map attorneys
-    const attorneys = project.assignments.map(a => a.user.name);
+    // Parse milestones
+    const milestones = Array.isArray(portalDemo.milestones)
+      ? portalDemo.milestones
+      : JSON.parse(portalDemo.milestones as string || "[]");
+
+    // Parse documents
+    const documents = Array.isArray(portalDemo.documents)
+      ? portalDemo.documents
+      : JSON.parse(portalDemo.documents as string || "[]");
 
     return NextResponse.json({
-      clientName: project.client.name,
-      matterName: project.name,
-      caseNumber: project.code,
-      status: project.status, // OPEN or CLOSED
+      clientName: portalDemo.clientName,
+      matterName: portalDemo.matterName,
+      caseNumber: portalDemo.caseNumber,
+      status: portalDemo.currentStatus.toUpperCase().includes("CLOSED") ? "CLOSED" : "OPEN",
+      courtName: portalDemo.courtName,
       attorneys,
       milestones,
-      documents: project.attachments.map(doc => ({
-        id: doc.id,
-        name: doc.label || "Document",
-        url: doc.url,
-        date: doc.createdAt.toISOString().split("T")[0]
-      }))
+      documents
     });
   } catch (error) {
     console.error("GET /api/website/portal/case/[id] error:", error);

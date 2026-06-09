@@ -173,24 +173,55 @@ export default function Home() {
   const [portalMessageSent, setPortalMessageSent] = useState(false);
   const [previewDoc, setPreviewDoc]               = useState<{ name: string; date: string; size: string } | null>(null);
 
+  const dynamicPortalDemo = siteData?.portalDemo;
+
   const portalData = {
-    ...staticContent.portalDemo,
-    clientName: portalCaseData?.clientName || staticContent.portalDemo.clientName,
-    matterName: portalCaseData?.matterName || staticContent.portalDemo.matterName,
-    caseNumber: portalCaseData?.caseNumber || staticContent.portalDemo.caseNumber,
-    currentStatus: portalCaseData ? `${portalCaseData.status === "OPEN" ? "Active" : "Closed"} - ${portalCaseData.milestones[portalCaseData.milestones.length - 1]?.title || "In Progress"}` : staticContent.portalDemo.currentStatus,
-    assignedAttorneys: portalCaseData?.attorneys?.length ? portalCaseData.attorneys : staticContent.portalDemo.assignedAttorneys,
-    milestones: portalCaseData?.milestones?.length ? portalCaseData.milestones.map((m: any, idx: number) => ({
-      title: m.title,
-      date: m.date,
-      status: m.status === "DONE" ? "completed" : "upcoming"
-    })) : staticContent.portalDemo.milestones,
-    documents: portalCaseData?.documents?.length ? portalCaseData.documents.map((d: any) => ({
-      name: d.name,
-      size: "Varies",
-      type: "PDF",
-      date: d.date
-    })) : staticContent.portalDemo.documents,
+    title: dynamicPortalDemo?.title || staticContent.portalDemo.title,
+    subtitle: dynamicPortalDemo?.subtitle || staticContent.portalDemo.subtitle,
+    clientName: portalCaseData?.clientName || dynamicPortalDemo?.clientName || staticContent.portalDemo.clientName,
+    matterName: portalCaseData?.matterName || dynamicPortalDemo?.matterName || staticContent.portalDemo.matterName,
+    caseNumber: portalCaseData?.caseNumber || dynamicPortalDemo?.caseNumber || staticContent.portalDemo.caseNumber,
+    courtName: portalCaseData?.courtName || dynamicPortalDemo?.courtName || staticContent.portalDemo.courtName,
+    currentStatus: portalCaseData 
+      ? `${portalCaseData.status === "OPEN" ? "Active" : "Closed"} - ${portalCaseData.milestones[portalCaseData.milestones.length - 1]?.title || "In Progress"}` 
+      : (dynamicPortalDemo?.currentStatus || staticContent.portalDemo.currentStatus),
+    assignedAttorneys: portalCaseData?.attorneys?.length 
+      ? portalCaseData.attorneys 
+      : (dynamicPortalDemo?.assignedAttorneys 
+          ? dynamicPortalDemo.assignedAttorneys.split(",").map((a: string) => a.trim())
+          : staticContent.portalDemo.assignedAttorneys),
+    milestones: portalCaseData?.milestones?.length 
+      ? portalCaseData.milestones.map((m: any, idx: number) => ({
+          title: m.title,
+          date: m.date,
+          status: m.status === "DONE" ? "completed" : "upcoming",
+          description: m.description
+        })) 
+      : (dynamicPortalDemo?.milestones 
+          ? (Array.isArray(dynamicPortalDemo.milestones) ? dynamicPortalDemo.milestones : JSON.parse(dynamicPortalDemo.milestones as string)).map((m: any) => ({
+              title: m.title,
+              date: m.date,
+              status: m.status === "DONE" ? "completed" : "upcoming",
+              description: m.description
+            }))
+          : staticContent.portalDemo.milestones),
+    documents: portalCaseData?.documents?.length 
+      ? portalCaseData.documents.map((d: any) => ({
+          name: d.name,
+          size: "Varies",
+          type: "PDF",
+          date: d.date,
+          url: d.url
+        })) 
+      : (dynamicPortalDemo?.documents 
+          ? (Array.isArray(dynamicPortalDemo.documents) ? dynamicPortalDemo.documents : JSON.parse(dynamicPortalDemo.documents as string)).map((d: any) => ({
+              name: d.name,
+              size: d.size || "Varies",
+              type: d.type || "PDF",
+              date: d.date,
+              url: d.url
+            }))
+          : staticContent.portalDemo.documents),
   };
 
   useEffect(() => {
@@ -1073,8 +1104,8 @@ export default function Home() {
                     <div className="space-y-2 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                       {[
                         { label: "File No:", value: websiteContent.portalDemo.caseNumber },
-                        { label: "Court:", value: websiteContent.portalDemo.courtName.split(",")[0] },
-                        { label: "Attorneys:", value: "Hassane, Omneya" }
+                        { label: "Court:", value: websiteContent.portalDemo.courtName },
+                        { label: "Attorneys:", value: Array.isArray(websiteContent.portalDemo.assignedAttorneys) ? websiteContent.portalDemo.assignedAttorneys.join(", ") : websiteContent.portalDemo.assignedAttorneys }
                       ].map((r, i) => (
                         <div key={i} className="flex justify-between text-[11px]">
                           <span className="text-zinc-500">{r.label}</span>
@@ -1127,12 +1158,7 @@ export default function Home() {
                             {isSelected && (
                               <div className="mt-2 p-3 rounded text-xs text-zinc-400 leading-relaxed font-light"
                                 style={{ background: "rgba(197,160,89,0.05)", border: "1px solid rgba(197,160,89,0.15)" }}>
-                                {idx === 0 && "Verification of GAFI registers and corporate authorization completed."}
-                                {idx === 1 && "Cease and desist brief finalized by Partner Hassane El Sheref and served to counterparty."}
-                                {idx === 2 && "Opposition brief lodged at the Egyptian Trademark Registry by Omneya Moawad."}
-                                {idx === 3 && "First litigation hearing held before Cairo Economic Court. Oral pleas filed by senior partners."}
-                                {idx === 4 && "Final written defense briefs and evidence logs submitted to Giza Economic Court (Today)."}
-                                {idx === 5 && "Verdict session and enforcement files scheduled. Legal team monitoring developments daily."}
+                                {m.description || "Details for this milestone are managed securely by the legal team."}
                               </div>
                             )}
                           </div>
@@ -1227,7 +1253,12 @@ export default function Home() {
                 <span className="text-[7px] font-bold text-red-500 text-center uppercase tracking-widest leading-none">SHIELD<br/>OFFICIAL<br/>SEAL</span>
               </div>
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-between items-center">
+              {(previewDoc as any).url && (previewDoc as any).url.startsWith("http") ? (
+                <a href={(previewDoc as any).url} target="_blank" rel="noreferrer" className="bg-[#C5A059] hover:bg-[#d4b06a] text-[#080b12] font-sans text-xs font-bold py-2 px-5 rounded transition-colors select-none decoration-transparent">
+                  Download / View File
+                </a>
+              ) : <div />}
               <button onClick={() => window.print()} className="bg-zinc-800 hover:bg-zinc-900 text-white font-sans text-xs font-bold py-2 px-5 rounded transition-colors">
                 Print Document
               </button>

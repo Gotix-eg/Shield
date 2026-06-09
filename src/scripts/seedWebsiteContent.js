@@ -189,6 +189,7 @@ async function seed() {
   await prisma.websiteContact.deleteMany({ where: { companyId: COMPANY_ID } });
   await prisma.websiteFaq.deleteMany({ where: { companyId: COMPANY_ID } });
   await prisma.websiteScheduleSlot.deleteMany({ where: { companyId: COMPANY_ID } });
+  await prisma.websitePortalDemo.deleteMany({ where: { companyId: COMPANY_ID } });
 
   // 1. Seed Hero
   await prisma.websiteHero.create({
@@ -299,94 +300,38 @@ async function seed() {
   }
 
   // 9. Seed Case Tracker Demo Data
-  let client = await prisma.client.findFirst({ where: { companyId: COMPANY_ID, contactEmail: "client@globaltech.com" } });
-  if (!client) {
-    const adminUser = await prisma.user.findFirst({ where: { companyId: COMPANY_ID } });
-    if (adminUser) {
-      client = await prisma.client.create({
-        data: {
-          companyId: COMPANY_ID,
-          ownerId: adminUser.id,
-          name: "Global Tech Solutions Inc.",
-          contactEmail: "client@globaltech.com",
-          contactPerson: "John Doe",
-          code: "C0001",
-        }
-      });
-      console.log("✅ Seeded demo client 'Global Tech Solutions Inc.'");
+  const milestones = [
+    { title: "Case Assessment & Power of Attorney Verified", date: "April 02, 2026", status: "DONE", description: "Verification of GAFI registers and corporate authorization completed." },
+    { title: "Cease & Desist Warning Served to Counterparty", date: "April 18, 2026", status: "DONE", description: "Cease and desist brief finalized by Partner Hassane El Sheref and served to counterparty." },
+    { title: "Opposition Brief Lodged at Egypt Trademark Registry", date: "May 05, 2026", status: "DONE", description: "Opposition brief lodged at the Egyptian Trademark Registry by Omneya Moawad." },
+    { title: "First economic court trial hearing held in Giza", date: "June 01, 2026", status: "DONE", description: "First litigation hearing held before Cairo Economic Court. Oral pleas filed by senior partners." },
+    { title: "Submission of Written Defense & Evidence Logs", date: "June 08, 2026 (Today)", status: "DONE", description: "Final written defense briefs and evidence logs submitted to Giza Economic Court (Today)." },
+    { title: "Final Court Verdict and Execution of Seizures", date: "Scheduled for July 12, 2026", status: "PENDING", description: "Verdict session and enforcement files scheduled. Legal team monitoring developments daily." }
+  ];
+
+  const documents = [
+    { name: "Trademark_Infringement_Claim_Brief.pdf", size: "1.4 MB", type: "PDF", date: "May 04, 2026", url: "/documents/Trademark_Infringement_Claim_Brief.pdf" },
+    { name: "Notarized_Power_of_Attorney_GAFI.pdf", size: "920 KB", type: "PDF", date: "April 10, 2026", url: "/documents/Notarized_Power_of_Attorney_GAFI.pdf" },
+    { name: "Giza_Economic_Court_First_Hearing_Minutes.pdf", size: "380 KB", type: "PDF", date: "June 02, 2026", url: "/documents/Giza_Economic_Court_First_Hearing_Minutes.pdf" }
+  ];
+
+  await prisma.websitePortalDemo.create({
+    data: {
+      companyId: COMPANY_ID,
+      title: "Shield Advocates Client Portal Preview",
+      subtitle: "Track active milestones, review pleadings, and view court schedules. This live interactive workspace demonstrates how Shield Advocates utilizes state-of-the-art legal tech to deliver transparency to our corporate partners.",
+      clientName: "Global Tech Solutions Inc.",
+      matterName: "Intellectual Property Opposition & Trademark Litigation",
+      caseNumber: "SA-IP-2026-092",
+      clientEmail: "client@globaltech.com",
+      courtName: "Cairo Economic Court, Giza Chamber",
+      currentStatus: "Pleadings Submitted - Awaiting Court Verdict",
+      assignedAttorneys: "Hassane El Sheref, Omneya Moawad",
+      milestones: milestones,
+      documents: documents
     }
-  }
-
-  if (client) {
-    let project = await prisma.project.findFirst({ where: { companyId: COMPANY_ID, code: "SA-IP-2026-092" } });
-    if (!project) {
-      const adminUser = await prisma.user.findFirst({ where: { companyId: COMPANY_ID } });
-      project = await prisma.project.create({
-        data: {
-          companyId: COMPANY_ID,
-          ownerId: adminUser.id,
-          clientId: client.id,
-          name: "Intellectual Property Opposition & Trademark Litigation",
-          code: "SA-IP-2026-092",
-          status: "OPEN",
-        }
-      });
-      console.log("✅ Seeded demo project 'SA-IP-2026-092'");
-
-      // Seed milestones (Tasks)
-      const milestones = [
-        { title: "Case Assessment & Power of Attorney Verified", daysOffset: -69, status: "DONE" },
-        { title: "Cease & Desist Warning Served to Counterparty", daysOffset: -53, status: "DONE" },
-        { title: "Opposition Brief Lodged at Egypt Trademark Registry", daysOffset: -36, status: "DONE" },
-        { title: "First economic court trial hearing held in Giza", daysOffset: -9, status: "DONE" },
-        { title: "Submission of Written Defense & Evidence Logs", daysOffset: -2, status: "DONE" },
-        { title: "Final Court Verdict and Execution of Seizures", daysOffset: 32, status: "PENDING" }
-      ];
-
-      for (const m of milestones) {
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + m.daysOffset);
-        await prisma.task.create({
-          data: {
-            title: m.title,
-            dueDate,
-            status: m.status,
-            assignerId: adminUser.id,
-            projectId: project.id,
-            assigneeIds: String(adminUser.id),
-          }
-        });
-      }
-      console.log("✅ Seeded demo project milestones");
-
-      // Seed project attachments (documents)
-      const attachments = [
-        { label: "Trademark_Infringement_Claim_Brief.pdf", url: "/documents/Trademark_Infringement_Claim_Brief.pdf" },
-        { label: "Notarized_Power_of_Attorney_GAFI.pdf", url: "/documents/Notarized_Power_of_Attorney_GAFI.pdf" },
-        { label: "Giza_Economic_Court_First_Hearing_Minutes.pdf", url: "/documents/Giza_Economic_Court_First_Hearing_Minutes.pdf" }
-      ];
-
-      for (const att of attachments) {
-        await prisma.projectAttachment.create({
-          data: {
-            projectId: project.id,
-            label: att.label,
-            url: att.url,
-            uploadedById: adminUser.id,
-          }
-        });
-      }
-      console.log("✅ Seeded demo project attachments");
-
-      // Also create project assignment for Assem and Hassane in case
-      await prisma.projectAssignment.create({
-        data: {
-          userId: adminUser.id,
-          projectId: project.id,
-        }
-      });
-    }
-  }
+  });
+  console.log("✅ Seeded dynamic client portal demo content");
 
   console.log("✅ Website content & portal demo seeded successfully!");
 }
