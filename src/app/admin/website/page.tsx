@@ -1181,7 +1181,7 @@ export default function WebsiteManager() {
 
                       <div className="bg-[#070b13] rounded-lg border border-white/5 overflow-hidden shadow-xl">
                         <div className="overflow-x-auto">
-                          <table className="w-full text-left border-collapse">
+                          <table className="w-full min-w-[950px] text-left border-collapse">
                             <thead>
                               <tr className="border-b border-white/5 bg-white/[0.02] text-[10px] uppercase tracking-wider text-slate-400 font-bold">
                                 <th className="py-4 px-4">Client / Case Number</th>
@@ -2273,6 +2273,132 @@ export default function WebsiteManager() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* PORTAL CASES FORM */}
+            {editModal.type === "portalCases" && (
+              <form onSubmit={handleModalSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Client Name</label>
+                    <input
+                      type="text"
+                      value={editModal.data.clientName || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, clientName: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Client Registered Email (For Login)</label>
+                    <input
+                      type="email"
+                      value={editModal.data.clientEmail || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, clientEmail: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Case Number (File No)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={editModal.data.caseNumber || ""}
+                        onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, caseNumber: e.target.value } })}
+                        placeholder="Leave blank to auto-generate"
+                        className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const year = new Date().getFullYear();
+                          const randNum = Math.floor(1000 + Math.random() * 9000);
+                          setEditModal({
+                            ...editModal,
+                            data: {
+                              ...editModal.data,
+                              caseNumber: `SA-CASE-${year}-${randNum}`
+                            }
+                          });
+                        }}
+                        className="px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-slate-300 transition-all shrink-0"
+                      >
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Matter Name</label>
+                    <input
+                      type="text"
+                      value={editModal.data.matterName || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, matterName: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Court Name</label>
+                    <input
+                      type="text"
+                      value={editModal.data.courtName || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, courtName: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Current Status</label>
+                    <input
+                      type="text"
+                      value={editModal.data.currentStatus || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, currentStatus: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Assigned Attorneys (Comma-separated)</label>
+                    <input
+                      type="text"
+                      value={editModal.data.assignedAttorneys || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, assignedAttorneys: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Portal Title</label>
+                    <input
+                      type="text"
+                      value={editModal.data.title || "Shield Advocates Client Portal"}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, title: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Portal Subtitle</label>
+                    <textarea
+                      rows={2}
+                      value={editModal.data.subtitle || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, subtitle: e.target.value } })}
+                      required
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
+                  <button type="button" onClick={() => setEditModal(null)} className="px-5 py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition-all">
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-5 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all">
+                    Save Case Portal
+                  </button>
+                </div>
+              </form>
             )}
 
           </div>
