@@ -152,26 +152,35 @@ export default function NavBar() {
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto px-6 space-y-1 custom-scrollbar">
-        {navLinks.filter(l => l.key === "dashboard" || allowedPages.includes(l.key)).map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-4 px-5 py-3.5 rounded-xl text-[13px] font-medium tracking-wide transition-all duration-300 relative group ${
-                active 
-                  ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <Icon className={`w-4.5 h-4.5 transition-colors duration-300 ${active ? "text-legal-gold" : "text-slate-500 group-hover:text-white"}`} />
-              <span className="relative z-10">{label}</span>
-              {active && (
-                <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-4 rounded-l-full bg-legal-gold"></span>
-              )}
-            </Link>
-          );
-        })}
+        {(() => {
+          const isWebsiteOnlyAdmin = resolvedRole && ["OWNER", "MANAGING_PARTNER", "ADMIN"].includes(resolvedRole);
+          const filteredNavLinks = navLinks.filter(l => {
+            if (l.key === "dashboard") {
+              return !isWebsiteOnlyAdmin;
+            }
+            return allowedPages.includes(l.key);
+          });
+          return filteredNavLinks.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-4 px-5 py-3.5 rounded-xl text-[13px] font-medium tracking-wide transition-all duration-300 relative group ${
+                  active 
+                    ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Icon className={`w-4.5 h-4.5 transition-colors duration-300 ${active ? "text-legal-gold" : "text-slate-500 group-hover:text-white"}`} />
+                <span className="relative z-10">{label}</span>
+                {active && (
+                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-4 rounded-l-full bg-legal-gold"></span>
+                )}
+              </Link>
+            );
+          });
+        })()}
       </nav>
 
       {/* Sidebar Footer */}

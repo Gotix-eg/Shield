@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { fetchAuth } from '@/lib/fetchAuth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { getAuth } from '@/lib/auth';
 
 interface Company {
   name: string;
@@ -15,7 +17,23 @@ interface Company {
   _count?: { users: number };
 }
 
+function decodeRole(token?: string): string | null {
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    return (payload.role ?? "STAFF");
+  } catch {
+    return null;
+  }
+}
+
 export default function DashboardHome() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -27,6 +45,16 @@ export default function DashboardHome() {
   });
 
   useEffect(() => {
+    const token = getAuth();
+    if (token) {
+      const role = decodeRole(token);
+      if (role === 'OWNER' || role === 'MANAGING_PARTNER' || role === 'ADMIN' || role === 'SUPER_ADMIN') {
+        router.replace('/admin/website');
+        return;
+      }
+    }
+    setCheckingAuth(false);
+
     const fetchCompany = async () => {
       try {
         const res = await fetchAuth("/api/company");
@@ -68,9 +96,19 @@ export default function DashboardHome() {
 
     fetchCompany();
     fetchStats();
-  }, []);
+  }, [router]);
 
   const fmt2 = (n: number) => String(Math.max(0, n)).padStart(2, '0');
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center bg-[#070c14]">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-2 border-t-[#C5A059] border-white/5 animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
