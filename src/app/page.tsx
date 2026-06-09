@@ -74,6 +74,68 @@ function PracticeIcon({ name }: { name: string }) {
   }
 }
 
+/* ─── Partner media hover player component ───────────────────────── */
+function PartnerMedia({ image, video, name }: { image: string; video?: string; name: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setHovered(true);
+    if (videoRef.current) {
+      videoRef.current.muted = false;
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(err => {
+        console.log("Autoplay with sound blocked, trying muted:", err);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          videoRef.current.play().catch(e => console.error(e));
+        }
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.muted = true;
+      videoRef.current.currentTime = 0;
+    }
+  };
+
+  if (!video) {
+    return (
+      <img src={image} alt={name} className="w-full h-full object-cover team-card-img" />
+    );
+  }
+
+  return (
+    <div 
+      className="relative w-full h-full"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <img 
+        src={image} 
+        alt={name} 
+        className={`absolute inset-0 w-full h-full object-cover team-card-img transition-opacity duration-300 ${
+          hovered ? "opacity-0" : "opacity-100"
+        }`} 
+      />
+      <video
+        ref={videoRef}
+        src={video}
+        loop
+        muted
+        playsInline
+        className={`w-full h-full object-cover team-card-img transition-opacity duration-300 ${
+          hovered ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════════ */
@@ -671,21 +733,9 @@ export default function Home() {
 
                 {/* Portrait */}
                 <div className="relative h-80 overflow-hidden">
-                  {member.video ? (
-                    <video
-                      src={member.video}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover team-card-img"
-                    />
-                  ) : (
-                    <img src={member.image} alt={member.name}
-                      className="w-full h-full object-cover team-card-img" />
-                  )}
+                  <PartnerMedia image={member.image} video={member.video} name={member.name} />
                   {/* Gold bottom gradient */}
-                  <div className="absolute inset-x-0 bottom-0 h-24"
+                  <div className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
                     style={{ background: "linear-gradient(transparent, rgba(8,11,18,0.9))" }} />
                 </div>
 
