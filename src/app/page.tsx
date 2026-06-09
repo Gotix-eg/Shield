@@ -145,11 +145,11 @@ export default function Home() {
     setTimeout(() => {
       setBotTyping(false);
       const q = userText.toLowerCase();
-      let response = "Thank you. For case inquiries, please request a consultation, or contact our Giza office at +20 1027 6000 78.";
+      let response = `Thank you. For case inquiries, please request a consultation, or contact our Giza office at ${websiteContent.contact.phone}.`;
       if (q.includes("where") || q.includes("address") || q.includes("location")) {
         response = `Our offices are located at: ${websiteContent.contact.address}.`;
       } else if (q.includes("phone") || q.includes("contact") || q.includes("number")) {
-        response = "You can call our corporate line at +20 1027 6000 78, or email info@shieldadvocates.com.";
+        response = `You can call our corporate line at ${websiteContent.contact.phone}, or email ${websiteContent.contact.email}.`;
       } else if (q.includes("book") || q.includes("appointment") || q.includes("schedule")) {
         response = "Please scroll to the 'Schedule Consultation' section to select a date and book an online meeting.";
       } else if (q.includes("ip") || q.includes("trademark") || q.includes("brand")) {
@@ -627,7 +627,7 @@ export default function Home() {
               <p className="text-sm text-zinc-300 leading-relaxed font-light mb-6">{item.longDesc}</p>
               <div className="flex items-center justify-between gap-4 pt-5"
                 style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <span className="text-[10px] text-zinc-500">+20 1027 6000 78</span>
+                <span className="text-[10px] text-zinc-500">{websiteContent.contact.phone}</span>
                 <a href="#scheduler"
                   onClick={() => { setSchedulerForm(p => ({ ...p, practice: item.id })); setActivePracticeModal(null); }}
                   className="px-6 py-2.5 rounded font-bold text-[10px] uppercase tracking-widest transition-all"
@@ -910,7 +910,7 @@ export default function Home() {
               </span>
               <h2 className="text-xl font-bold text-zinc-900 tracking-tight font-sans">SHIELD ADVOCATES</h2>
               <span className="text-[9px] font-sans block text-zinc-500 font-semibold">AL HAWY & HASSANE LAW FIRM</span>
-              <p className="text-[10px] font-sans text-zinc-500">Sheikh Zayed | Karma 1, Giza | +20 1027 6000 78</p>
+              <p className="text-[10px] font-sans text-zinc-500">Sheikh Zayed | Karma 1, Giza | {websiteContent.contact.phone}</p>
             </div>
             <div className="py-6 space-y-4 text-xs text-zinc-700 leading-relaxed">
               <div className="flex justify-between font-sans text-[9px] font-semibold text-zinc-400">
@@ -1206,7 +1206,7 @@ export default function Home() {
 
             {/* Contact */}
             <div className="flex items-center gap-4">
-              <a href="tel:+201027600078"
+              <a href={`tel:${websiteContent.contact.phone.replace(/[^+\d]/g, "")}`}
                 className="w-9 h-9 rounded flex items-center justify-center transition-all"
                 style={{ background: "rgba(197,160,89,0.08)", border: "1px solid rgba(197,160,89,0.2)" }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(197,160,89,0.5)"}

@@ -21,10 +21,10 @@ export const websiteContent = {
   },
 
   hero: {
-    tagline: "TOP-RANKED LAW FIRM | SHEIKH ZAYED, EGYPT",
+    tagline: "We speak the language of law and business.",
     titleFirst: "STRATEGIC LEGAL",
     titleSecond: "SHIELD",
-    subtitle: "Shield Advocates - Al Hawy & Hassane is a premier independent corporate and intellectual property law firm. Trusted by multinational corporations and global brands to protect assets and navigate complex regulatory frameworks in Egypt and the MENA region.",
+    subtitle: "Shield Advocates – Al Hawy & Hassane is a premier independent law firm based in the administrative heart of Sheikh Zayed City, Giza. Established in 2020, the firm provides bespoke legal solutions across corporate, commercial and intellectual property matters. Its multidisciplinary team combines deep legal experience with business‑savvy insight to navigate complex transactions, cross‑border arrangements and high‑value disputes. The firm works with multinational corporations, regional and local businesses, investors and entrepreneurs, helping them manage legal and compliance risks and protect their most valuable assets.",
     ctaBook: "Request Consultation",
     ctaPortal: "Client Workspace"
   },
@@ -32,8 +32,8 @@ export const websiteContent = {
   about: {
     tagline: "THE FIRM",
     title: "Protecting Corporate Integrity & Assets Since 2020",
-    description1: "Founded in 2020, Shield Advocates – Al Hawy & Hassane is a premium full-service law firm based in the administrative heart of Sheikh Zayed City, Giza. We bridge local Egyptian legal complexities with international corporate standards.",
-    description2: "We are highly recognized by leading global legal rating directories such as The Legal 500 and IP STARS for our exceptional legal advocacy, corporate structuring capabilities, and comprehensive intellectual property enforcement campaigns.",
+    description1: "Shield Advocates is a full‑service law practice offering tailored solutions to multinational corporations, regional businesses and start‑ups. The firm’s mission is to be a trusted legal partner who helps clients identify and mitigate legal risks across industries and stages of growth. By pairing legal acumen with commercial awareness, the team guides clients through complex deals, cross‑border transactions and major disputes.",
+    description2: "Our mission is to become the legal partner of choice for businesses operating in Egypt and the Middle East. We aim to deliver practical solutions that support decision‑making, ensure regulatory compliance and foster sustainable growth. Clients choose us because of our experienced advisers with commercial mindsets, our proactive risk‑focused approach, transparent communication and proven track record of local and international success. We help businesses build compliant corporate structures aligned with their strategic objectives.",
     stats: [
       { value: "2020", label: "Established in Giza, Egypt" },
       { value: "Legal 500", label: "Top-Ranked Practice" },
@@ -45,27 +45,32 @@ export const websiteContent = {
   recognition: {
     tagline: "ACCOLADES & PARTNERSHIPS",
     title: "Globally Rated & Awarded Excellence",
-    subtitle: "Our firm is consistently recognized by international rating agencies and award bodies for our legal achievements and client service transparency.",
+    subtitle: "Shield Advocates’ excellence has been acknowledged by leading legal directories and award bodies.",
     awards: [
       {
         title: "The Legal 500",
         institution: "Leading Firm - Egypt",
-        desc: "Ranked as a top-tier firm for Intellectual Property and Corporate/Commercial legal representation in Egypt."
+        desc: "Ranked as a leading firm for intellectual property and corporate/commercial law in Egypt."
       },
       {
         title: "IP STARS",
-        institution: "Trademark & Patent Authority",
-        desc: "Highly recommended for trademark strategy, registration, customs enforcement, and anti-counterfeiting raids."
+        institution: "Recommended Firm",
+        desc: "Recognised among the top firms for trademark and patent work and praised for anti‑counterfeiting initiatives."
       },
       {
         title: "MEA Business Awards",
         institution: "Winner - 2023",
-        desc: "Awarded Best Corporate & Intellectual Property Law Firm in Egypt for outstanding commercial legal advice."
+        desc: "Winner of Best Intellectual Property & Commercial Law Firm in Egypt, 2023."
       },
       {
         title: "Influential Businesswoman Awards",
         institution: "Winner - 2026",
-        desc: "Recognizing outstanding leadership and legal execution by our managing associates."
+        desc: "Commended the firm’s leadership for contributions to women in the legal field."
+      },
+      {
+        title: "Additional Honours",
+        institution: "Shortlisted & Top Ranked",
+        desc: "The firm has been shortlisted for “Firm of the Year” and ranked among the top ten firms for trademarks (2023–2025) and patents (2024–2025) in Egypt."
       }
     ]
   },
@@ -79,42 +84,42 @@ export const websiteContent = {
         id: "ip",
         title: "Intellectual Property & Brand Protection",
         shortDesc: "Trademark portfolio management, patent registration, copyright protection, and anti-counterfeiting raids.",
-        longDesc: "Led by Partner Hassane El Sheref, our Intellectual Property department is a core strength. We coordinate directly with Egyptian customs and security authorities to conduct customs seizures and raids, protecting global luxury and commercial brands from counterfeiting.",
+        longDesc: "Our IP department offers end‑to‑end protection for brands, inventions and creative works. Services include trademark searches, filings and renewals, patent prosecution, copyright registration and enforcing rights through customs actions, anti‑counterfeiting raids and litigation. We manage global portfolios, coordinate international filings through INTA networks, draft licensing and assignment agreements and handle renewals and recordals. The practice is consistently recognised by leading rankings such as Managing IP and has earned “Recommended Firm” status. The team serves clients across diverse industries and is led by award‑winning practitioners.\n\nOur Intellectual Property team covers the Middle East and North Africa, including North Africa (Algeria, Egypt, Libya, Morocco and Tunisia), the Levant (Iraq, Jordan, Lebanon and Syria) and the Gulf Cooperation Council (Saudi Arabia, UAE, Bahrain, Kuwait, Oman and Qatar). Through a network of trusted associates, we coordinate filings and enforcement actions across these jurisdictions.",
         icon: "ShieldAlert"
       },
       {
         id: "corporate",
         title: "Corporate & Commercial Law",
         shortDesc: "Structuring complex commercial contracts, joint ventures, governance, and regulatory licensing.",
-        longDesc: "We assist multinational enterprises and investors with drafting joint venture agreements, distribution agreements, franchising, agency licensing, and ensuring compliance with the General Authority for Investment (GAFI).",
+        longDesc: "We provide comprehensive legal support for companies operating in Egypt and internationally. Our lawyers assist with company formation, joint ventures, shareholder agreements, corporate governance, franchising and regulatory licensing. For investors seeking to enter the Egyptian market, we offer fast and reliable incorporation services and guide cross‑border expansion through our global network.",
         icon: "Briefcase"
       },
       {
         id: "labor",
         title: "Labour & Employment Law",
         shortDesc: "Advising on Egyptian Labor Law No. 12 of 2003, executive policies, and labor disputes.",
-        longDesc: "Under Founding Partner Assem Al Hawy, we provide comprehensive advice on drafting employment agreements, structuring social security compliance, collective bargaining, and representing management in labor union disputes.",
+        longDesc: "Our employment team advises clients on all aspects of Egyptian Labour Law No. 12 of 2003. We draft employment contracts, handbooks and executive policies; handle terminations, restructuring and profit‑sharing arrangements; and represent clients in labour disputes. Under our leadership, the employment practice has been recognised by The Legal 500 for strengthening the firm’s offering.",
         icon: "Users"
       },
       {
         id: "disputes",
         title: "Dispute Resolution & Arbitration",
         shortDesc: "Litigation before Cairo Economic Courts, civil/tax chambers, and international arbitration.",
-        longDesc: "We protect our clients' commercial interests in litigation before Egyptian courts and in alternative dispute resolution (ADR). We represent corporations in high-stakes international arbitration proceedings.",
+        longDesc: "We represent clients in complex disputes before the Cairo Economic Courts, civil and tax chambers and international arbitral tribunals. Our litigation team leverages deep procedural knowledge to achieve favourable outcomes in commercial, contractual and regulatory disputes. With experience in high‑stakes litigation and cross‑border arbitration, we offer strategic guidance from pre‑litigation risk assessment through settlement or final award.",
         icon: "Scale"
       },
       {
         id: "ma",
-        title: "Mergers & Acquisitions (M&A)",
+        title: "Mergers & Acquisitions",
         shortDesc: "Legal due diligence, transaction structuring, and regulatory clearances.",
-        longDesc: "We guide corporate expansions by executing comprehensive legal due diligence, drafting share purchase agreements (SPAs), shareholder agreements, and obtaining antitrust clearances from the Egyptian Competition Authority.",
+        longDesc: "We guide clients through every stage of the deal cycle, from legal due diligence and risk assessment to structuring, drafting and negotiating transaction documents. Our M&A team works closely with tax and regulatory specialists to ensure transactions comply with Egyptian law and obtain necessary governmental approvals. We have advised on acquisitions, disposals, joint ventures and corporate restructurings across diverse sectors.",
         icon: "TrendingUp"
       },
       {
         id: "finance",
         title: "Banking, Finance & Capital Markets",
         shortDesc: "Corporate credit structures, regulatory financial authority compliance, and project finance.",
-        longDesc: "We advise financial entities and corporate borrowers on structuring secured loan agreements, project financing, and compliance with the Central Bank of Egypt (CBE) and Financial Regulatory Authority (FRA) guidelines.",
+        longDesc: "We advise banks, financial institutions and corporate borrowers on credit facilities, project finance, securitisation, Islamic finance and regulatory compliance. Our capital markets practice handles equity and debt offerings, private placements and continuing obligations on the Egyptian Exchange and abroad.",
         icon: "DollarSign"
       }
     ]
@@ -128,21 +133,21 @@ export const websiteContent = {
       {
         name: "Assem Al Hawy",
         role: "Founding Partner & Head of Corporate",
-        bio: "Assem Al Hawy has over 20 years of experience leading major corporate transactions in Egypt. He is a recognized authority in corporate restructuring, joint ventures, and Egyptian labor law, advising major multinational manufacturing and commercial firms.",
-        focus: ["Corporate Law", "Labour & Employment", "Commercial Contracts", "GAFI Compliance"],
+        bio: "Assem Al Hawy co‑founded Shield Advocates in 2020 and leads the General Corporate and Commercial Department. Based in Giza, he has more than 20 years of experience guiding companies through complex corporate and commercial transactions. Assem drafts and negotiates distribution and agency agreements, manufacturing and supply contracts and other strategic arrangements. He specialises in corporate law with a focus on labour law, corporate governance, banking and finance, capital markets, M&A, real estate and dispute resolution. His background spans industries such as mining, pharmaceuticals, media, e‑commerce and finance; he has advised on large‑scale human resources restructurings, due diligence reviews and public and private free‑zone incorporations.",
+        focus: ["Corporate Law", "Labour Law", "M&A", "Banking & Finance"],
         image: "/images/partner_assem.png"
       },
       {
         name: "Hassane El Sheref",
         role: "Founding Partner & Head of Intellectual Property",
-        bio: "Hassane El Sheref is a top-ranked IP Stars practitioner with extensive expertise in cross-border brand protection. He manages international trademark portfolios and executes anti-counterfeiting raids. He is active in the International Trademark Association (INTA).",
+        bio: "Hassane El Sheref is a top‑ranked IP practitioner with over a decade of experience protecting brands across the Middle East and North Africa. As the head of the firm’s Intellectual Property Department, he manages international trademark portfolios, coordinates anti‑counterfeiting raids, oversees patent prosecution and represents clients in infringement disputes. He was shortlisted for “IP Lawyer of the Year 2026,” serves as Co‑Chair of the International Trademark Association (INTA) Middle East Global Advisory Council and is regularly recognised by The Legal 500 and IP STARS.",
         focus: ["Brand Protection", "Trademark Litigation", "Customs Enforcement", "Anti-Counterfeiting"],
         image: "/images/partner_hassane.png"
       },
       {
         name: "Omneya Moawad",
-        role: "Managing Associate - Intellectual Property",
-        bio: "Omneya Moawad is a highly praised senior legal advisor specializing in IP litigation, trademark opposition briefs, and regulatory affairs. She is recognized for her strategic approach in complex trademark disputes and was highlighted in the 2026 Influential Businesswoman Awards.",
+        role: "Managing Associate, Intellectual Property",
+        bio: "Omneya Moawad is a highly praised senior legal advisor specialising in IP litigation, trademark opposition briefs and regulatory affairs. She adopts a strategic, detail‑oriented approach that has earned recognition from the 2026 Influential Businesswoman Awards. Omneya works closely with Hassane El Sheref to enforce IP rights and craft effective brand protection strategies. She is supported by a team of specialised attorneys, trademark agents, patent attorneys and investigators.",
         focus: ["IP Litigation", "Trademark Registrations", "Opposition Briefs", "Regulatory Affairs"],
         image: "/images/partner_omneya.png"
       }
@@ -202,10 +207,10 @@ export const websiteContent = {
     title: "Our Offices",
     subtitle: "Contact our partners directly or visit our Giza administrative office to discuss corporate agreements.",
     officeTitle: "Sheikh Zayed Office",
-    address: "Karma 1, Administrative Building, 4th District, Sheikh Zayed City, Giza, Egypt",
-    phone: "+20 1027 6000 78",
+    address: "Unit 302Y, Administrative Building, Karma 1, 4th District, Sheikh Zayed City, Giza, Egypt",
+    phone: "+2 (02) 3304 3010",
     email: "info@shieldadvocates.com",
-    workingHours: "Sunday - Thursday: 9:00 AM - 5:30 PM (Egypt Time)",
+    workingHours: "Sunday – Thursday, 9:00 AM – 5:30 PM (Egypt Time)",
     form: {
       title: "Direct Inquiry",
       btn: "Submit Inquiry",
@@ -217,8 +222,8 @@ export const websiteContent = {
     welcome: "Welcome to Shield Advocates. I am your AI assistant. I can guide you through our practice areas, tell you about our office location, or help you schedule a consultation. How can I help you?",
     placeholder: "Type a question...",
     faq: [
-      { question: "Where is the Giza office?", answer: "We are located at Karma 1, Administrative Building, 4th District, Sheikh Zayed City, Giza, Egypt." },
-      { question: "What is the contact number?", answer: "You can reach us at our official mobile number: +20 1027 6000 78, or by emailing info@shieldadvocates.com." },
+      { question: "Where is the Giza office?", answer: "We are located at Unit 302Y, Administrative Building, Karma 1, 4th District, Sheikh Zayed City, Giza, Egypt." },
+      { question: "What is the contact number?", answer: "You can reach us at our official number: +2 (02) 3304 3010, or by emailing info@shieldadvocates.com." },
       { question: "Who leads the IP practice?", answer: "Our Intellectual Property and Brand Protection practice is led by Partner Hassane El Sheref, with Managing Associate Omneya Moawad supervising opposition briefs and registrations." },
       { question: "What awards do you have?", answer: "Shield Advocates has been recognized by The Legal 500 and IP Stars, and won the 2023 MEA Business Awards and 2026 Influential Businesswoman Awards." }
     ]
