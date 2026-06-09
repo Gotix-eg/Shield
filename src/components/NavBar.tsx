@@ -99,6 +99,13 @@ export default function NavBar() {
             <Shield className="w-4 h-4 text-legal-gold" />
             <span>Platform Admin</span>
           </Link>
+          <Link href="/admin/website"
+            className={`flex items-center gap-4 px-5 py-3.5 rounded-xl text-[13px] font-medium tracking-wide transition-all duration-300 relative group ${
+              pathname.startsWith("/admin/website") ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/5"
+            }`}>
+            <Globe className="w-4 h-4 text-legal-gold" />
+            <span>Website</span>
+          </Link>
         </nav>
         <div className="p-6 mt-auto border-t border-white/5">
           <button onClick={handleLogout}

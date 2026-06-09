@@ -47,7 +47,8 @@ export function middleware(request: NextRequest) {
     const payload = jwt.verify(token, JWT_SECRET) as { role?: string };
     const role = payload.role ?? "STAFF";
     const adminPaths = ["/admin", "/invoices"];
-    if (role !== "ADMIN" && adminPaths.some(p=> pathname.startsWith(p))) {
+    const allowedAdminRoles = ["ADMIN", "SUPER_ADMIN", "OWNER", "MANAGING_PARTNER"];
+    if (!allowedAdminRoles.includes(role) && adminPaths.some(p=> pathname.startsWith(p))) {
       const dashUrl = new URL("/dashboard", request.url);
       return NextResponse.redirect(dashUrl);
     }
