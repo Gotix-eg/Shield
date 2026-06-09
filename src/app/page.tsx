@@ -79,28 +79,35 @@ function PartnerMedia({ image, video, name }: { image: string; video?: string; n
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovered, setHovered] = useState(false);
 
+  useEffect(() => {
+    if (hovered && videoRef.current) {
+      const playVideo = async () => {
+        try {
+          videoRef.current!.muted = false;
+          videoRef.current!.currentTime = 0;
+          await videoRef.current!.play();
+        } catch (err) {
+          console.log("Autoplay with sound blocked, trying muted:", err);
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+            try {
+              await videoRef.current.play();
+            } catch (e) {
+              console.error("Muted autoplay failed:", e);
+            }
+          }
+        }
+      };
+      playVideo();
+    }
+  }, [hovered]);
+
   const handleMouseEnter = () => {
     setHovered(true);
-    if (videoRef.current) {
-      videoRef.current.muted = false;
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(err => {
-        console.log("Autoplay with sound blocked, trying muted:", err);
-        if (videoRef.current) {
-          videoRef.current.muted = true;
-          videoRef.current.play().catch(e => console.error(e));
-        }
-      });
-    }
   };
 
   const handleMouseLeave = () => {
     setHovered(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.muted = true;
-      videoRef.current.currentTime = 0;
-    }
   };
 
   if (!video) {
@@ -120,21 +127,21 @@ function PartnerMedia({ image, video, name }: { image: string; video?: string; n
         alt={name} 
         className="absolute inset-0 w-full h-full object-cover team-card-img" 
       />
-      <video
-        ref={videoRef}
-        src={video}
-        loop
-        playsInline
-        preload="auto"
-        poster={image}
-        className={`absolute inset-0 w-full h-full object-cover team-card-img transition-opacity duration-300 ${
-          hovered ? "opacity-100" : "opacity-0"
-        }`}
-        style={{ pointerEvents: "none" }}
-      />
+      {hovered && (
+        <video
+          ref={videoRef}
+          src={video}
+          loop
+          playsInline
+          poster={image}
+          className="absolute inset-0 w-full h-full object-cover team-card-img"
+          style={{ pointerEvents: "none" }}
+        />
+      )}
     </div>
   );
 }
+
 
 
 /* ═══════════════════════════════════════════════════════════════════
