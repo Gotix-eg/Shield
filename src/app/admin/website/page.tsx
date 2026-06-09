@@ -67,6 +67,7 @@ export default function WebsiteManager() {
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
   const [casesList, setCasesList] = useState<any[]>([]);
   const [portalDemoData, setPortalDemoData] = useState<any>(null);
+  const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
   // Selected case details
   const [selectedCaseForDetail, setSelectedCaseForDetail] = useState<any | null>(null);
@@ -140,7 +141,21 @@ export default function WebsiteManager() {
       if (Array.isArray(slots)) setSlotsList(slots);
       if (Array.isArray(consultations)) setConsultationsList(consultations);
       if (Array.isArray(inquiries)) setInquiriesList(inquiries);
-      if (portalDemo) setPortalDemoData(portalDemo);
+
+      if (Array.isArray(portalDemo)) {
+        setCasesList(portalDemo);
+        if (selectedCaseId !== null) {
+          const activeCase = portalDemo.find((c: any) => c.id === selectedCaseId);
+          if (activeCase) {
+            setPortalDemoData(activeCase);
+          }
+        }
+      } else if (portalDemo) {
+        setCasesList([portalDemo]);
+        if (selectedCaseId !== null && portalDemo.id === selectedCaseId) {
+          setPortalDemoData(portalDemo);
+        }
+      }
 
     } catch (error) {
       console.error("Error loading CMS data:", error);
@@ -233,11 +248,12 @@ export default function WebsiteManager() {
       Authorization: `Bearer ${token}`
     };
 
-    let url = `/api/website/${type}`;
+    const endpointType = type === "portalCases" ? "portal-demo" : type;
+    let url = `/api/website/${endpointType}`;
     let method = "POST";
 
     if (mode === "edit") {
-      url = `/api/website/${type}/${data.id}`;
+      url = `/api/website/${endpointType}/${data.id}`;
       method = "PUT";
     }
 
@@ -253,7 +269,7 @@ export default function WebsiteManager() {
         throw new Error(err.error || "Failed to save");
       }
 
-      toast.success(`${type.toUpperCase()} entry saved successfully!`);
+      toast.success(`${type === "portalCases" ? "CASE" : type.toUpperCase()} saved successfully!`);
       setEditModal(null);
       fetchAllData();
     } catch (error: any) {
@@ -268,8 +284,9 @@ export default function WebsiteManager() {
     const token = getAuth();
     if (!token) return;
 
+    const endpointType = type === "portalCases" ? "portal-demo" : type;
     try {
-      const res = await fetch(`/api/website/${type}/${id}`, {
+      const res = await fetch(`/api/website/${endpointType}/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -1130,457 +1147,559 @@ export default function WebsiteManager() {
               )}
 
               {/* Tab: Client Case Tracker */}
-              {activeTab === "portalCases" && portalDemoData && (
-                <div className="space-y-8">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h2 className="text-lg font-bold text-white font-serif tracking-wide">Client Case Tracker (Homepage Preview)</h2>
-                      <p className="text-xs text-slate-400">Control the texts, progress timeline, milestones and documents shown in the Case Tracker preview on the homepage.</p>
-                    </div>
-                  </div>
+              {activeTab === "portalCases" && (
+                <div>
+                  {selectedCaseId === null ? (
+                    /* LIST VIEW */
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <h2 className="text-lg font-bold text-white font-serif tracking-wide">Client Case Tracker Portals</h2>
+                          <p className="text-xs text-slate-400">Configure distinct case files and timelines. Clients can log in on the homepage using their Email and unique Case Number.</p>
+                        </div>
+                        <button
+                          onClick={() => setEditModal({
+                            type: "portalCases",
+                            mode: "new",
+                            data: {
+                              clientName: "",
+                              clientEmail: "",
+                              caseNumber: "",
+                              matterName: "",
+                              courtName: "",
+                              currentStatus: "Pleadings Submitted - Awaiting Court Verdict",
+                              assignedAttorneys: "Hassane El Sheref",
+                              title: "Shield Advocates Client Portal",
+                              subtitle: "Track active milestones, review pleadings, and view court schedules. This live interactive workspace demonstrates how Shield Advocates utilizes state-of-the-art legal tech to deliver transparency to our corporate partners."
+                            }
+                          })}
+                          className="px-4 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 shrink-0"
+                        >
+                          <Plus className="w-4 h-4" /> Create Case Portal
+                        </button>
+                      </div>
 
-                  {/* Section 1: Case Details Editor */}
-                  <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    const token = getAuth();
-                    if (!token) return;
-                    const promise = fetch("/api/website/portal-demo", {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                      },
-                      body: JSON.stringify(portalDemoData)
-                    }).then(async res => {
-                      if (!res.ok) {
-                        const err = await res.json();
-                        throw new Error(err.error || "Failed to save");
-                      }
-                      return res.json();
-                    });
-
-                    toast.promise(promise, {
-                      loading: "Saving case workspace details...",
-                      success: "Case workspace details and descriptions saved successfully!",
-                      error: (err) => err.message || "Failed to save details"
-                    });
-                  }} className="bg-[#070b13] p-6 rounded-lg border border-white/5 space-y-4 shadow-xl">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#C5A059] border-b border-white/5 pb-2">Case Workspace Settings</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Portal Title</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.title || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, title: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Case Number (File No)</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.caseNumber || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, caseNumber: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Portal Subtitle</label>
-                        <textarea
-                          rows={2}
-                          value={portalDemoData.subtitle || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, subtitle: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white resize-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Client Name</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.clientName || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, clientName: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Client Registered Email (For Login)</label>
-                        <input
-                          type="email"
-                          value={portalDemoData.clientEmail || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, clientEmail: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Matter Name</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.matterName || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, matterName: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Court Name</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.courtName || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, courtName: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Current Status</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.currentStatus || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, currentStatus: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Assigned Attorneys (comma separated)</label>
-                        <input
-                          type="text"
-                          value={portalDemoData.assignedAttorneys || ""}
-                          onChange={(e) => setPortalDemoData({ ...portalDemoData, assignedAttorneys: e.target.value })}
-                          required
-                          className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                        />
+                      <div className="bg-[#070b13] rounded-lg border border-white/5 overflow-hidden shadow-xl">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="border-b border-white/5 bg-white/[0.02] text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                                <th className="py-4 px-4">Client / Case Number</th>
+                                <th className="py-4 px-4">Matter Name / Court</th>
+                                <th className="py-4 px-4">Attorneys</th>
+                                <th className="py-4 px-4">Status</th>
+                                <th className="py-4 px-4 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-xs">
+                              {casesList.length === 0 ? (
+                                <tr>
+                                  <td colSpan={5} className="py-8 text-center text-slate-500 italic">
+                                    No client case portals configured yet. Click "Create Case Portal" to setup the first one.
+                                  </td>
+                                </tr>
+                              ) : (
+                                casesList.map((c: any) => (
+                                  <tr key={c.id} className="hover:bg-white/[0.01] transition-all">
+                                    <td className="py-4 px-4">
+                                      <div className="font-semibold text-white">{c.clientName}</div>
+                                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{c.clientEmail}</div>
+                                      <div className="mt-1"><span className="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded font-mono font-semibold">{c.caseNumber}</span></div>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                      <div className="text-slate-200 font-medium">{c.matterName || "General Case file"}</div>
+                                      <div className="text-[10px] text-slate-400 mt-0.5">{c.courtName}</div>
+                                    </td>
+                                    <td className="py-4 px-4 text-slate-300">
+                                      {c.assignedAttorneys}
+                                    </td>
+                                    <td className="py-4 px-4">
+                                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C5A059]/10 text-[#C5A059] border border-[#C5A059]/20">
+                                        {c.currentStatus}
+                                      </span>
+                                    </td>
+                                    <td className="py-4 px-4 text-right">
+                                      <div className="flex justify-end gap-2">
+                                        <button
+                                          onClick={() => {
+                                            setPortalDemoData(c);
+                                            setSelectedCaseId(c.id);
+                                          }}
+                                          className="px-3 py-1.5 bg-[#C5A059]/10 hover:bg-[#C5A059]/20 border border-[#C5A059]/20 rounded-lg text-xs font-semibold text-[#C5A059] transition-all"
+                                        >
+                                          Manage Timeline & Docs
+                                        </button>
+                                        <button
+                                          onClick={() => setEditModal({
+                                            type: "portalCases",
+                                            mode: "edit",
+                                            data: c
+                                          })}
+                                          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-semibold text-white transition-all"
+                                        >
+                                          Edit Details
+                                        </button>
+                                        <button
+                                          onClick={() => handleModalDelete("portalCases", c.id)}
+                                          className="p-2 hover:bg-red-500/10 rounded-lg text-red-500 hover:text-red-400 transition-all"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex justify-end pt-2">
-                      <button
-                        type="submit"
-                        className="px-6 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all"
-                      >
-                        Save Case Details
-                      </button>
-                    </div>
-                  </form>
+                  ) : (
+                    /* DETAIL VIEW */
+                    portalDemoData && (
+                      <div className="space-y-8">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <button
+                              onClick={() => {
+                                setSelectedCaseId(null);
+                                setPortalDemoData(null);
+                                fetchAllData();
+                              }}
+                              className="text-xs text-slate-400 hover:text-white transition-all flex items-center gap-1 mb-2 font-semibold bg-white/5 px-3 py-1.5 rounded-lg border border-white/5"
+                            >
+                              ← Back to Cases List
+                            </button>
+                            <h2 className="text-lg font-bold text-white font-serif tracking-wide mt-2">
+                              Timeline & Documents: {portalDemoData.clientName} ({portalDemoData.caseNumber})
+                            </h2>
+                            <p className="text-xs text-slate-400">Manage progression milestones and upload documents for this specific client portal.</p>
+                          </div>
+                        </div>
 
-                  {/* Section 2: Milestones & Documents Editors */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Milestones Editor */}
-                    <div className="space-y-6 bg-[#070b13] p-5 rounded-lg border border-white/5 shadow-xl">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2">Progression Milestones</h3>
-
-                      {/* Add Milestone Form */}
-                      <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        const token = getAuth();
-                        if (!token) return;
-                        
-                        const newMilestone = {
-                          title: newMilestoneForm.title,
-                          date: newMilestoneForm.dueDate,
-                          status: newMilestoneForm.status,
-                          description: ""
-                        };
-
-                        const updatedMilestones = [...(portalDemoData.milestones || []), newMilestone];
-                        const updatedData = { ...portalDemoData, milestones: updatedMilestones };
-
-                        try {
-                          const res = await fetch("/api/website/portal-demo", {
+                        {/* Section 1: Case Details Editor */}
+                        <form onSubmit={async (e) => {
+                          e.preventDefault();
+                          const token = getAuth();
+                          if (!token) return;
+                          const promise = fetch(`/api/website/portal-demo/${portalDemoData.id}`, {
                             method: "PUT",
                             headers: {
                               "Content-Type": "application/json",
                               Authorization: `Bearer ${token}`
                             },
-                            body: JSON.stringify(updatedData)
+                            body: JSON.stringify(portalDemoData)
+                          }).then(async res => {
+                            if (!res.ok) {
+                              const err = await res.json();
+                              throw new Error(err.error || "Failed to save");
+                            }
+                            return res.json();
                           });
-                          if (!res.ok) throw new Error();
-                          
-                          setPortalDemoData(updatedData);
-                          setNewMilestoneForm({ title: "", dueDate: new Date().toISOString().split("T")[0], status: "PENDING" });
-                          toast.success("Milestone added successfully!");
-                        } catch (err) {
-                          toast.error("Failed to add milestone.");
-                        }
-                      }} className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/5">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 block">Add New Milestone</span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <input
-                            type="text"
-                            placeholder="Milestone Title (e.g. Opposition Brief)"
-                            value={newMilestoneForm.title}
-                            onChange={(e) => setNewMilestoneForm({ ...newMilestoneForm, title: e.target.value })}
-                            required
-                            className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Date Text (e.g. May 05, 2026)"
-                            value={newMilestoneForm.dueDate}
-                            onChange={(e) => setNewMilestoneForm({ ...newMilestoneForm, dueDate: e.target.value })}
-                            required
-                            className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
-                          />
-                        </div>
-                        <div className="flex justify-between items-center gap-3">
-                          <select
-                            value={newMilestoneForm.status}
-                            onChange={(e) => setNewMilestoneForm({ ...newMilestoneForm, status: e.target.value })}
-                            className="bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                          >
-                            <option value="DONE">Completed (Done)</option>
-                            <option value="PENDING">Upcoming (Pending)</option>
-                          </select>
-                          <button
-                            type="submit"
-                            className="px-4 py-1.5 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs"
-                          >
-                            Add Milestone
-                          </button>
-                        </div>
-                      </form>
 
-                      {/* Milestones List */}
-                      <div className="space-y-4">
-                        {portalDemoData.milestones?.map((m: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-white/5 rounded-lg border border-white/5 text-xs space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <span className="font-semibold text-white block">{m.title}</span>
-                                <span className="text-[10px] text-slate-400 block font-mono mt-0.5">{m.date}</span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                                  m.status === "DONE" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
-                                }`}>
-                                  {m.status === "DONE" ? "COMPLETED" : "UPCOMING"}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={async () => {
-                                    if (!window.confirm("Delete this milestone?")) return;
-                                    const token = getAuth();
-                                    if (!token) return;
-
-                                    const updatedMilestones = portalDemoData.milestones.filter((_: any, i: number) => i !== idx);
-                                    const updatedData = { ...portalDemoData, milestones: updatedMilestones };
-
-                                    try {
-                                      const res = await fetch("/api/website/portal-demo", {
-                                        method: "PUT",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                          Authorization: `Bearer ${token}`
-                                        },
-                                        body: JSON.stringify(updatedData)
-                                      });
-                                      if (!res.ok) throw new Error();
-                                      setPortalDemoData(updatedData);
-                                      toast.success("Milestone deleted!");
-                                    } catch (err) {
-                                      toast.error("Failed to delete milestone.");
-                                    }
-                                  }}
-                                  className="p-1 hover:bg-white/5 rounded text-red-500 hover:text-red-400"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
+                          toast.promise(promise, {
+                            loading: "Saving case workspace details...",
+                            success: "Case workspace details and descriptions saved successfully!",
+                            error: (err) => err.message || "Failed to save details"
+                          });
+                        }} className="bg-[#070b13] p-6 rounded-lg border border-white/5 space-y-4 shadow-xl">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-[#C5A059] border-b border-white/5 pb-2">Case Workspace Settings</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Portal Title</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.title || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, title: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                              />
                             </div>
                             <div>
-                              <label className="text-[9px] uppercase font-bold text-slate-500 block mb-0.5">Description Detail</label>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Case Number (File No)</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.caseNumber || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, caseNumber: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Portal Subtitle</label>
                               <textarea
                                 rows={2}
-                                value={m.description || ""}
-                                placeholder="Details shown when milestone is selected on the portal..."
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  const updatedMilestones = portalDemoData.milestones.map((mil: any, i: number) => {
-                                    if (i === idx) return { ...mil, description: val };
-                                    return mil;
-                                  });
-                                  setPortalDemoData({ ...portalDemoData, milestones: updatedMilestones });
-                                }}
-                                className="w-full bg-[#0b101d] border border-white/5 rounded p-2 text-[11px] focus:outline-none focus:border-[#C5A059] text-zinc-300 resize-none font-sans"
+                                value={portalDemoData.subtitle || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, subtitle: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white resize-none"
                               />
                             </div>
-                          </div>
-                        ))}
-                        {portalDemoData.milestones?.length === 0 && (
-                          <p className="text-center text-slate-500 text-xs py-4">No milestones set.</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Documents Editor */}
-                    <div className="space-y-6 bg-[#070b13] p-5 rounded-lg border border-white/5 shadow-xl">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2">Secure Pleading Documents</h3>
-
-                      {/* Add Document Form */}
-                      <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        const token = getAuth();
-                        if (!token) return;
-
-                        const newDoc = {
-                          name: newDocForm.label,
-                          url: newDocForm.url,
-                          size: "Varies",
-                          type: "PDF",
-                          date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
-                        };
-
-                        const updatedDocuments = [...(portalDemoData.documents || []), newDoc];
-                        const updatedData = { ...portalDemoData, documents: updatedDocuments };
-
-                        try {
-                          const res = await fetch("/api/website/portal-demo", {
-                            method: "PUT",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify(updatedData)
-                          });
-                          if (!res.ok) throw new Error();
-
-                          setPortalDemoData(updatedData);
-                          setNewDocForm({ label: "", url: "" });
-                          toast.success("Document added successfully!");
-                        } catch (err) {
-                          toast.error("Failed to add document.");
-                        }
-                      }} className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/5">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 block">Add New Document</span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <input
-                            type="text"
-                            placeholder="Document Name (e.g. Brief.pdf)"
-                            value={newDocForm.label}
-                            onChange={(e) => setNewDocForm({ ...newDocForm, label: e.target.value })}
-                            required
-                            className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                          />
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              placeholder="File URL"
-                              value={newDocForm.url}
-                              onChange={(e) => setNewDocForm({ ...newDocForm, url: e.target.value })}
-                              required
-                              className="w-full flex-1 bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
-                            />
-                            <label className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg cursor-pointer text-slate-400 hover:text-white transition-all flex items-center justify-center shrink-0">
-                              {uploading ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-[#C5A059]" />
-                              ) : (
-                                <Upload className="w-4 h-4" />
-                              )}
-                              <input
-                                type="file"
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file) return;
-                                  const token = getAuth();
-                                  if (!token) return;
-
-                                  setUploading(true);
-                                  const formData = new FormData();
-                                  formData.append("file", file);
-
-                                  try {
-                                    const res = await fetch("/api/website/upload", {
-                                      method: "POST",
-                                      headers: { Authorization: `Bearer ${token}` },
-                                      body: formData
-                                    });
-                                    if (!res.ok) throw new Error();
-                                    const data = await res.json();
-                                    setNewDocForm({ label: file.name, url: data.url });
-                                    toast.success("File uploaded to storage!");
-                                  } catch (err) {
-                                    toast.error("Upload failed.");
-                                  } finally {
-                                    setUploading(false);
-                                  }
-                                }}
-                                className="hidden"
-                                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                              />
-                            </label>
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <button
-                            type="submit"
-                            className="px-4 py-1.5 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs"
-                          >
-                            Add Document
-                          </button>
-                        </div>
-                      </form>
-
-                      {/* Documents List */}
-                      <div className="space-y-3.5">
-                        {portalDemoData.documents?.map((doc: any, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 text-xs">
                             <div>
-                              <span className="font-semibold text-white block">{doc.name}</span>
-                              <span className="text-[10px] text-slate-400 block font-mono mt-0.5">{doc.date} | {doc.size || "Varies"}</span>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Client Name</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.clientName || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, clientName: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                              />
                             </div>
-                            <div className="flex items-center gap-3">
-                              <a
-                                href={doc.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-xs text-[#C5A059] hover:underline font-semibold"
-                              >
-                                View File
-                              </a>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  if (!window.confirm("Delete this document?")) return;
-                                  const token = getAuth();
-                                  if (!token) return;
-
-                                  const updatedDocs = portalDemoData.documents.filter((_: any, i: number) => i !== idx);
-                                  const updatedData = { ...portalDemoData, documents: updatedDocs };
-
-                                  try {
-                                    const res = await fetch("/api/website/portal-demo", {
-                                      method: "PUT",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                        Authorization: `Bearer ${token}`
-                                      },
-                                      body: JSON.stringify(updatedData)
-                                    });
-                                    if (!res.ok) throw new Error();
-                                    setPortalDemoData(updatedData);
-                                    toast.success("Document deleted!");
-                                  } catch (err) {
-                                    toast.error("Failed to delete document.");
-                                  }
-                                }}
-                                className="p-1 hover:bg-white/5 rounded text-red-500 hover:text-red-400"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Client Registered Email (For Login)</label>
+                              <input
+                                type="email"
+                                value={portalDemoData.clientEmail || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, clientEmail: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Matter Name</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.matterName || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, matterName: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Court Name</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.courtName || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, courtName: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Current Status</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.currentStatus || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, currentStatus: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Assigned Attorneys (comma separated)</label>
+                              <input
+                                type="text"
+                                value={portalDemoData.assignedAttorneys || ""}
+                                onChange={(e) => setPortalDemoData({ ...portalDemoData, assignedAttorneys: e.target.value })}
+                                required
+                                className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-4 py-2 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                              />
                             </div>
                           </div>
-                        ))}
-                        {portalDemoData.documents?.length === 0 && (
-                          <p className="text-center text-slate-500 text-xs py-4">No documents uploaded.</p>
-                        )}
+                          <div className="flex justify-end pt-2">
+                            <button
+                              type="submit"
+                              className="px-6 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all"
+                            >
+                              Save Case Details
+                            </button>
+                          </div>
+                        </form>
+
+                        {/* Section 2: Milestones & Documents Editors */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          {/* Milestones Editor */}
+                          <div className="space-y-6 bg-[#070b13] p-5 rounded-lg border border-white/5 shadow-xl">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2">Progression Milestones</h3>
+
+                            {/* Add Milestone Form */}
+                            <form onSubmit={async (e) => {
+                              e.preventDefault();
+                              const token = getAuth();
+                              if (!token) return;
+                              
+                              const newMilestone = {
+                                title: newMilestoneForm.title,
+                                date: newMilestoneForm.dueDate,
+                                status: newMilestoneForm.status,
+                                description: ""
+                              };
+
+                              const updatedMilestones = [...(portalDemoData.milestones || []), newMilestone];
+                              const updatedData = { ...portalDemoData, milestones: updatedMilestones };
+
+                              try {
+                                const res = await fetch(`/api/website/portal-demo/${portalDemoData.id}`, {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`
+                                  },
+                                  body: JSON.stringify(updatedData)
+                                });
+                                if (!res.ok) throw new Error();
+                                
+                                setPortalDemoData(updatedData);
+                                setNewMilestoneForm({ title: "", dueDate: new Date().toISOString().split("T")[0], status: "PENDING" });
+                                toast.success("Milestone added successfully!");
+                              } catch (err) {
+                                toast.error("Failed to add milestone.");
+                              }
+                            }} className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/5">
+                              <span className="text-[10px] font-bold uppercase text-slate-400 block">Add New Milestone</span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  placeholder="Milestone Title (e.g. Opposition Brief)"
+                                  value={newMilestoneForm.title}
+                                  onChange={(e) => setNewMilestoneForm({ ...newMilestoneForm, title: e.target.value })}
+                                  required
+                                  className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Date Text (e.g. May 05, 2026)"
+                                  value={newMilestoneForm.dueDate}
+                                  onChange={(e) => setNewMilestoneForm({ ...newMilestoneForm, dueDate: e.target.value })}
+                                  required
+                                  className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                                />
+                              </div>
+                              <div className="flex justify-between items-center gap-3">
+                                <select
+                                  value={newMilestoneForm.status}
+                                  onChange={(e) => setNewMilestoneForm({ ...newMilestoneForm, status: e.target.value })}
+                                  className="bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                                >
+                                  <option value="DONE">Completed (Done)</option>
+                                  <option value="PENDING">Upcoming (Pending)</option>
+                                </select>
+                                <button
+                                  type="submit"
+                                  className="px-4 py-1.5 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs"
+                                >
+                                  Add Milestone
+                                </button>
+                              </div>
+                            </form>
+
+                            {/* Milestones List */}
+                            <div className="space-y-4">
+                              {portalDemoData.milestones?.map((m: any, idx: number) => (
+                                <div key={idx} className="p-3 bg-white/5 rounded-lg border border-white/5 text-xs space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <span className="font-semibold text-white block">{m.title}</span>
+                                      <span className="text-[10px] text-slate-400 block font-mono mt-0.5">{m.date}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                        m.status === "DONE" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
+                                      }`}>
+                                        {m.status === "DONE" ? "COMPLETED" : "UPCOMING"}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          if (!window.confirm("Delete this milestone?")) return;
+                                          const token = getAuth();
+                                          if (!token) return;
+
+                                          const updatedMilestones = portalDemoData.milestones.filter((_: any, i: number) => i !== idx);
+                                          const updatedData = { ...portalDemoData, milestones: updatedMilestones };
+
+                                          try {
+                                            const res = await fetch(`/api/website/portal-demo/${portalDemoData.id}`, {
+                                              method: "PUT",
+                                              headers: {
+                                                "Content-Type": "application/json",
+                                                Authorization: `Bearer ${token}`
+                                              },
+                                              body: JSON.stringify(updatedData)
+                                            });
+                                            if (!res.ok) throw new Error();
+                                            setPortalDemoData(updatedData);
+                                            toast.success("Milestone deleted!");
+                                          } catch (err) {
+                                            toast.error("Failed to delete milestone.");
+                                          }
+                                        }}
+                                        className="p-1 hover:bg-white/5 rounded text-red-500 hover:text-red-400"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-[9px] uppercase font-bold text-slate-500 block mb-0.5">Description Detail</label>
+                                    <textarea
+                                      rows={2}
+                                      value={m.description || ""}
+                                      placeholder="Details shown when milestone is selected on the portal..."
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        const updatedMilestones = portalDemoData.milestones.map((mil: any, i: number) => {
+                                          if (i === idx) return { ...mil, description: val };
+                                          return mil;
+                                        });
+                                        setPortalDemoData({ ...portalDemoData, milestones: updatedMilestones });
+                                      }}
+                                      className="w-full bg-[#0b101d] border border-white/5 rounded p-2 text-[11px] focus:outline-none focus:border-[#C5A059] text-zinc-300 resize-none font-sans"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                              {portalDemoData.milestones?.length === 0 && (
+                                <p className="text-center text-slate-500 text-xs py-4">No milestones set.</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Documents Editor */}
+                          <div className="space-y-6 bg-[#070b13] p-5 rounded-lg border border-white/5 shadow-xl">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2">Secure Pleading Documents</h3>
+
+                            {/* Add Document Form */}
+                            <form onSubmit={async (e) => {
+                              e.preventDefault();
+                              const token = getAuth();
+                              if (!token) return;
+
+                              const newDoc = {
+                                name: newDocForm.label,
+                                url: newDocForm.url,
+                                size: "Varies",
+                                type: "PDF",
+                                date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+                              };
+
+                              const updatedDocuments = [...(portalDemoData.documents || []), newDoc];
+                              const updatedData = { ...portalDemoData, documents: updatedDocuments };
+
+                              try {
+                                const res = await fetch(`/api/website/portal-demo/${portalDemoData.id}`, {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`
+                                  },
+                                  body: JSON.stringify(updatedData)
+                                });
+                                if (!res.ok) throw new Error();
+
+                                setPortalDemoData(updatedData);
+                                setNewDocForm({ label: "", url: "" });
+                                toast.success("Document added successfully!");
+                              } catch (err) {
+                                toast.error("Failed to add document.");
+                              }
+                            }} className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/5">
+                              <span className="text-[10px] font-bold uppercase text-slate-400 block">Add New Document</span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  placeholder="Document Name (e.g. Statement of Claim)"
+                                  value={newDocForm.label}
+                                  onChange={(e) => setNewDocForm({ ...newDocForm, label: e.target.value })}
+                                  required
+                                  className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white"
+                                />
+                                <div className="space-y-1">
+                                  <div className="flex gap-2">
+                                    <input
+                                      type="text"
+                                      placeholder="https://... or upload file"
+                                      value={newDocForm.url}
+                                      onChange={(e) => setNewDocForm({ ...newDocForm, url: e.target.value })}
+                                      required
+                                      className="w-full bg-[#0b101d] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                                    />
+                                    <label className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-slate-300 cursor-pointer transition-all shrink-0 flex items-center justify-center">
+                                      {uploading ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      ) : (
+                                        <Upload className="w-3.5 h-3.5" />
+                                      )}
+                                      <input
+                                        type="file"
+                                        onChange={handleCaseDocUpload}
+                                        className="hidden"
+                                        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                                      />
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-end pt-1">
+                                <button
+                                  type="submit"
+                                  className="px-4 py-1.5 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs"
+                                >
+                                  Add Document
+                                </button>
+                              </div>
+                            </form>
+
+                            {/* Documents List */}
+                            <div className="space-y-3">
+                              {portalDemoData.documents?.map((doc: any, idx: number) => (
+                                <div key={idx} className="p-3 bg-white/5 rounded-lg border border-white/5 text-xs flex items-center justify-between">
+                                  <div className="min-w-0 flex-1 pr-4">
+                                    <span className="font-semibold text-white block truncate">{doc.name}</span>
+                                    <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">{doc.date} &bull; {doc.size}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <a
+                                      href={doc.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-xs text-[#C5A059] hover:underline font-semibold"
+                                    >
+                                      View File
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={async () => {
+                                        if (!window.confirm("Delete this document?")) return;
+                                        const token = getAuth();
+                                        if (!token) return;
+
+                                        const updatedDocs = portalDemoData.documents.filter((_: any, i: number) => i !== idx);
+                                        const updatedData = { ...portalDemoData, documents: updatedDocs };
+
+                                        try {
+                                          const res = await fetch(`/api/website/portal-demo/${portalDemoData.id}`, {
+                                            method: "PUT",
+                                            headers: {
+                                              "Content-Type": "application/json",
+                                              Authorization: `Bearer ${token}`
+                                            },
+                                            body: JSON.stringify(updatedData)
+                                          });
+                                          if (!res.ok) throw new Error();
+                                          setPortalDemoData(updatedData);
+                                          toast.success("Document deleted!");
+                                        } catch (err) {
+                                          toast.error("Failed to delete document.");
+                                        }
+                                      }}
+                                      className="p-1 hover:bg-white/5 rounded text-red-500 hover:text-red-400"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                              {portalDemoData.documents?.length === 0 && (
+                                <p className="text-center text-slate-500 text-xs py-4">No documents uploaded.</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    )
+                  )}
                 </div>
               )}
 

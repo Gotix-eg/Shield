@@ -4,20 +4,32 @@ import { prisma as tenantDb } from "@/lib/prisma";
 import { verifyWebsiteAuth } from "@/lib/verifyWebsiteAuth";
 import { getWebsiteCompanyId } from "@/lib/getWebsiteCompanyId";
 
-// PUBLIC - Get Case Tracker Portal Demo Section Content
-export async function GET() {
+// GET - Get cases: list of all cases for admin, or first case for public preview
+export async function GET(req: NextRequest) {
   try {
     const companyId = await getWebsiteCompanyId();
-    const portalDemo = await db.websitePortalDemo.findFirst({ where: { companyId } });
-    return NextResponse.json(portalDemo);
+    const user = await verifyWebsiteAuth(req);
+
+    if (user && user.companyId === companyId) {
+      // Authenticated admin - return all cases for the firm
+      const list = await db.websitePortalDemo.findMany({
+        where: { companyId },
+        orderBy: { updatedAt: "desc" }
+      });
+      return NextResponse.json(list);
+    } else {
+      // Public - return first case (default preview mockup)
+      const portalDemo = await db.websitePortalDemo.findFirst({ where: { companyId } });
+      return NextResponse.json(portalDemo);
+    }
   } catch (error) {
     console.error("GET /api/website/portal-demo error:", error);
-    return NextResponse.json({ error: "Failed to fetch portal demo" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch portal demo content" }, { status: 500 });
   }
 }
 
-// ADMIN ONLY - Update Case Tracker Portal Demo Content
-export async function PUT(req: NextRequest) {
+// POST - Create a new Case Portal for a client
+export async function POST(req: NextRequest) {
   const user = await verifyWebsiteAuth(req);
   if (!user || !user.companyId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,42 +37,55 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, subtitle, clientName, matterName, caseNumber, clientEmail, courtName, currentStatus, assignedAttorneys, milestones, documents } = body;
+    const { title, subtitle, clientName, matterName, caseNumber, clientEmail, courtName, currentStatus, assignedAttorneys } = body;
 
-    if (!title || !subtitle || !clientName || !matterName || !caseNumber || !clientEmail || !courtName || !currentStatus || !assignedAttorneys || !milestones || !documents) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!clientName || !clientEmail) {
+      return NextResponse.json({ error: "Client Name and Email are required" }, { status: 400 });
     }
 
-    const existing = await tenantDb.websitePortalDemo.findFirst();
+    // Auto-generate Case Number if not provided
+    let caseNum = caseNumber;
+    if (!caseNum) {
+      const year = new Date().getFullYear();
+      const randNum = Math.floor(1000 + Math.random() * 9000);
+      caseNum = `SA-CASE-${year}-${randNum}`;
+    }
 
-    let portalDemo;
+    // Check if caseNumber already exists
+    const existing = await tenantDb.websitePortalDemo.findFirst({
+      where: { caseNumber: caseNum }
+    });
     if (existing) {
-      portalDemo = await tenantDb.websitePortalDemo.update({
-        where: { id: existing.id },
-        data: { title, subtitle, clientName, matterName, caseNumber, clientEmail, courtName, currentStatus, assignedAttorneys, milestones, documents },
-      });
-    } else {
-      portalDemo = await tenantDb.websitePortalDemo.create({
-        data: {
-          title,
-          subtitle,
-          clientName,
-          matterName,
-          caseNumber,
-          clientEmail,
-          courtName,
-          currentStatus,
-          assignedAttorneys,
-          milestones,
-          documents,
-          companyId: user.companyId,
-        },
-      });
+      return NextResponse.json({ error: `Case number "${caseNum}" already exists. Please use a unique one.` }, { status: 400 });
     }
 
-    return NextResponse.json(portalDemo);
+    const newCase = await tenantDb.websitePortalDemo.create({
+      data: {
+        title: title || "Shield Advocates Client Portal Preview",
+        subtitle: subtitle || "Track active milestones, review pleadings, and view court schedules. This live interactive workspace demonstrates how Shield Advocates utilizes state-of-the-art legal tech to deliver transparency to our corporate partners.",
+        clientName,
+        matterName: matterName || "Intellectual Property Opposition & Trademark Litigation",
+        caseNumber: caseNum,
+        clientEmail,
+        courtName: courtName || "Cairo Economic Court",
+        currentStatus: currentStatus || "Pleadings Submitted - Awaiting Court Verdict",
+        assignedAttorneys: assignedAttorneys || "Hassane El Sheref",
+        milestones: [
+          {
+            title: "Case Registered",
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status: "COMPLETED",
+            description: "Case setup complete and initial records established on the system portal."
+          }
+        ],
+        documents: [],
+        companyId: user.companyId,
+      },
+    });
+
+    return NextResponse.json(newCase);
   } catch (error) {
-    console.error("PUT /api/website/portal-demo error:", error);
-    return NextResponse.json({ error: "Failed to update portal demo" }, { status: 500 });
+    console.error("POST /api/website/portal-demo error:", error);
+    return NextResponse.json({ error: "Failed to create portal demo case" }, { status: 500 });
   }
 }
