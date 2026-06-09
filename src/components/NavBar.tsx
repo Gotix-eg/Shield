@@ -9,9 +9,9 @@ type UserRole = string; // roles now dynamic
 interface NavLink { href:string; label:string; key:string }
 const ADMIN_ROLES = ["ADMIN","MANAGING_PARTNER","ACCOUNTANT_MASTER","ACCOUNTANT_ASSISTANT","LAWYER_PARTNER","LAWYER_MANAGER"];
 const ROLE_PAGES: Record<string,string[]> = {
-  OWNER:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  MANAGING_PARTNER:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
-  ADMIN:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks"],
+  OWNER:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks","website"],
+  MANAGING_PARTNER:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks","website"],
+  ADMIN:["clients","projects","agents","agent-process","time","expenses","invoices","reports","accounts","settings","hr","leaves","notifications","admin_time","tasks","website"],
   ACCOUNTANT_MASTER:["invoices","reports","accounts","trust","leaves","payroll","notifications"],
   ACCOUNTANT_ASSISTANT:["invoices","accounts","leaves","notifications"],
   LAWYER_PARTNER:["clients","projects","time","reports","leaves","settings"],
@@ -54,7 +54,7 @@ function decodeRole(token?:string):UserRole|null{
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut, Bell, LayoutDashboard, Users, FolderKanban, CheckSquare, Clock, CreditCard, Calendar, FileText, BarChart3, Settings, Users2, Banknote, Shield } from "lucide-react";
+import { LogOut, Bell, LayoutDashboard, Users, FolderKanban, CheckSquare, Clock, CreditCard, Calendar, FileText, BarChart3, Settings, Users2, Banknote, Shield, Globe } from "lucide-react";
 
 export default function NavBar() {
   const [role,setRole]=useState<UserRole|null>(() => decodeRole(getAuth() || undefined));
@@ -129,6 +129,7 @@ export default function NavBar() {
     { href: "/accounts", label: "Accounts", key: "accounts", icon: Banknote },
     { href: "/admin/payroll", label: "Payroll", key: "payroll", icon: CreditCard },
     { href: "/admin", label: "Admin", key: "settings", icon: Settings },
+    { href: "/admin/website", label: "Website", key: "website", icon: Globe },
     { href: "/admin/hr", label: "HR", key: "hr", icon: Users2 },
   ];
 

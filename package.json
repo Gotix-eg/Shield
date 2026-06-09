@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "cleanup:trust": "ts-node --transpile-only scripts/cleanupOrphanTrust.ts",
+    "seed:website": "node src/scripts/seedWebsiteContent.js",
     "postinstall": "prisma generate --no-engine"
   },
   "dependencies": {

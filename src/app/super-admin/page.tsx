@@ -73,7 +73,7 @@ export default function SuperAdminPage() {
   };
 
   const handleDelete = async (c: Company) => {
-    if (c.registeredEmail === "info@pro-law.net") {
+    if (c.registeredEmail === "info@shieldadvocates.com") {
       toast.error("Cannot delete the master admin firm");
       return;
     }

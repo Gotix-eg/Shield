@@ -11,7 +11,8 @@ const PUBLIC_PATHS = [
   "/",
   "/dashboard/clients",
   "/dashboard/clients/new",
-  "/dashboard/clients/[id]"
+  "/dashboard/clients/[id]",
+  "/api/website"
 ];
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";

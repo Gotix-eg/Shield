@@ -928,3 +928,131 @@ enum TaskStatus {
   DONE
   REJECTED
 }
+
+// ═══════════════════════════════════════════════
+//  WEBSITE CMS MODELS
+// ═══════════════════════════════════════════════
+
+model WebsiteHero {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  tagline     String
+  titleFirst  String
+  titleSecond String
+  subtitle    String   @db.Text
+  ctaBook     String
+  ctaPortal   String
+  updatedAt   DateTime @updatedAt
+}
+
+model WebsiteAbout {
+  id           Int      @id @default(autoincrement())
+  companyId    Int
+  tagline      String
+  title        String
+  description1 String   @db.Text
+  description2 String   @db.Text
+  updatedAt    DateTime @updatedAt
+}
+
+model WebsiteTeamMember {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  name      String
+  role      String
+  bio       String   @db.Text
+  focus     String[] // Array of specialization tags
+  imageUrl  String
+  videoUrl  String?
+  sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WebsitePractice {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  slug      String   // e.g. "ip", "corporate"
+  title     String
+  shortDesc String   @db.Text
+  longDesc  String   @db.Text
+  icon      String   // Lucide icon name
+  sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WebsiteAward {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  title       String
+  institution String
+  description String   @db.Text
+  sortOrder   Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WebsiteContact {
+  id           Int      @id @default(autoincrement())
+  companyId    Int
+  officeTitle  String
+  address      String   @db.Text
+  phone        String
+  email        String
+  workingHours String
+  updatedAt    DateTime @updatedAt
+}
+
+model WebsiteFaq {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  question  String
+  answer    String   @db.Text
+  sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ConsultationRequest {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  name        String
+  email       String
+  company     String?
+  phone       String?
+  summary     String?  @db.Text
+  practiceId  String?  // slug reference to WebsitePractice
+  date        String   // Selected date
+  timeSlot    String   // Selected time slot
+  status      String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  notes       String?  @db.Text // Admin notes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactInquiry {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  name      String
+  email     String
+  phone     String?
+  message   String   @db.Text
+  status    String   @default("NEW") // NEW, READ, REPLIED, ARCHIVED
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WebsiteScheduleSlot {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  label     String   // e.g. "09:30 AM - 10:00 AM"
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

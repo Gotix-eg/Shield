@@ -29,7 +29,7 @@ import {
   Quote,
 } from "lucide-react";
 
-import { websiteContent } from "@/data/websiteContent";
+import { websiteContent as staticContent } from "@/data/websiteContent";
 
 /* ─── Animated counter hook ─────────────────────────────────────── */
 function useCountUp(target: number, duration = 1800, start = false) {
@@ -152,6 +152,130 @@ export default function Home() {
   const [scrolled, setScrolled]                     = useState(false);
   const [activePracticeModal, setActivePracticeModal] = useState<string | null>(null);
 
+  // Dynamic Website Content States
+  const [siteData, setSiteData] = useState<any>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Contact Form State
+  const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactSuccess, setContactSuccess] = useState(false);
+
+  // Portal Demo States
+  const [portalUnlocked, setPortalUnlocked]       = useState(false);
+  const [portalLoading, setPortalLoading]         = useState(false);
+  const [portalCaseNumber, setPortalCaseNumber]   = useState("SA-IP-2026-092");
+  const [portalEmail, setPortalEmail]             = useState("client@globaltech.com");
+  const [portalCaseData, setPortalCaseData]       = useState<any>(null);
+  const [portalError, setPortalError]             = useState("");
+  const [selectedMilestone, setSelectedMilestone] = useState<number>(4);
+  const [portalMessage, setPortalMessage]         = useState("");
+  const [portalMessageSent, setPortalMessageSent] = useState(false);
+  const [previewDoc, setPreviewDoc]               = useState<{ name: string; date: string; size: string } | null>(null);
+
+  const portalData = {
+    ...staticContent.portalDemo,
+    clientName: portalCaseData?.clientName || staticContent.portalDemo.clientName,
+    matterName: portalCaseData?.matterName || staticContent.portalDemo.matterName,
+    caseNumber: portalCaseData?.caseNumber || staticContent.portalDemo.caseNumber,
+    currentStatus: portalCaseData ? `${portalCaseData.status === "OPEN" ? "Active" : "Closed"} - ${portalCaseData.milestones[portalCaseData.milestones.length - 1]?.title || "In Progress"}` : staticContent.portalDemo.currentStatus,
+    assignedAttorneys: portalCaseData?.attorneys?.length ? portalCaseData.attorneys : staticContent.portalDemo.assignedAttorneys,
+    milestones: portalCaseData?.milestones?.length ? portalCaseData.milestones.map((m: any, idx: number) => ({
+      title: m.title,
+      date: m.date,
+      status: m.status === "DONE" ? "completed" : "upcoming"
+    })) : staticContent.portalDemo.milestones,
+    documents: portalCaseData?.documents?.length ? portalCaseData.documents.map((d: any) => ({
+      name: d.name,
+      size: "Varies",
+      type: "PDF",
+      date: d.date
+    })) : staticContent.portalDemo.documents,
+  };
+
+  useEffect(() => {
+    fetch("/api/website/content")
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        setSiteData(data);
+        setDataLoading(false);
+      })
+      .catch(() => {
+        setDataLoading(false);
+      });
+  }, []);
+
+  const websiteContent = {
+    ...staticContent,
+    hero: siteData?.hero ? {
+      tagline: siteData.hero.tagline,
+      titleFirst: siteData.hero.titleFirst,
+      titleSecond: siteData.hero.titleSecond,
+      subtitle: siteData.hero.subtitle,
+      ctaBook: siteData.hero.ctaBook,
+      ctaPortal: siteData.hero.ctaPortal,
+    } : staticContent.hero,
+    about: siteData?.about ? {
+      tagline: siteData.about.tagline,
+      title: siteData.about.title,
+      description1: siteData.about.description1,
+      description2: siteData.about.description2,
+      stats: staticContent.about.stats,
+    } : staticContent.about,
+    team: {
+      ...staticContent.team,
+      members: siteData?.team?.length ? siteData.team.map((m: any) => ({
+        name: m.name,
+        role: m.role,
+        bio: m.bio,
+        focus: m.focus,
+        image: m.imageUrl,
+        video: m.videoUrl,
+      })) : staticContent.team.members,
+    },
+    practices: {
+      ...staticContent.practices,
+      list: siteData?.practices?.length ? siteData.practices.map((p: any) => ({
+        id: p.slug,
+        title: p.title,
+        shortDesc: p.shortDesc,
+        longDesc: p.longDesc,
+        icon: p.icon,
+      })) : staticContent.practices.list,
+    },
+    recognition: {
+      ...staticContent.recognition,
+      awards: siteData?.awards?.length ? siteData.awards.map((a: any) => ({
+        title: a.title,
+        institution: a.institution,
+        desc: a.description,
+      })) : staticContent.recognition.awards,
+    },
+    contact: siteData?.contact ? {
+      ...staticContent.contact,
+      officeTitle: siteData.contact.officeTitle,
+      address: siteData.contact.address,
+      phone: siteData.contact.phone,
+      email: siteData.contact.email,
+      workingHours: siteData.contact.workingHours,
+    } : staticContent.contact,
+    chatbot: {
+      ...staticContent.chatbot,
+      faq: siteData?.faq?.length ? siteData.faq.map((f: any) => ({
+        question: f.question,
+        answer: f.answer,
+      })) : staticContent.chatbot.faq,
+    },
+    scheduler: {
+      ...staticContent.scheduler,
+      timeSlots: siteData?.scheduleSlots?.length ? siteData.scheduleSlots.map((s: any) => s.label) : staticContent.scheduler.timeSlots,
+    },
+    portalDemo: portalData,
+  };
+
   // Scheduler
   const [schedulerForm, setSchedulerForm] = useState({
     name: "", email: "", company: "", phone: "", summary: "",
@@ -163,22 +287,21 @@ export default function Home() {
   const [schedulerSuccess, setSchedulerSuccess]   = useState(false);
   const [ticketModalOpen, setTicketModalOpen]     = useState(false);
 
-  // Portal Demo
-  const [portalUnlocked, setPortalUnlocked]       = useState(false);
-  const [portalLoading, setPortalLoading]         = useState(false);
-  const [selectedMilestone, setSelectedMilestone] = useState<number>(4);
-  const [portalMessage, setPortalMessage]         = useState("");
-  const [portalMessageSent, setPortalMessageSent] = useState(false);
-  const [previewDoc, setPreviewDoc]               = useState<{ name: string; date: string; size: string } | null>(null);
-
   // Chatbot
   const [chatbotOpen, setChatbotOpen]   = useState(false);
-  const [chatMessages, setChatMessages] = useState<Array<{ sender: "bot" | "user"; text: string }>>([
-    { sender: "bot", text: websiteContent.chatbot.welcome }
-  ]);
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: "bot" | "user"; text: string }>>([]);
   const [chatInput, setChatInput] = useState("");
   const [botTyping, setBotTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize bot welcome message once content loads
+  useEffect(() => {
+    if (chatMessages.length === 0 && (websiteContent.chatbot.welcome || staticContent.chatbot.welcome)) {
+      setChatMessages([
+        { sender: "bot", text: websiteContent.chatbot.welcome || staticContent.chatbot.welcome }
+      ]);
+    }
+  }, [siteData]);
 
   // Stats section in-view for counter animation
   const { ref: statsRef, inView: statsInView } = useInView(0.3);
@@ -234,15 +357,57 @@ export default function Home() {
   };
 
   /* ── Portal ── */
-  const handleUnlockPortal = () => {
+  const handleUnlockPortal = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setPortalError("");
     setPortalLoading(true);
-    setTimeout(() => { setPortalLoading(false); setPortalUnlocked(true); }, 800);
+    try {
+      const res = await fetch("/api/website/portal/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ caseNumber: portalCaseNumber, email: portalEmail }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to connect to workspace");
+      }
+      const authData = await res.json();
+      const token = authData.token;
+      const projectId = authData.projectId;
+
+      const caseRes = await fetch(`/api/website/portal/case/${projectId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!caseRes.ok) throw new Error("Failed to load case data");
+      
+      const caseData = await caseRes.json();
+      setPortalCaseData(caseData);
+      setPortalUnlocked(true);
+    } catch (err: any) {
+      console.error(err);
+      setPortalError(err.message || "Invalid case number or email");
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
-  const handleSendPortalMessage = (e: React.FormEvent) => {
+  const handleSendPortalMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!portalMessage.trim()) return;
     setPortalMessageSent(true);
+    try {
+      await fetch("/api/website/portal/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          caseNumber: portalCaseNumber,
+          email: portalEmail,
+          message: portalMessage,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
     setTimeout(() => { setPortalMessageSent(false); setPortalMessage(""); }, 2500);
   };
 
@@ -255,12 +420,55 @@ export default function Home() {
     setSelectedTimeSlot(slot);
     setSchedulerForm(prev => ({ ...prev, time: slot }));
   };
-  const handleSchedulerSubmit = (e: React.FormEvent) => {
+  const handleSchedulerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schedulerForm.name || !schedulerForm.email) return;
     setSchedulerSubmitting(true);
-    setTimeout(() => { setSchedulerSubmitting(false); setSchedulerSuccess(true); setTicketModalOpen(true); }, 1000);
+    try {
+      const res = await fetch("/api/website/consultations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: schedulerForm.name,
+          email: schedulerForm.email,
+          company: schedulerForm.company,
+          phone: schedulerForm.phone,
+          summary: schedulerForm.summary,
+          practiceId: schedulerForm.practice,
+          date: schedulerForm.date,
+          timeSlot: schedulerForm.time,
+        }),
+      });
+      if (!res.ok) throw new Error("Submission failed");
+      setSchedulerSuccess(true);
+      setTicketModalOpen(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSchedulerSubmitting(false);
+    }
   };
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactForm.name || !contactForm.email || !contactForm.message) return;
+    setContactSubmitting(true);
+    try {
+      const res = await fetch("/api/website/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+      if (!res.ok) throw new Error();
+      setContactSuccess(true);
+      setContactForm({ name: "", email: "", phone: "", message: "" });
+      setTimeout(() => setContactSuccess(false), 5000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
+
   const handleResetScheduler = () => {
     setSchedulerForm({ name: "", email: "", company: "", phone: "", summary: "", practice: "ip", date: "2026-06-15", time: "10:30 AM - 11:00 AM" });
     setSelectedDate(15); setSelectedTimeSlot("10:30 AM - 11:00 AM"); setSchedulerSuccess(false);
@@ -798,7 +1006,7 @@ export default function Home() {
 
           <div className="max-w-5xl mx-auto">
             {!portalUnlocked ? (
-              <div className="rounded p-14 text-center space-y-6 shadow-2xl"
+              <div className="rounded p-14 text-center space-y-6 shadow-2xl max-w-xl mx-auto"
                 style={{ background: "#0e1320", border: "1px solid rgba(197,160,89,0.2)" }}>
                 <div className="flex justify-center">
                   <div className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -808,20 +1016,38 @@ export default function Home() {
                 </div>
                 <div className="max-w-md mx-auto space-y-2">
                   <h3 className="font-playfair font-bold text-white text-xl">Client Case Tracker Workspace</h3>
-                  <p className="text-sm text-zinc-400 font-light leading-relaxed">
-                    Initialize the demo client environment to view the active IP opposition file for{" "}
-                    <strong className="text-white">Global Tech Solutions Inc.</strong>
+                  <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                    Enter your case reference number and registered corporate email to access your timeline.
                   </p>
                 </div>
-                <button onClick={handleUnlockPortal} disabled={portalLoading}
-                  className="inline-flex items-center gap-2.5 px-10 py-3.5 rounded font-bold text-[11px] uppercase tracking-widest transition-all"
-                  style={{ background: "#C5A059", color: "#080b12" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "#d4b06a")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "#C5A059")}>
-                  {portalLoading ? (
-                    <><span className="w-4 h-4 border-2 border-[#080b12] border-t-transparent rounded-full animate-spin" />Connecting...</>
-                  ) : "Connect to Case Demo"}
-                </button>
+                <form onSubmit={handleUnlockPortal} className="text-left space-y-4 max-w-sm mx-auto">
+                  {portalError && (
+                    <div className="text-xs text-rose-400 text-center bg-rose-500/10 py-2 rounded border border-rose-500/20">{portalError}</div>
+                  )}
+                  <div>
+                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1">Case Number</label>
+                    <input type="text" value={portalCaseNumber} onChange={e => setPortalCaseNumber(e.target.value)} required
+                      placeholder="e.g. SA-IP-2026-092"
+                      style={{ background: "#080b12", border: "1px solid rgba(255,255,255,0.08)", color: "#ffffff" }}
+                      className="w-full text-sm rounded px-4 py-2.5 focus:outline-none focus:border-[#C5A059] text-white" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1">Corporate Email</label>
+                    <input type="email" value={portalEmail} onChange={e => setPortalEmail(e.target.value)} required
+                      placeholder="e.g. client@globaltech.com"
+                      style={{ background: "#080b12", border: "1px solid rgba(255,255,255,0.08)", color: "#ffffff" }}
+                      className="w-full text-sm rounded px-4 py-2.5 focus:outline-none focus:border-[#C5A059] text-white" />
+                  </div>
+                  <button type="submit" disabled={portalLoading}
+                    className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 rounded font-bold text-[11px] uppercase tracking-widest transition-all mt-2"
+                    style={{ background: "#C5A059", color: "#080b12" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#d4b06a")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "#C5A059")}>
+                    {portalLoading ? (
+                      <><span className="w-4 h-4 border-2 border-[#080b12] border-t-transparent rounded-full animate-spin" />Connecting...</>
+                    ) : "Connect to Case Workspace"}
+                  </button>
+                </form>
               </div>
             ) : (
               <div className="rounded overflow-hidden shadow-2xl flex flex-col md:flex-row fade-in"
@@ -1212,31 +1438,39 @@ export default function Home() {
               style={{ background: "#0e1320", border: "1px solid rgba(197,160,89,0.2)" }}>
               <h3 className="font-playfair font-semibold text-white text-xl mb-1">{websiteContent.contact.form.title}</h3>
               <div className="h-px mb-5" style={{ background: "rgba(197,160,89,0.15)" }} />
-              <form className="space-y-4" onSubmit={e => { e.preventDefault(); }}>
-                {[
-                  { label: "Full Name", type: "text", ph: "Your name" },
-                  { label: "Email Address", type: "email", ph: "your@company.com" },
-                  { label: "Phone Number", type: "tel", ph: "+20 ..." }
-                ].map((f, i) => (
-                  <div key={i}>
-                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1.5">{f.label}</label>
-                    <input type={f.type} placeholder={f.ph}
+              {contactSuccess ? (
+                <div className="text-zinc-300 text-sm py-4 text-center">{websiteContent.contact.form.success}</div>
+              ) : (
+                <form className="space-y-4" onSubmit={handleContactSubmit}>
+                  <div>
+                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1.5">Full Name</label>
+                    <input type="text" placeholder="Your name" value={contactForm.name} onChange={e => setContactForm(prev => ({ ...prev, name: e.target.value }))} required
                       className="contact-input w-full text-sm rounded px-4 py-2.5 focus:outline-none" />
                   </div>
-                ))}
-                <div>
-                  <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1.5">Message</label>
-                  <textarea rows={4} placeholder="Describe your legal inquiry..."
-                    className="contact-input w-full text-sm rounded px-4 py-2.5 focus:outline-none resize-none" />
-                </div>
-                <button type="submit"
-                  className="w-full py-3.5 rounded font-bold text-[11px] uppercase tracking-widest transition-all mt-2"
-                  style={{ background: "#C5A059", color: "#080b12", border: "none" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "#d4b06a")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "#C5A059")}>
-                  {websiteContent.contact.form.btn}
-                </button>
-              </form>
+                  <div>
+                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1.5">Email Address</label>
+                    <input type="email" placeholder="your@company.com" value={contactForm.email} onChange={e => setContactForm(prev => ({ ...prev, email: e.target.value }))} required
+                      className="contact-input w-full text-sm rounded px-4 py-2.5 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1.5">Phone Number</label>
+                    <input type="tel" placeholder="+20 ..." value={contactForm.phone} onChange={e => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="contact-input w-full text-sm rounded px-4 py-2.5 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block mb-1.5">Message</label>
+                    <textarea rows={4} placeholder="Describe your legal inquiry..." value={contactForm.message} onChange={e => setContactForm(prev => ({ ...prev, message: e.target.value }))} required
+                      className="contact-input w-full text-sm rounded px-4 py-2.5 focus:outline-none resize-none" />
+                  </div>
+                  <button type="submit" disabled={contactSubmitting}
+                    className="w-full py-3.5 rounded font-bold text-[11px] uppercase tracking-widest transition-all mt-2 disabled:opacity-50"
+                    style={{ background: "#C5A059", color: "#080b12", border: "none" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#d4b06a")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "#C5A059")}>
+                    {contactSubmitting ? "Submitting..." : websiteContent.contact.form.btn}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
