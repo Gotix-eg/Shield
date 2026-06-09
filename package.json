@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate --no-engine && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "cleanup:trust": "ts-node --transpile-only scripts/cleanupOrphanTrust.ts",
     "seed:website": "node src/scripts/seedWebsiteContent.js",
-    "postinstall": "prisma generate --no-engine"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@craftjs/core": "^0.2.12",
