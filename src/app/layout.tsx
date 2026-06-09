@@ -17,8 +17,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "ProLaw",
-  description: "Legal Management System",
+  title: "Shield Advocates",
+  description: "Shield Advocates | Al Hawy & Hassane | Corporate & IP Law Firm",
 };
 
 export default function RootLayout({

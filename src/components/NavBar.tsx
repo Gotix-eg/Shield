@@ -87,7 +87,7 @@ export default function NavBar() {
       <aside className="w-[var(--sidebar-width)] h-screen sticky top-0 left-0 bg-[#0a0f1a] border-r border-white/5 flex flex-col z-[100] shrink-0">
         <div className="p-8 pb-12">
           <Link href="/super-admin" className="group flex flex-col items-center">
-            <span className="text-4xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500">PRO LAW</span>
+            <span className="text-2xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500">SHIELD ADVOCATES</span>
             <span className="text-[8px] uppercase tracking-[0.6em] text-slate-500 font-bold mt-2">Super Admin</span>
           </Link>
         </div>
@@ -137,7 +137,7 @@ export default function NavBar() {
       {/* Sidebar Logo */}
       <div className="p-8 pb-12">
         <Link href="/dashboard" className="group flex flex-col items-center">
-          <span className="text-4xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500">PRO LAW</span>
+          <span className="text-2xl font-serif font-bold text-legal-gold tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500">SHIELD ADVOCATES</span>
           <span className="text-[8px] uppercase tracking-[0.6em] text-slate-500 font-bold mt-2 group-hover:text-legal-gold transition-colors duration-500">Elite Firm Management</span>
         </Link>
       </div>

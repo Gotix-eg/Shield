@@ -53,7 +53,7 @@ export default function RegisterFirmPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-5xl font-serif text-legal-gold mb-2 tracking-tighter">PRO LAW</h1>
+          <h1 className="text-5xl font-serif text-legal-gold mb-2 tracking-tighter">SHIELD ADVOCATES</h1>
           <p className="text-slate-500 text-sm">Register your law firm — start with a free demo</p>
           <div className="h-px w-full bg-gradient-to-r from-transparent via-legal-gold/30 to-transparent mt-6" />
         </div>

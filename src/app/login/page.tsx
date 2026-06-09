@@ -65,7 +65,7 @@ export default function LoginPage() {
         <div className="relative z-10 max-w-lg">
           <span className="text-legal-gold text-[12px] uppercase tracking-[0.5em] font-bold mb-8 block animate-in fade-in slide-in-from-left-8 duration-1000">INTELLIGENT LEGAL MANAGEMENT SYSTEM</span>
           <h2 className="text-7xl font-serif text-white mb-8 leading-tight animate-in fade-in slide-in-from-left-12 duration-1000 delay-200">
-            PRO LAW <br /> 
+            SHIELD ADVOCATES <br /> 
             <span className="italic text-legal-gold text-5xl">for professional excellence.</span>
           </h2>
           <div className="h-px w-24 bg-legal-gold/50 mb-8"></div>
@@ -82,7 +82,7 @@ export default function LoginPage() {
         
         <div className="w-full max-w-md relative z-10">
           <header className="mb-12">
-            <h1 className="text-6xl font-serif text-legal-gold mb-4 tracking-tighter">PRO LAW</h1>
+            <h1 className="text-6xl font-serif text-legal-gold mb-4 tracking-tighter">SHIELD ADVOCATES</h1>
             <p className="text-slate-400 font-light leading-relaxed mb-8 text-lg">
               The ultimate solution for managing your legal practice. Streamline firm operations, automate billing, and manage client relationships with unmatched precision and security.
             </p>
@@ -154,7 +154,7 @@ export default function LoginPage() {
 
           <footer className="mt-12 pt-8 border-t border-white/5 text-center">
             <p className="text-slate-600 text-xs font-light tracking-widest uppercase">
-              &copy; {new Date().getFullYear()} PRO LAW SYSTEMS. ALL RIGHTS RESERVED.
+              &copy; {new Date().getFullYear()} SHIELD ADVOCATES. ALL RIGHTS RESERVED.
             </p>
           </footer>
         </div>

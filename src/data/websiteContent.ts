@@ -158,7 +158,7 @@ export const websiteContent = {
   },
 
   portalDemo: {
-    title: "ProLaw Client Portal Preview",
+    title: "Shield Advocates Client Portal Preview",
     subtitle: "Track active milestones, review pleadings, and view court schedules. This live interactive workspace demonstrates how Shield Advocates utilizes state-of-the-art legal tech to deliver transparency to our corporate partners.",
     clientName: "Global Tech Solutions Inc.",
     matterName: "Intellectual Property Opposition & Trademark Litigation",

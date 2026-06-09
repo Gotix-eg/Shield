@@ -858,7 +858,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="pt-6 mt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                    <span className="text-[8px] text-zinc-600 font-mono block mb-2">PROLAW SECURE ENV.</span>
+                    <span className="text-[8px] text-zinc-600 font-mono block mb-2">SHIELD ADVOCATES SECURE ENV.</span>
                     <button onClick={() => setPortalUnlocked(false)}
                       className="text-[9px] font-bold uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors">
                       Disconnect Demo

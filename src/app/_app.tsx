@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'ProLaw - Legal Management System',
+  title: 'Shield Advocates - Legal Management System',
   description: 'Professional legal case management system',
 };
 

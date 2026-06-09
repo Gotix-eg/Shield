@@ -198,7 +198,7 @@ export default function DashboardHome() {
               </div>
             </div>
             <div className="legal-card p-golden border-dashed border-2 border-white/5 bg-transparent shadow-none hover:border-legal-gold/50 transition-all">
-              <h4 className="text-[10px] uppercase tracking-widest text-slate-500 mb-4 font-bold">ProLaw</h4>
+              <h4 className="text-[10px] uppercase tracking-widest text-slate-500 mb-4 font-bold">Shield Advocates</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-light italic">&ldquo;Precision is the soul of justice.&rdquo;</p>
             </div>
           </aside>
