@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getAuth } from "@/lib/auth";
+import { getAuth, clearAuth } from "@/lib/auth";
 import toast, { Toaster } from "react-hot-toast";
 import {
   LayoutTemplate,
@@ -29,7 +29,9 @@ import {
   ChevronRight,
   Shield,
   Loader2,
-  FolderKanban
+  FolderKanban,
+  LogOut,
+  Bell
 } from "lucide-react";
 
 const TABS = [
@@ -45,6 +47,20 @@ const TABS = [
   { id: "consultations", label: "Consultation Inbox", icon: Inbox },
   { id: "inquiries", label: "Contact Inquiries", icon: FileText }
 ];
+
+function decodeRole(token?: string): string | null {
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    return (payload.role ?? "STAFF");
+  } catch {
+    return null;
+  }
+}
 
 export default function WebsiteManager() {
   const router = useRouter();
@@ -452,26 +468,21 @@ export default function WebsiteManager() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b13] text-slate-100 font-sans p-6 md:p-10">
+    <div className="flex min-h-screen bg-[#070b13] text-slate-100 font-sans relative">
       <Toaster position="top-right" reverseOrder={false} />
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-white tracking-wide">Website Content Manager</h1>
-          <p className="text-slate-400 text-xs mt-1">Control the public Shield Advocates homepage, schedule, and case portal.</p>
+      {/* Primary Navigation Sidebar */}
+      <aside className="w-[var(--sidebar-width)] h-screen sticky top-0 left-0 bg-[#0a0f1a] border-r border-white/5 flex flex-col z-[100] shrink-0">
+        {/* Sidebar Logo */}
+        <div className="p-8 pb-10">
+          <div className="group flex flex-col items-center">
+            <span className="text-2xl font-serif font-bold text-legal-gold tracking-tighter block">SHIELD ADVOCATES</span>
+            <span className="text-[8px] uppercase tracking-[0.6em] text-slate-500 font-bold mt-2 block">Website Manager</span>
+          </div>
         </div>
-        <button
-          onClick={() => window.open("/", "_blank")}
-          className="px-4 py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2"
-        >
-          <Eye className="w-4 h-4" /> View Live Site
-        </button>
-      </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Navigation Sidebar */}
-        <div className="w-full lg:w-64 shrink-0 flex flex-col gap-2">
+        {/* Navigation Links */}
+        <nav className="flex-1 overflow-y-auto px-6 space-y-1 custom-scrollbar">
           {TABS.map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -479,17 +490,79 @@ export default function WebsiteManager() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs font-medium text-left transition-all ${
-                  active
-                    ? "bg-[#C5A059]/10 text-[#C5A059] border-l-2 border-[#C5A059]"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-[13px] font-medium tracking-wide transition-all duration-300 relative group ${
+                  active 
+                    ? "text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <Icon className={`w-4.5 h-4.5 ${active ? "text-[#C5A059]" : "text-slate-500"}`} />
-                {tab.label}
+                <Icon className={`w-4.5 h-4.5 transition-colors duration-300 ${active ? "text-[#C5A059]" : "text-slate-500 group-hover:text-white"}`} />
+                <span className="relative z-10">{tab.label}</span>
+                {active && (
+                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-4 rounded-l-full bg-legal-gold"></span>
+                )}
               </button>
             );
           })}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-6 mt-auto border-t border-white/5 space-y-4">
+          {/* Back to Platform Admin for Super Admins */}
+          {(() => {
+            const token = getAuth();
+            if (token) {
+              const role = decodeRole(token);
+              if (role === "SUPER_ADMIN") {
+                return (
+                  <button
+                    onClick={() => router.push("/super-admin")}
+                    className="w-full flex items-center gap-4 px-5 py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-[#C5A059]/20 transition-all duration-300 group"
+                  >
+                    <Shield className="w-4 h-4 text-slate-400 group-hover:text-[#C5A059] transition-colors" />
+                    <span className="text-[13px] font-medium text-slate-400 group-hover:text-white transition-colors">Platform Admin</span>
+                  </button>
+                );
+              }
+            }
+            return null;
+          })()}
+
+          <button
+            onClick={() => router.push("/notifications")}
+            className="w-full flex items-center gap-4 px-5 py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-[#C5A059]/20 transition-all duration-300 group"
+          >
+            <Bell className="w-4 h-4 text-slate-400 group-hover:text-[#C5A059] transition-colors" />
+            <span className="text-[13px] font-medium text-slate-400 group-hover:text-white transition-colors">Notifications</span>
+          </button>
+
+          <button 
+            onClick={() => {
+              clearAuth();
+              window.location.href = "/login";
+            }}
+            className="w-full flex items-center gap-4 px-5 py-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 hover:border-red-500/30 group transition-all duration-500 shadow-xl"
+          >
+            <LogOut className="w-4.5 h-4.5 text-red-400 transition-colors" />
+            <span className="text-[13px] font-bold tracking-widest text-red-400 group-hover:text-red-300">SIGN OUT</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 min-h-screen relative z-10 overflow-x-hidden p-6 md:p-10 flex flex-col">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8 mb-8">
+          <div>
+            <h1 className="text-3xl font-serif font-bold text-white tracking-wide">Website Content Manager</h1>
+            <p className="text-slate-400 text-xs mt-1">Control the public Shield Advocates homepage, schedule, and case portal.</p>
+          </div>
+          <button
+            onClick={() => window.open("/", "_blank")}
+            className="px-4 py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" /> View Live Site
+          </button>
         </div>
 
         {/* Tab Content Panel */}
@@ -1706,7 +1779,7 @@ export default function WebsiteManager() {
             </div>
           )}
         </div>
-      </div>
+      </main>
 
       {/* CRUD / VIEW MODALS */}
       {editModal && (

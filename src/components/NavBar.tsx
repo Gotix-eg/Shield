@@ -72,7 +72,7 @@ export default function NavBar() {
 
   // Hide navbar on login, register or when not authenticated
   const tokenRaw = getAuth();
-  if (!tokenRaw || pathname === "/" || pathname.includes("login") || pathname.includes("register")) return null;
+  if (!tokenRaw || pathname === "/" || pathname.includes("login") || pathname.includes("register") || pathname === "/admin/website") return null;
 
   const resolvedRole = role ?? decodeRole(tokenRaw || undefined);
 
