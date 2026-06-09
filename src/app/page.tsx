@@ -671,8 +671,19 @@ export default function Home() {
 
                 {/* Portrait */}
                 <div className="relative h-80 overflow-hidden">
-                  <img src={member.image} alt={member.name}
-                    className="w-full h-full object-cover team-card-img" />
+                  {member.video ? (
+                    <video
+                      src={member.video}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover team-card-img"
+                    />
+                  ) : (
+                    <img src={member.image} alt={member.name}
+                      className="w-full h-full object-cover team-card-img" />
+                  )}
                   {/* Gold bottom gradient */}
                   <div className="absolute inset-x-0 bottom-0 h-24"
                     style={{ background: "linear-gradient(transparent, rgba(8,11,18,0.9))" }} />
