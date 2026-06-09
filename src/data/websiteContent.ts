@@ -135,7 +135,7 @@ export const websiteContent = {
         role: "Founding Partner & Head of Corporate",
         bio: "Assem Al Hawy co‑founded Shield Advocates in 2020 and leads the General Corporate and Commercial Department. Based in Giza, he has more than 20 years of experience guiding companies through complex corporate and commercial transactions. Assem drafts and negotiates distribution and agency agreements, manufacturing and supply contracts and other strategic arrangements. He specialises in corporate law with a focus on labour law, corporate governance, banking and finance, capital markets, M&A, real estate and dispute resolution. His background spans industries such as mining, pharmaceuticals, media, e‑commerce and finance; he has advised on large‑scale human resources restructurings, due diligence reviews and public and private free‑zone incorporations.",
         focus: ["Corporate Law", "Labour Law", "M&A", "Banking & Finance"],
-        image: "/images/partner_assem.png",
+        image: "/images/partner_assem.jpeg",
         video: "/video/assem.mp4"
       },
       {
@@ -143,7 +143,7 @@ export const websiteContent = {
         role: "Founding Partner & Head of Intellectual Property",
         bio: "Hassane El Sheref is a top‑ranked IP practitioner with over a decade of experience protecting brands across the Middle East and North Africa. As the head of the firm’s Intellectual Property Department, he manages international trademark portfolios, coordinates anti‑counterfeiting raids, oversees patent prosecution and represents clients in infringement disputes. He was shortlisted for “IP Lawyer of the Year 2026,” serves as Co‑Chair of the International Trademark Association (INTA) Middle East Global Advisory Council and is regularly recognised by The Legal 500 and IP STARS.",
         focus: ["Brand Protection", "Trademark Litigation", "Customs Enforcement", "Anti-Counterfeiting"],
-        image: "/images/partner_hassane.png",
+        image: "/images/partner_hassane.jpeg",
         video: "/video/hassan.mp4"
       },
       {
@@ -151,7 +151,7 @@ export const websiteContent = {
         role: "Managing Associate, Intellectual Property",
         bio: "Omneya Moawad is a highly praised senior legal advisor specialising in IP litigation, trademark opposition briefs and regulatory affairs. She adopts a strategic, detail‑oriented approach that has earned recognition from the 2026 Influential Businesswoman Awards. Omneya works closely with Hassane El Sheref to enforce IP rights and craft effective brand protection strategies. She is supported by a team of specialised attorneys, trademark agents, patent attorneys and investigators.",
         focus: ["IP Litigation", "Trademark Registrations", "Opposition Briefs", "Regulatory Affairs"],
-        image: "/images/partner_omneya.png",
+        image: "/images/partner_omneya.jpeg",
         video: "/video/omneya.mp4"
       }
     ]
