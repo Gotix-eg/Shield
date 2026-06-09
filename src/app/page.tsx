@@ -111,30 +111,31 @@ function PartnerMedia({ image, video, name }: { image: string; video?: string; n
 
   return (
     <div 
-      className="relative w-full h-full"
+      className="relative w-full h-full overflow-hidden"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <img 
         src={image} 
         alt={name} 
-        className={`absolute inset-0 w-full h-full object-cover team-card-img transition-opacity duration-300 ${
-          hovered ? "opacity-0" : "opacity-100"
-        }`} 
+        className="absolute inset-0 w-full h-full object-cover team-card-img" 
       />
       <video
         ref={videoRef}
         src={video}
         loop
-        muted
         playsInline
-        className={`w-full h-full object-cover team-card-img transition-opacity duration-300 ${
+        preload="auto"
+        poster={image}
+        className={`absolute inset-0 w-full h-full object-cover team-card-img transition-opacity duration-300 ${
           hovered ? "opacity-100" : "opacity-0"
         }`}
+        style={{ pointerEvents: "none" }}
       />
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
