@@ -42,9 +42,9 @@ export function middleware(request: NextRequest) {
   // Decode role
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { role?: string };
-    const role = payload.role ?? "STAFF";
+    const role = payload.role ?? "EDITOR";
     const adminPaths = ["/admin"];
-    const allowedAdminRoles = ["ADMIN", "SUPER_ADMIN", "OWNER", "MANAGER"];
+    const allowedAdminRoles = ["SUPER_ADMIN", "ADMIN", "EDITOR"];
     if (!allowedAdminRoles.includes(role) && adminPaths.some(p=> pathname.startsWith(p))) {
       const homeUrl = new URL("/", request.url);
       return NextResponse.redirect(homeUrl);

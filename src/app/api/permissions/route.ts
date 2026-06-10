@@ -14,12 +14,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // ensure core permission exists
-  await prisma.permission.upsert({
-    where: { code: "admin_all" },
-    update: {},
-    create: { code: "admin_all", name: "Full Admin Access" }
-  });
+  // ensure core permissions exist
+  const corePerms = [
+    { code: "edit_hero", name: "Edit Hero Section" },
+    { code: "edit_about", name: "Edit About Section" },
+    { code: "edit_team", name: "Edit Team Members" },
+    { code: "edit_practices", name: "Edit Practice Areas" },
+    { code: "edit_awards", name: "Edit Awards & Accolades" },
+    { code: "edit_contact", name: "Edit Contact Info" },
+    { code: "edit_faq", name: "Edit FAQs (Chatbot)" },
+    { code: "edit_slots", name: "Edit Schedule Slots" },
+    { code: "edit_portal_cases", name: "Edit Client Case Tracker" },
+    { code: "view_consultations", name: "View Consultation Inbox" },
+    { code: "view_inquiries", name: "View Contact Inquiries" }
+  ];
+
+  for (const perm of corePerms) {
+    await prisma.permission.upsert({
+      where: { code: perm.code },
+      update: {},
+      create: perm
+    });
+  }
 
   // List all possible permissions
   const permissions = await prisma.permission.findMany({ orderBy: { code: 'asc' } });

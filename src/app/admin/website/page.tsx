@@ -57,7 +57,22 @@ function decodeRole(token?: string): string | null {
     const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
     const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
     const payload = JSON.parse(atob(padded));
-    return (payload.role ?? "STAFF");
+    return (payload.role ?? "EDITOR");
+  } catch {
+    return null;
+  }
+}
+
+function decodeUserId(token?: string): number | null {
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    const claim = payload.sub ?? payload.id;
+    return claim ? Number(claim) : null;
   } catch {
     return null;
   }
@@ -109,6 +124,30 @@ export default function WebsiteManager() {
 
   const [uploading, setUploading] = useState(false);
 
+  const [currentUserRole, setCurrentUserRole] = useState<string>("EDITOR");
+  const [currentUserPermissions, setCurrentUserPermissions] = useState<Record<string, boolean>>({});
+
+  const isTabAllowed = (tabId: string) => {
+    if (currentUserRole === "SUPER_ADMIN" || currentUserRole === "ADMIN") return true;
+    if (tabId === "users") return false; // Editors can never manage users/permissions
+    
+    const map: Record<string, string> = {
+      hero: "edit_hero",
+      about: "edit_about",
+      team: "edit_team",
+      practices: "edit_practices",
+      awards: "edit_awards",
+      contact: "edit_contact",
+      faq: "edit_faq",
+      slots: "edit_slots",
+      portalCases: "edit_portal_cases",
+      consultations: "view_consultations",
+      inquiries: "view_inquiries"
+    };
+    const permCode = map[tabId];
+    return !!currentUserPermissions[permCode];
+  };
+
   useEffect(() => {
     setMounted(true);
     const token = getAuth();
@@ -116,6 +155,53 @@ export default function WebsiteManager() {
       router.push("/login");
       return;
     }
+
+    const role = decodeRole(token) || "EDITOR";
+    setCurrentUserRole(role);
+
+    if (role === "EDITOR") {
+      const uId = decodeUserId(token);
+      if (uId) {
+        fetch(`/api/users/${uId}/permissions`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.json())
+          .then((perms: any[]) => {
+            const obj: Record<string, boolean> = {};
+            if (Array.isArray(perms)) {
+              perms.forEach((p: any) => {
+                obj[p.code] = p.allowed;
+              });
+            }
+            setCurrentUserPermissions(obj);
+
+            // Set first allowed tab
+            const map: Record<string, string> = {
+              hero: "edit_hero",
+              about: "edit_about",
+              team: "edit_team",
+              practices: "edit_practices",
+              awards: "edit_awards",
+              contact: "edit_contact",
+              faq: "edit_faq",
+              slots: "edit_slots",
+              portalCases: "edit_portal_cases",
+              consultations: "view_consultations",
+              inquiries: "view_inquiries"
+            };
+            const allowedIds = TABS.filter(t => {
+              if (t.id === "users") return false;
+              const perm = map[t.id];
+              return !!obj[perm];
+            }).map(t => t.id);
+            if (allowedIds.length > 0) {
+              setActiveTab(allowedIds[0]);
+            }
+          })
+          .catch(() => {});
+      }
+    } else {
+      setActiveTab("hero");
+    }
+
     fetchAllData();
     // fetch unread notifications count
     fetch('/api/notifications?unread=true', { headers: { Authorization: `Bearer ${token}` } })
@@ -615,7 +701,7 @@ export default function WebsiteManager() {
 
         {/* Navigation Links */}
         <nav className="flex-1 overflow-y-auto px-6 space-y-1 custom-scrollbar">
-          {TABS.map(tab => {
+          {TABS.filter(t => isTabAllowed(t.id)).map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
@@ -1928,7 +2014,7 @@ export default function WebsiteManager() {
                         setEditModal({
                           type: "users",
                           mode: "new",
-                          data: { name: "", email: "", password: "", role: "STAFF", phone: "", address: "" }
+                          data: { name: "", email: "", password: "", role: "EDITOR", phone: "", address: "" }
                         })
                       }
                       className="px-4 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center gap-2 self-start"
@@ -2726,14 +2812,16 @@ export default function WebsiteManager() {
                   <div>
                     <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">System Role</label>
                     <select
-                      value={editModal.data.role || "STAFF"}
+                      value={editModal.data.role || "EDITOR"}
+                      disabled={editModal.data.role === "SUPER_ADMIN"}
                       onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, role: e.target.value } })}
                       className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white"
                     >
-                      <option value="OWNER">Owner</option>
+                      {editModal.data.role === "SUPER_ADMIN" && (
+                        <option value="SUPER_ADMIN">Super Admin</option>
+                      )}
                       <option value="ADMIN">Admin</option>
-                      <option value="MANAGER">Manager</option>
-                      <option value="STAFF">Staff</option>
+                      <option value="EDITOR">Editor</option>
                     </select>
                   </div>
                 </div>

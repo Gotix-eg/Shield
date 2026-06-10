@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     const admins = await db.user.findMany({
       where: {
         companyId,
-        role: { in: ['ADMIN', 'MANAGER', 'OWNER'] }
+        role: { in: ['SUPER_ADMIN', 'ADMIN'] }
       }
     });
     if (admins.length > 0) {

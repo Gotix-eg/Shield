@@ -26,7 +26,7 @@ model User {
   name                  String
   email                 String               @unique
   passwordHash          String
-  role                  Role                 @default(STAFF)
+  role                  Role                 @default(EDITOR)
   createdAt             DateTime             @default(now())
   address               String?
   phone                 String?
@@ -66,10 +66,9 @@ model UserPermission {
 }
 
 enum Role {
-  OWNER
+  SUPER_ADMIN
   ADMIN
-  MANAGER
-  STAFF
+  EDITOR
 }
 
 enum CompanyStatus {

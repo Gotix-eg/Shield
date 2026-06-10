@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         passwordHash,
-        role: "OWNER",
+        role: "SUPER_ADMIN",
         companyId: company.id,
       },
     });

@@ -33,8 +33,11 @@ export async function GET(request: NextRequest) {
   }
 
   const where: Prisma.UserWhereInput = {
-    role: { in: ["ADMIN", "OWNER", "MANAGER", "STAFF"] },
-    companyId
+    role: { in: ["SUPER_ADMIN", "ADMIN", "EDITOR"] },
+    OR: [
+      { companyId },
+      { role: "SUPER_ADMIN" }
+    ]
   };
 
   const users = await prisma.user.findMany({
@@ -48,7 +51,7 @@ export async function GET(request: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, phone, address, password, role = "STAFF" } = body as {
+    const { name, email, phone, address, password, role = "EDITOR" } = body as {
       name: string;
       email: string;
       phone?: string;
