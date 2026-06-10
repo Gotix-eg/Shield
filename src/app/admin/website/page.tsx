@@ -44,6 +44,7 @@ const TABS = [
   { id: "faq", label: "FAQs (Chatbot)", icon: MessageSquare },
   { id: "slots", label: "Schedule Slots", icon: Calendar },
   { id: "portalCases", label: "Client Case Tracker", icon: FolderKanban },
+  { id: "users", label: "Users & Permissions", icon: Shield },
   { id: "consultations", label: "Consultation Inbox", icon: Inbox },
   { id: "inquiries", label: "Contact Inquiries", icon: FileText }
 ];
@@ -86,6 +87,14 @@ export default function WebsiteManager() {
   const [portalDemoData, setPortalDemoData] = useState<any>(null);
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
+  // Users & Permissions States
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [permissionsUser, setPermissionsUser] = useState<number | null>(null);
+  const [permissionsChecked, setPermissionsChecked] = useState<Record<string, boolean>>({});
+  const [allPermissions, setAllPermissions] = useState<any[]>([]);
+  const [permissionsDrawerOpen, setPermissionsDrawerOpen] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+
   // Selected case details
   const [selectedCaseForDetail, setSelectedCaseForDetail] = useState<any | null>(null);
   const [newMilestoneForm, setNewMilestoneForm] = useState({ title: "", dueDate: new Date().toISOString().split("T")[0], status: "PENDING" });
@@ -93,7 +102,7 @@ export default function WebsiteManager() {
 
   // Modal State
   const [editModal, setEditModal] = useState<{
-    type: "team" | "practices" | "awards" | "faq" | "slots" | "consultations" | "inquiries" | "portalCases";
+    type: "team" | "practices" | "awards" | "faq" | "slots" | "consultations" | "inquiries" | "portalCases" | "users";
     mode: "new" | "edit" | "view";
     data: any;
   } | null>(null);
@@ -165,6 +174,13 @@ export default function WebsiteManager() {
       if (Array.isArray(slots)) setSlotsList(slots);
       if (Array.isArray(consultations)) setConsultationsList(consultations);
       if (Array.isArray(inquiries)) setInquiriesList(inquiries);
+
+      // Fetch users list
+      const usersRes = await fetch("/api/lawyers", { headers });
+      if (usersRes.ok) {
+        const u = await usersRes.json();
+        if (Array.isArray(u)) setUsersList(u);
+      }
 
       if (Array.isArray(portalDemo)) {
         setCasesList(portalDemo);
@@ -272,6 +288,33 @@ export default function WebsiteManager() {
       Authorization: `Bearer ${token}`
     };
 
+    if (type === "users") {
+      let url = "/api/lawyers";
+      let method = "POST";
+      if (mode === "edit") {
+        url = `/api/lawyers/${data.id}`;
+        method = "PUT";
+      }
+      try {
+        const res = await fetch(url, {
+          method,
+          headers,
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Failed to save user");
+        }
+        toast.success("User saved successfully!");
+        setEditModal(null);
+        fetchAllData();
+      } catch (error: any) {
+        console.error(error);
+        toast.error(error.message || "Failed to save user");
+      }
+      return;
+    }
+
     const endpointType = type === "portalCases" ? "portal-demo" : type;
     let url = `/api/website/${endpointType}`;
     let method = "POST";
@@ -307,6 +350,23 @@ export default function WebsiteManager() {
 
     const token = getAuth();
     if (!token) return;
+
+    if (type === "users") {
+      try {
+        const res = await fetch(`/api/lawyers/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Delete failed");
+        toast.success("User deleted successfully!");
+        setEditModal(null);
+        fetchAllData();
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to delete user.");
+      }
+      return;
+    }
 
     const endpointType = type === "portalCases" ? "portal-demo" : type;
     try {
@@ -348,6 +408,70 @@ export default function WebsiteManager() {
     } catch (err) {
       console.error(err);
       toast.error("Failed to update status.");
+    }
+  };
+
+  const handleOpenPermissions = async (userId: number) => {
+    setPermissionsUser(userId);
+    setPermissionsDrawerOpen(true);
+    setPermissionsLoading(true);
+    const token = getAuth();
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      const allRes = await fetch("/api/permissions", { headers });
+      let allPerms: any[] = [];
+      if (allRes.ok) {
+        const list = await allRes.json();
+        allPerms = list.filter((p: any) => !/^\d+$/.test(p.code));
+        setAllPermissions(allPerms);
+      }
+
+      const userRes = await fetch(`/api/users/${userId}/permissions`, { headers });
+      if (userRes.ok) {
+        const list = await userRes.json();
+        const obj: Record<string, boolean> = {};
+        list.forEach((p: any) => {
+          if (p.allowed) obj[p.code] = true;
+        });
+        setPermissionsChecked(obj);
+      } else {
+        setPermissionsChecked({});
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load permissions.");
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
+
+  const handleSavePermissions = async () => {
+    if (!permissionsUser) return;
+    const token = getAuth();
+    if (!token) return;
+
+    try {
+      const res = await fetch(`/api/users/${permissionsUser}/permissions`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          permissions: Object.fromEntries(
+            Object.entries(permissionsChecked).filter(([k]) => !/^\d+$/.test(k))
+          )
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to save permissions");
+      toast.success("User permissions updated!");
+      setPermissionsDrawerOpen(false);
+      setPermissionsUser(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update permissions");
     }
   };
 
@@ -1791,6 +1915,83 @@ export default function WebsiteManager() {
                 </div>
               )}
 
+              {/* Tab 12: Users & Permissions */}
+              {activeTab === "users" && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div>
+                      <h2 className="text-lg font-bold text-white font-serif tracking-wide">System Users & Permissions</h2>
+                      <p className="text-xs text-slate-400 mt-1">Manage system administrators, editors, and assign custom dashboard permissions.</p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setEditModal({
+                          type: "users",
+                          mode: "new",
+                          data: { name: "", email: "", password: "", role: "LAWYER", phone: "", address: "" }
+                        })
+                      }
+                      className="px-4 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center gap-2 self-start"
+                    >
+                      <Plus className="w-4 h-4" /> Add User
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-white/5 text-[10px] uppercase tracking-wider text-slate-400">
+                          <th className="py-4 px-4 font-semibold">Name</th>
+                          <th className="py-4 px-4 font-semibold">Email</th>
+                          <th className="py-4 px-4 font-semibold">Role</th>
+                          <th className="py-4 px-4 font-semibold text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {usersList.map((usr: any) => (
+                          <tr key={usr.id} className="border-b border-white/5 text-sm hover:bg-white/5 transition-all">
+                            <td className="py-4 px-4 font-semibold text-white">{usr.name}</td>
+                            <td className="py-4 px-4 text-slate-300 font-mono text-xs">{usr.email}</td>
+                            <td className="py-4 px-4">
+                              <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-white/5 border border-white/5 text-slate-300">
+                                {usr.role === "LAWYER" ? "STAFF" : usr.role === "MANAGING_PARTNER" ? "MANAGER" : usr.role}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-right space-x-2 whitespace-nowrap">
+                              <button
+                                onClick={() => setEditModal({ type: "users", mode: "edit", data: { ...usr, password: "" } })}
+                                className="px-2.5 py-1.5 rounded bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-slate-300 hover:text-white transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                              >
+                                <Edit className="w-3.5 h-3.5" /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleOpenPermissions(usr.id)}
+                                className="px-2.5 py-1.5 rounded bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/15 hover:border-amber-500/20 text-amber-400 hover:text-amber-300 transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                              >
+                                <Shield className="w-3.5 h-3.5" /> Permissions
+                              </button>
+                              <button
+                                onClick={() => handleModalDelete("users", usr.id)}
+                                className="px-2.5 py-1.5 rounded bg-red-500/5 border border-red-500/10 hover:bg-red-500/15 hover:border-red-500/20 text-red-400 hover:text-red-300 transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {usersList.length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="py-8 text-center text-slate-500 text-xs">
+                              No system users found.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
         </div>
@@ -2489,6 +2690,181 @@ export default function WebsiteManager() {
               </form>
             )}
 
+            {/* USER FORM */}
+            {editModal.type === "users" && (
+              <form onSubmit={handleModalSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editModal.data.name || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, name: e.target.value } })}
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={editModal.data.email || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, email: e.target.value } })}
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Phone Number</label>
+                    <input
+                      type="text"
+                      value={editModal.data.phone || ""}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, phone: e.target.value } })}
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">System Role</label>
+                    <select
+                      value={editModal.data.role || "LAWYER"}
+                      onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, role: e.target.value } })}
+                      className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white"
+                    >
+                      <option value="OWNER">Owner</option>
+                      <option value="ADMIN">Admin</option>
+                      <option value="MANAGING_PARTNER">Manager</option>
+                      <option value="LAWYER">Staff</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    {editModal.mode === "new" ? "Password" : "New Password (Leave blank to keep current)"}
+                  </label>
+                  <input
+                    type="password"
+                    required={editModal.mode === "new"}
+                    value={editModal.data.password || ""}
+                    onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, password: e.target.value } })}
+                    className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white"
+                    placeholder={editModal.mode === "new" ? "••••••••" : "Enter new password if changing"}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
+                  <button type="button" onClick={() => setEditModal(null)} className="px-5 py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition-all">
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-5 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all">
+                    {editModal.mode === "new" ? "Create User" : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* Slide-out Permissions Drawer */}
+      {permissionsDrawerOpen && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => {
+            setPermissionsDrawerOpen(false);
+            setPermissionsUser(null);
+          }}
+        >
+          <div
+            className="bg-[#0b101d] w-full max-w-md h-full p-8 overflow-y-auto shadow-2xl border-l border-white/10 flex flex-col justify-between animate-in slide-in-from-right duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                <div>
+                  <h2 className="text-xl font-serif font-bold text-white tracking-wide flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-[#C5A059]" /> Explicit Permissions
+                  </h2>
+                  <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-widest">
+                    Configure features for User ID: {permissionsUser}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setPermissionsDrawerOpen(false);
+                    setPermissionsUser(null);
+                  }}
+                  className="p-1.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {permissionsLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-[#C5A059] animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-3 pr-2 custom-scrollbar max-h-[calc(100vh-220px)] overflow-y-auto">
+                  {allPermissions.map((perm) => {
+                    const isActive = !!permissionsChecked[perm.code];
+                    return (
+                      <label
+                        key={perm.code}
+                        onClick={() => setPermissionsChecked(prev => ({ ...prev, [perm.code]: !prev[perm.code] }))}
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 cursor-pointer select-none ${
+                          isActive
+                            ? "bg-[#C5A059]/5 border-[#C5A059]/30 text-white shadow-inner"
+                            : "bg-[#070b13] border-white/5 text-slate-400 hover:text-slate-200 hover:border-white/10"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-semibold tracking-wide uppercase">
+                            {perm.name === "Manage Users" ? "Manage Website Users" : perm.name}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-mono">
+                            {perm.code}
+                          </span>
+                        </div>
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-200 ${
+                            isActive
+                              ? "bg-[#C5A059] border-[#C5A059] text-slate-900"
+                              : "border-white/20 bg-transparent text-transparent"
+                          }`}
+                        >
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      </label>
+                    );
+                  })}
+                  {allPermissions.length === 0 && (
+                    <p className="text-center text-slate-500 text-xs py-10">
+                      No explicit permissions loaded from system.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-6 shrink-0">
+              <button
+                onClick={() => {
+                  setPermissionsDrawerOpen(false);
+                  setPermissionsUser(null);
+                }}
+                className="px-5 py-2.5 border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSavePermissions}
+                className="px-5 py-2.5 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all"
+              >
+                Save Permissions
+              </button>
+            </div>
           </div>
         </div>
       )}
