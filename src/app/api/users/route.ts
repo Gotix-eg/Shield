@@ -66,15 +66,22 @@ export async function POST(req: NextRequest) {
 
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    let creatorCompanyId: number | null = null;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (token) {
-      try {
-        const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-        const creatorId = Number(payload.sub ?? payload.id);
-        const creator = await prisma.user.findUnique({ where: { id: creatorId }, select: { companyId: true } });
-        creatorCompanyId = creator?.companyId || null;
-      } catch {}
+    let creatorCompanyId: number | null = null;
+    try {
+      const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+      const creatorRole = payload.role;
+      if (creatorRole !== "SUPER_ADMIN" && creatorRole !== "OWNER") {
+        return NextResponse.json({ error: "Only Super Admin can add users" }, { status: 403 });
+      }
+      const creatorId = Number(payload.sub ?? payload.id);
+      const creator = await prisma.user.findUnique({ where: { id: creatorId }, select: { companyId: true } });
+      creatorCompanyId = creator?.companyId || null;
+    } catch {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     if (!creatorCompanyId) {

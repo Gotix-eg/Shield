@@ -125,6 +125,7 @@ export default function WebsiteManager() {
   const [uploading, setUploading] = useState(false);
 
   const [currentUserRole, setCurrentUserRole] = useState<string>("EDITOR");
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [currentUserPermissions, setCurrentUserPermissions] = useState<Record<string, boolean>>({});
 
   const isTabAllowed = (tabId: string) => {
@@ -158,6 +159,8 @@ export default function WebsiteManager() {
 
     const role = decodeRole(token) || "EDITOR";
     setCurrentUserRole(role);
+    const uId = decodeUserId(token);
+    setCurrentUserId(uId);
 
     if (role === "EDITOR") {
       const uId = decodeUserId(token);
@@ -2009,18 +2012,20 @@ export default function WebsiteManager() {
                       <h2 className="text-lg font-bold text-white font-serif tracking-wide">System Users & Permissions</h2>
                       <p className="text-xs text-slate-400 mt-1">Manage system administrators, editors, and assign custom dashboard permissions.</p>
                     </div>
-                    <button
-                      onClick={() =>
-                        setEditModal({
-                          type: "users",
-                          mode: "new",
-                          data: { name: "", email: "", password: "", role: "EDITOR", phone: "", address: "" }
-                        })
-                      }
-                      className="px-4 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center gap-2 self-start"
-                    >
-                      <Plus className="w-4 h-4" /> Add User
-                    </button>
+                    {(currentUserRole === "SUPER_ADMIN" || currentUserRole === "OWNER") && (
+                      <button
+                        onClick={() =>
+                          setEditModal({
+                            type: "users",
+                            mode: "new",
+                            data: { name: "", email: "", password: "", role: "EDITOR", phone: "", address: "" }
+                          })
+                        }
+                        className="px-4 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center gap-2 self-start"
+                      >
+                        <Plus className="w-4 h-4" /> Add User
+                      </button>
+                    )}
                   </div>
 
                   <div className="overflow-x-auto">
@@ -2044,24 +2049,30 @@ export default function WebsiteManager() {
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right space-x-2 whitespace-nowrap">
-                              <button
-                                onClick={() => setEditModal({ type: "users", mode: "edit", data: { ...usr, password: "" } })}
-                                className="px-2.5 py-1.5 rounded bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-slate-300 hover:text-white transition-all text-xs font-bold inline-flex items-center gap-1.5"
-                              >
-                                <Edit className="w-3.5 h-3.5" /> Edit
-                              </button>
-                              <button
-                                onClick={() => handleOpenPermissions(usr.id)}
-                                className="px-2.5 py-1.5 rounded bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/15 hover:border-amber-500/20 text-amber-400 hover:text-amber-300 transition-all text-xs font-bold inline-flex items-center gap-1.5"
-                              >
-                                <Shield className="w-3.5 h-3.5" /> Permissions
-                              </button>
-                              <button
-                                onClick={() => handleModalDelete("users", usr.id)}
-                                className="px-2.5 py-1.5 rounded bg-red-500/5 border border-red-500/10 hover:bg-red-500/15 hover:border-red-500/20 text-red-400 hover:text-red-300 transition-all text-xs font-bold inline-flex items-center gap-1.5"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" /> Delete
-                              </button>
+                              {((currentUserRole === "SUPER_ADMIN" || currentUserRole === "OWNER") || currentUserId === usr.id) && (
+                                <button
+                                  onClick={() => setEditModal({ type: "users", mode: "edit", data: { ...usr, password: "" } })}
+                                  className="px-2.5 py-1.5 rounded bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-slate-300 hover:text-white transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                                >
+                                  <Edit className="w-3.5 h-3.5" /> Edit
+                                </button>
+                              )}
+                              {(currentUserRole === "SUPER_ADMIN" || currentUserRole === "OWNER") && usr.role === "EDITOR" && (
+                                <button
+                                  onClick={() => handleOpenPermissions(usr.id)}
+                                  className="px-2.5 py-1.5 rounded bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/15 hover:border-amber-500/20 text-amber-400 hover:text-amber-300 transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                                >
+                                  <Shield className="w-3.5 h-3.5" /> Permissions
+                                </button>
+                              )}
+                              {(currentUserRole === "SUPER_ADMIN" || currentUserRole === "OWNER") && currentUserId !== usr.id && (
+                                <button
+                                  onClick={() => handleModalDelete("users", usr.id)}
+                                  className="px-2.5 py-1.5 rounded bg-red-500/5 border border-red-500/10 hover:bg-red-500/15 hover:border-red-500/20 text-red-400 hover:text-red-300 transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))}

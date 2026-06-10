@@ -28,53 +28,58 @@ export async function GET(_: NextRequest, ctx: { params: { id: string } | Promis
 }
 
 // PUT body: { permissions: { [code:string]: boolean } }
-export async function PUT(req: NextRequest, ctx: { params: { id: string } | Promise<{ id: string }> }) {
-  const { id } = await ctx.params as { id: string };
-  const userId = Number(id);
-  const currentUser = auth(req);
-  if (!currentUser) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await ctx.params;
+    const userId = Number(id);
+    const currentUser = auth(req);
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-  const isSuper = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
-  let hasManage = false;
-  if (!isSuper) {
-    const perm = await prisma.userPermission.findFirst({
-      where: {
-        userId: currentUser.id,
-        allowed: true,
-        permission: { code: 'manage_users' },
-      },
-      include: { permission: true },
-    });
-    hasManage = !!perm;
-  }
-  if (!isSuper && !hasManage) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-  const { permissions } = await req.json();
-  if (!permissions || typeof permissions !== 'object') {
-    return NextResponse.json({ error: 'permissions object required' }, { status: 400 });
-  }
+    const isSuper = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'OWNER';
+    let hasManage = false;
+    if (!isSuper) {
+      const perm = await prisma.userPermission.findFirst({
+        where: {
+          userId: currentUser.id,
+          allowed: true,
+          permission: { code: 'manage_users' },
+        },
+        include: { permission: true },
+      });
+      hasManage = !!perm;
+    }
+    if (!isSuper && !hasManage) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    const { permissions } = await req.json();
+    if (!permissions || typeof permissions !== 'object') {
+      return NextResponse.json({ error: 'permissions object required' }, { status: 400 });
+    }
 
-  // Reset explicit permissions for this user then recreate from payload
-  await prisma.userPermission.deleteMany({ where: { userId } });
+    // Reset explicit permissions for this user then recreate from payload
+    await prisma.userPermission.deleteMany({ where: { userId } });
 
-  for (const [code, allowed] of Object.entries(permissions)) {
-    // ensure permission record exists
-    await prisma.permission.upsert({
-      where: { code },
-      update: {},
-      create: { code, name: code.replace(/_/g, ' ') },
-    });
-    await prisma.userPermission.create({
-      data: {
-        allowed: Boolean(allowed),
-        user: { connect: { id: userId } },
-        permission: { connect: { code } },
-      },
-    });
+    for (const [code, allowed] of Object.entries(permissions)) {
+      // ensure permission record exists
+      await prisma.permission.upsert({
+        where: { code },
+        update: {},
+        create: { code, name: code.replace(/_/g, ' ') },
+      });
+      await prisma.userPermission.create({
+        data: {
+          allowed: Boolean(allowed),
+          user: { connect: { id: userId } },
+          permission: { connect: { code } },
+        },
+      });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("PUT /api/users/[id]/permissions error:", err);
+    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 500 });
   }
-  return NextResponse.json({ ok: true });
 }
 
