@@ -82,7 +82,9 @@ export default function LoginPage() {
         
         <div className="w-full max-w-md relative z-10">
           <header className="mb-12">
-            <h1 className="text-6xl font-serif text-legal-gold mb-4 tracking-tighter">SHIELD ADVOCATES</h1>
+            <div className="mb-6">
+              <img src="/images/logo.svg" alt="Shield Advocates Logo" className="h-14 w-auto" />
+            </div>
             <p className="text-slate-400 font-light leading-relaxed mb-8 text-lg">
               The ultimate solution for managing your legal practice. Streamline firm operations, automate billing, and manage client relationships with unmatched precision and security.
             </p>

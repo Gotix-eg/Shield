@@ -564,18 +564,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
 
           {/* Logo */}
-          <Link href="#home" className="flex items-center gap-4 select-none group">
-            <div className="w-10 h-10 shrink-0 overflow-hidden rounded" style={{ border: "1px solid rgba(197,160,89,0.4)" }}>
-              <img src="/images/shield_logo.png" alt="Shield Advocates Logo" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-white font-bold tracking-[0.18em] text-[13px]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                SHIELD ADVOCATES
-              </span>
-              <span className="text-[8px] tracking-[0.4em] mt-1 font-medium" style={{ color: "#C5A059", letterSpacing: "0.38em" }}>
-                AL HAWY & HASSANE
-              </span>
-            </div>
+          <Link href="#home" className="flex items-center select-none group">
+            <img src="/images/logo.svg" alt="Shield Advocates Logo" className="h-10 w-auto transition-transform duration-500 group-hover:scale-105" />
           </Link>
 
           {/* Desktop Nav */}
@@ -1514,18 +1504,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo */}
-            <Link href="#home" className="flex items-center gap-3 select-none">
-              <div className="w-8 h-8 rounded overflow-hidden" style={{ border: "1px solid rgba(197,160,89,0.3)" }}>
-                <img src="/images/shield_logo.png" alt="Shield Advocates" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-white font-bold tracking-[0.18em] text-[12px]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  SHIELD ADVOCATES
-                </span>
-                <span className="text-[7px] tracking-[0.4em] mt-0.5 font-medium" style={{ color: "#C5A059" }}>
-                  AL HAWY & HASSANE
-                </span>
-              </div>
+            <Link href="#home" className="flex items-center select-none group">
+              <img src="/images/logo.svg" alt="Shield Advocates" className="h-8 w-auto transition-transform duration-500 group-hover:scale-105" />
             </Link>
 
             {/* Links */}

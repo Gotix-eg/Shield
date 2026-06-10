@@ -474,9 +474,9 @@ export default function WebsiteManager() {
       {/* Primary Navigation Sidebar */}
       <aside className="w-[var(--sidebar-width)] h-screen sticky top-0 left-0 bg-[#0a0f1a] border-r border-white/5 flex flex-col z-[100] shrink-0">
         {/* Sidebar Logo */}
-        <div className="p-8 pb-10">
+        <div className="p-8 pb-10 flex justify-center">
           <div className="group flex flex-col items-center">
-            <span className="text-2xl font-serif font-bold text-legal-gold tracking-tighter block">SHIELD ADVOCATES</span>
+            <img src="/images/logo.svg" alt="Shield Advocates" className="w-[180px] h-auto" />
             <span className="text-[8px] uppercase tracking-[0.6em] text-slate-500 font-bold mt-2 block">Website Manager</span>
           </div>
         </div>

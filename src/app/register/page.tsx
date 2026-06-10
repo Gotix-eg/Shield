@@ -52,8 +52,8 @@ export default function RegisterFirmPage() {
     <div className="min-h-screen bg-[#0a0f1a] flex items-center justify-center p-8">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-serif text-legal-gold mb-2 tracking-tighter">SHIELD ADVOCATES</h1>
+        <div className="text-center mb-10 flex flex-col items-center">
+          <img src="/images/logo.svg" alt="Shield Advocates Logo" className="h-12 w-auto mb-4" />
           <p className="text-slate-500 text-sm">Register your law firm — start with a free demo</p>
           <div className="h-px w-full bg-gradient-to-r from-transparent via-legal-gold/30 to-transparent mt-6" />
         </div>
