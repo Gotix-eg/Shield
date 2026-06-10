@@ -565,7 +565,7 @@ export default function Home() {
 
           {/* Logo */}
           <Link href="#home" className="flex items-center select-none group">
-            <img src="/images/logo.svg" alt="Shield Advocates Logo" className="h-10 w-auto transition-transform duration-500 group-hover:scale-105" />
+            <img src="/images/logo.svg" alt="Shield Advocates Logo" className="h-12 w-auto transition-transform duration-500 group-hover:scale-105" />
           </Link>
 
           {/* Desktop Nav */}
@@ -1505,7 +1505,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo */}
             <Link href="#home" className="flex items-center select-none group">
-              <img src="/images/logo.svg" alt="Shield Advocates" className="h-8 w-auto transition-transform duration-500 group-hover:scale-105" />
+              <img src="/images/logo.svg" alt="Shield Advocates" className="h-14 w-auto transition-transform duration-500 group-hover:scale-105" />
             </Link>
 
             {/* Links */}
