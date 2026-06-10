@@ -128,7 +128,7 @@ export default function WebsiteManager() {
   const [currentUserPermissions, setCurrentUserPermissions] = useState<Record<string, boolean>>({});
 
   const isTabAllowed = (tabId: string) => {
-    if (currentUserRole === "SUPER_ADMIN" || currentUserRole === "ADMIN") return true;
+    if (currentUserRole !== "EDITOR") return true;
     if (tabId === "users") return false; // Editors can never manage users/permissions
     
     const map: Record<string, string> = {
