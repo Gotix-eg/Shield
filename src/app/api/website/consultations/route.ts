@@ -48,6 +48,24 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Generate notifications for admins of the company
+    const admins = await db.user.findMany({
+      where: {
+        companyId,
+        role: { in: ['ADMIN', 'MANAGING_PARTNER', 'OWNER'] }
+      }
+    });
+    if (admins.length > 0) {
+      await db.notification.createMany({
+        data: admins.map(u => ({
+          userId: u.id,
+          type: 'CONSULTATION_REQUEST',
+          message: `New consultation request from ${name} on ${date} at ${timeSlot}`,
+          read: false
+        }))
+      });
+    }
+
     return NextResponse.json(consultation, { status: 201 });
   } catch (error) {
     console.error("POST /api/website/consultations error:", error);

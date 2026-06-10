@@ -61,6 +61,12 @@ export default function AdminSettingsPage() {
       description: "Manage firm workforce, roles, and records.",
     },
     {
+      href: "/admin/lawyers",
+      title: "Users & Permissions",
+      perm: "manage_lawyers",
+      description: "Manage system user logins, roles, and assign explicit permissions.",
+    },
+    {
       href: "/manager/time/pending",
       title: "Pending Time (Manager)",
       perm: "approve_time",

@@ -9,17 +9,17 @@ type UserRole = string; // roles now dynamic
 interface NavLink { href:string; label:string; key:string }
 const ADMIN_ROLES = ["ADMIN","MANAGING_PARTNER","ACCOUNTANT_MASTER","ACCOUNTANT_ASSISTANT","LAWYER_PARTNER","LAWYER_MANAGER"];
 const ROLE_PAGES: Record<string,string[]> = {
-  OWNER:["website"],
-  MANAGING_PARTNER:["website"],
-  ADMIN:["website"],
+  OWNER:["website","users"],
+  MANAGING_PARTNER:["website","users"],
+  ADMIN:["website","users"],
   ACCOUNTANT_MASTER:["invoices","reports","accounts","trust","leaves","payroll","notifications"],
   ACCOUNTANT_ASSISTANT:["invoices","accounts","leaves","notifications"],
-  LAWYER_PARTNER:["clients","projects","time","reports","leaves","settings"],
+  LAWYER_PARTNER:["clients","projects","time","reports","leaves","settings","users"],
   HR_MANAGER:["hr","employees","payroll","leaves","positions","notifications","admin_time"],
   LAWYER_MANAGER:["time","expenses","reports","leaves","notifications","settings","admin_time","tasks"],
   HR:["hr","payroll","leaves","notifications"],
   LAWYER:["time","expenses","leaves","notifications","tasks"],
-  ADMIN_REPORTS:["clients","projects","time","expenses","invoices","reports","settings","leaves","notifications"],
+  ADMIN_REPORTS:["clients","projects","time","expenses","invoices","reports","settings","leaves","notifications","users"],
 };
 
   const links:NavLink[] = [
@@ -138,6 +138,7 @@ export default function NavBar() {
     { href: "/admin", label: "Admin", key: "settings", icon: Settings },
     { href: "/admin/website", label: "Website", key: "website", icon: Globe },
     { href: "/admin/hr", label: "HR", key: "hr", icon: Users2 },
+    { href: "/admin/lawyers", label: "Users", key: "users", icon: Users },
   ];
 
   return (

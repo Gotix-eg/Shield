@@ -8,13 +8,14 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
     const { id: idStr } = await ctx.params;
     const id = Number(idStr);
     const body = await req.json();
-    const { name, email, phone, address, positionId, password, managedLawyerIds = [] } = body as {
-      name?: string; email?: string; phone?: string; address?: string; positionId?: number; password?: string; managedLawyerIds?: number[];
+    const { name, email, phone, address, positionId, password, role, managedLawyerIds = [] } = body as {
+      name?: string; email?: string; phone?: string; address?: string; positionId?: number; password?: string; role?: string; managedLawyerIds?: number[];
     };
 
     const data: any = { name, email, phone, address };
     if (positionId !== undefined) data.positionId = positionId || null;
     if (password) data.passwordHash = await bcrypt.hash(password, 10);
+    if (role) data.role = role;
 
     const updated = await prisma.user.update({ where: { id }, data, include: { position: true } });
 

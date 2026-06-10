@@ -66,6 +66,7 @@ export default function WebsiteManager() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("hero");
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // States for single records
@@ -107,6 +108,13 @@ export default function WebsiteManager() {
       return;
     }
     fetchAllData();
+    // fetch unread notifications count
+    fetch('/api/notifications?unread=true', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then((list: any) => {
+        if (Array.isArray(list)) setUnreadNotifications(list.length);
+      })
+      .catch(() => {});
   }, []);
 
   const fetchAllData = async () => {
@@ -530,10 +538,17 @@ export default function WebsiteManager() {
 
           <button
             onClick={() => router.push("/notifications")}
-            className="w-full flex items-center gap-4 px-5 py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-[#C5A059]/20 transition-all duration-300 group"
+            className="w-full flex items-center justify-between px-5 py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-[#C5A059]/20 transition-all duration-300 group"
           >
-            <Bell className="w-4 h-4 text-slate-400 group-hover:text-[#C5A059] transition-colors" />
-            <span className="text-[13px] font-medium text-slate-400 group-hover:text-white transition-colors">Notifications</span>
+            <div className="flex items-center gap-4">
+              <Bell className="w-4 h-4 text-slate-400 group-hover:text-[#C5A059] transition-colors" />
+              <span className="text-[13px] font-medium text-slate-400 group-hover:text-white transition-colors">Notifications</span>
+            </div>
+            {unreadNotifications > 0 && (
+              <span className="bg-red-500 text-[9px] font-bold text-white px-2 py-0.5 rounded-full animate-pulse">
+                {unreadNotifications}
+              </span>
+            )}
           </button>
 
           <button 
