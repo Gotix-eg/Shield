@@ -4,7 +4,7 @@
 export function fetchAuth(input: RequestInfo | URL, init: RequestInit = {}) {
   const token = localStorage.getItem("token") || "";
   const headers: Record<string, string> = {
-    ...(init.headers || {}),
+    ...(init.headers as any || {}),
   };
   if (token) headers.Authorization = `Bearer ${token}`;
   return fetch(input, { ...init, headers });

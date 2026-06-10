@@ -4,6 +4,7 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
+// @ts-ignore
 import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginPage() {

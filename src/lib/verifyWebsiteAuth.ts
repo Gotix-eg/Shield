@@ -12,7 +12,7 @@ export interface AuthUser {
   companyId?: number;
 }
 
-export async function verifyWebsiteAuth(req: NextRequest, allowedRoles = ["ADMIN", "OWNER", "MANAGING_PARTNER", "SUPER_ADMIN"]) {
+export async function verifyWebsiteAuth(req: NextRequest, allowedRoles = ["ADMIN", "OWNER", "MANAGER", "SUPER_ADMIN"]) {
   const token = getAuthServer(req);
   if (!token) return null;
   try {

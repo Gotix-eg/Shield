@@ -9,9 +9,6 @@ const PUBLIC_PATHS = [
   "/api/login",
   "/api/register",
   "/",
-  "/dashboard/clients",
-  "/dashboard/clients/new",
-  "/dashboard/clients/[id]",
   "/api/website"
 ];
 
@@ -46,11 +43,11 @@ export function middleware(request: NextRequest) {
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { role?: string };
     const role = payload.role ?? "STAFF";
-    const adminPaths = ["/admin", "/invoices"];
-    const allowedAdminRoles = ["ADMIN", "SUPER_ADMIN", "OWNER", "MANAGING_PARTNER"];
+    const adminPaths = ["/admin"];
+    const allowedAdminRoles = ["ADMIN", "SUPER_ADMIN", "OWNER", "MANAGER"];
     if (!allowedAdminRoles.includes(role) && adminPaths.some(p=> pathname.startsWith(p))) {
-      const dashUrl = new URL("/dashboard", request.url);
-      return NextResponse.redirect(dashUrl);
+      const homeUrl = new URL("/", request.url);
+      return NextResponse.redirect(homeUrl);
     }
   } catch {
     // invalid token => redirect to login

@@ -176,7 +176,7 @@ export default function WebsiteManager() {
       if (Array.isArray(inquiries)) setInquiriesList(inquiries);
 
       // Fetch users list
-      const usersRes = await fetch("/api/lawyers", { headers });
+      const usersRes = await fetch("/api/users", { headers });
       if (usersRes.ok) {
         const u = await usersRes.json();
         if (Array.isArray(u)) setUsersList(u);
@@ -289,10 +289,10 @@ export default function WebsiteManager() {
     };
 
     if (type === "users") {
-      let url = "/api/lawyers";
+      let url = "/api/users";
       let method = "POST";
       if (mode === "edit") {
-        url = `/api/lawyers/${data.id}`;
+        url = `/api/users/${data.id}`;
         method = "PUT";
       }
       try {
@@ -353,7 +353,7 @@ export default function WebsiteManager() {
 
     if (type === "users") {
       try {
-        const res = await fetch(`/api/lawyers/${id}`, {
+        const res = await fetch(`/api/users/${id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -1928,7 +1928,7 @@ export default function WebsiteManager() {
                         setEditModal({
                           type: "users",
                           mode: "new",
-                          data: { name: "", email: "", password: "", role: "LAWYER", phone: "", address: "" }
+                          data: { name: "", email: "", password: "", role: "STAFF", phone: "", address: "" }
                         })
                       }
                       className="px-4 py-2 bg-[#C5A059] hover:bg-[#d4b06a] text-slate-900 font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center gap-2 self-start"
@@ -1954,7 +1954,7 @@ export default function WebsiteManager() {
                             <td className="py-4 px-4 text-slate-300 font-mono text-xs">{usr.email}</td>
                             <td className="py-4 px-4">
                               <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-white/5 border border-white/5 text-slate-300">
-                                {usr.role === "LAWYER" ? "STAFF" : usr.role === "MANAGING_PARTNER" ? "MANAGER" : usr.role}
+                                {usr.role}
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right space-x-2 whitespace-nowrap">
@@ -2726,14 +2726,14 @@ export default function WebsiteManager() {
                   <div>
                     <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">System Role</label>
                     <select
-                      value={editModal.data.role || "LAWYER"}
+                      value={editModal.data.role || "STAFF"}
                       onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, role: e.target.value } })}
                       className="w-full bg-[#070b13] border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#C5A059] text-white"
                     >
                       <option value="OWNER">Owner</option>
                       <option value="ADMIN">Admin</option>
-                      <option value="MANAGING_PARTNER">Manager</option>
-                      <option value="LAWYER">Staff</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="STAFF">Staff</option>
                     </select>
                   </div>
                 </div>

@@ -1,41 +1,97 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import jwt from 'jsonwebtoken';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+export async function GET(request: NextRequest) {
+  const auth = request.headers.get("authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  let role: string | null = null;
+  let userId: number | null = null;
 
-function auth(req: NextRequest) {
-  let hdr = req.headers.get('authorization') || '';
-  if(!hdr){
-    const cookie = req.cookies.get('token');
-    hdr = cookie?.value ? `Bearer ${cookie.value}` : '';
+  if (token) {
+    try {
+      const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+      role = payload.role;
+      const claim = payload.sub ?? payload.id;
+      if (claim) userId = Number(claim);
+    } catch {}
   }
-  const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
-  if (!token) return null;
-  try {
-    const p = jwt.verify(token, JWT_SECRET) as any;
-    return { id: Number(p.sub ?? p.id), role: p.role ?? 'STAFF' };
-  } catch {
-    return null;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  let companyId: number | null = null;
+  if (userId) {
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { companyId: true } });
+    companyId = u?.companyId || null;
+  }
+
+  if (!companyId) {
+    return NextResponse.json({ error: "Company not found" }, { status: 401 });
+  }
+
+  const where: Prisma.UserWhereInput = {
+    role: { in: ["ADMIN", "OWNER", "MANAGER", "STAFF"] },
+    companyId
+  };
+
+  const users = await prisma.user.findMany({
+    where,
+    orderBy: { id: "asc" }
+  });
+
+  return NextResponse.json(users);
 }
 
-export async function GET(req: NextRequest) {
-  const projectIdParam = req.nextUrl.searchParams.get('projectId');
-  const projectId = projectIdParam ? Number(projectIdParam) : undefined;
-  const user = auth(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (user.role === 'STAFF') return NextResponse.json([], { status: 200 });
-  // fetch requester companyId
-  const current = await prisma.user.findUnique({ where: { id: user.id }, select: { companyId: true } });
-  const whereClause:any = { companyId: current?.companyId ?? undefined };
-  if(projectId){
-    whereClause.assignments = { some: { projectId } } as any;
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { name, email, phone, address, password, role = "STAFF" } = body as {
+      name: string;
+      email: string;
+      phone?: string;
+      address?: string;
+      password: string;
+      role?: string;
+    };
+
+    if (!name || !email || !password) {
+      return NextResponse.json({ error: "Name, email and password are required" }, { status: 400 });
+    }
+
+    const authHeader = req.headers.get("authorization") || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    let creatorCompanyId: number | null = null;
+
+    if (token) {
+      try {
+        const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+        const creatorId = Number(payload.sub ?? payload.id);
+        const creator = await prisma.user.findUnique({ where: { id: creatorId }, select: { companyId: true } });
+        creatorCompanyId = creator?.companyId || null;
+      } catch {}
+    }
+
+    if (!creatorCompanyId) {
+      return NextResponse.json({ error: "Creator company not found" }, { status: 400 });
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash: await bcrypt.hash(password, 10),
+        role: role as any,
+        company: { connect: { id: creatorCompanyId } },
+        phone,
+        address
+      }
+    });
+
+    return NextResponse.json(user, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-  const list = await prisma.user.findMany({
-    select: { id: true, name: true, email: true },
-    where: whereClause,
-    orderBy: { name: 'asc' },
-  });
-  return NextResponse.json(list);
 }

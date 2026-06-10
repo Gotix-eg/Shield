@@ -828,7 +828,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {websiteContent.recognition.awards.map((award, idx) => (
+            {websiteContent.recognition.awards.map((award: any, idx: number) => (
               <div key={idx} className="award-card card-hover p-7 rounded text-left transition-all duration-400">
                 <div className="w-10 h-10 rounded flex items-center justify-center mb-6"
                   style={{ background: "rgba(197,160,89,0.1)", border: "1px solid rgba(197,160,89,0.25)" }}>
@@ -867,7 +867,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {websiteContent.practices.list.map(practice => (
+            {websiteContent.practices.list.map((practice: any) => (
               <div key={practice.id}
                 className="practice-card card-hover p-8 rounded flex flex-col justify-between group cursor-pointer"
                 onClick={() => setActivePracticeModal(practice.id)}>
@@ -898,7 +898,7 @@ export default function Home() {
 
       {/* Practice Modal */}
       {activePracticeModal && (() => {
-        const item = websiteContent.practices.list.find(p => p.id === activePracticeModal);
+        const item = websiteContent.practices.list.find((p: any) => p.id === activePracticeModal);
         if (!item) return null;
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 fade-in"
@@ -962,7 +962,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
-            {websiteContent.team.members.map((member, idx) => (
+            {websiteContent.team.members.map((member: any, idx: number) => (
               <div key={idx} className="team-card rounded overflow-hidden group transition-all duration-400"
                 style={{ background: "rgba(12,15,25,0.8)", border: "1px solid rgba(255,255,255,0.06)" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(197,160,89,0.35)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-6px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 24px 48px -12px rgba(0,0,0,0.8)"; }}
@@ -991,7 +991,7 @@ export default function Home() {
                       SPECIALIZATION
                     </span>
                     <div className="flex flex-wrap gap-1.5">
-                      {member.focus.map((f, i) => (
+                      {member.focus.map((f: any, i: number) => (
                         <span key={i} className="gold-tag text-[8px] px-2.5 py-1 rounded font-medium">
                           {f}
                         </span>
@@ -1131,7 +1131,7 @@ export default function Home() {
                   <div>
                     <h3 className="font-semibold text-white text-sm mb-5">Case Progression Milestones</h3>
                     <div className="relative pl-6 space-y-5" style={{ borderLeft: "1px solid rgba(197,160,89,0.2)" }}>
-                      {websiteContent.portalDemo.milestones.map((m, idx) => {
+                      {websiteContent.portalDemo.milestones.map((m: any, idx: number) => {
                         const isSelected = selectedMilestone === idx;
                         const isCompleted = m.status === "completed";
                         return (
@@ -1161,7 +1161,7 @@ export default function Home() {
                   <div className="pt-5" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                     <h3 className="font-semibold text-white text-sm mb-4">Secure Pleading Documents</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {websiteContent.portalDemo.documents.map((doc, idx) => (
+                      {websiteContent.portalDemo.documents.map((doc: any, idx: number) => (
                         <div key={idx} onClick={() => setPreviewDoc(doc)}
                           className="p-4 rounded cursor-pointer transition-all flex items-center gap-3 group"
                           style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
@@ -1335,7 +1335,7 @@ export default function Home() {
 
                 <div className="space-y-2 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                   <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold block">Available Times</span>
-                  {websiteContent.scheduler.timeSlots.map(slot => (
+                  {websiteContent.scheduler.timeSlots.map((slot: any) => (
                     <button key={slot} onClick={() => handleTimeSlotClick(slot)}
                       className="w-full text-left px-3 py-2 rounded text-xs font-medium transition-all"
                       style={{
@@ -1378,7 +1378,7 @@ export default function Home() {
                     onChange={e => setSchedulerForm(p => ({ ...p, practice: e.target.value }))}
                     className="contact-input w-full text-sm rounded px-4 py-2.5 focus:outline-none"
                     style={{ appearance: "none" }}>
-                    {websiteContent.practices.list.map(p => (
+                    {websiteContent.practices.list.map((p: any) => (
                       <option key={p.id} value={p.id} style={{ background: "#0e1320" }}>{p.title}</option>
                     ))}
                   </select>
@@ -1607,7 +1607,7 @@ export default function Home() {
 
             {/* Quick Questions */}
             <div className="px-4 pb-2 flex gap-1.5 flex-wrap">
-              {websiteContent.chatbot.faq.slice(0, 2).map((faq, i) => (
+              {websiteContent.chatbot.faq.slice(0, 2).map((faq: any, i: number) => (
                 <button key={i}
                   onClick={() => handleChatQuestionClick(faq.question, faq.answer)}
                   className="text-[9px] px-2.5 py-1 rounded-full font-medium transition-all"
