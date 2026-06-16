@@ -1,0 +1,3 @@
+name,code,contactPerson,email,phone,address,city,vatcode,country
+John Doe Agency,AG001,John Doe,john@example.com,+123456789,123 Legal St,Cairo,VAT123456,Egypt
+Smart Lawyers Corp,AG002,Jane Smith,jane@example.com,+987654321,456 Law Ave,Alexandria,VAT789012,Egypt

@@ -6,9 +6,6 @@ datasource db {
   provider  = "postgresql"
   url       = env("PRISMA_DATABASE_URL")
   directUrl = env("POSTGRES_URL")
-  // Temporarily disable shadow database locally to avoid
-  // "shadow database appears to be the same as the main database" error
-  // shadowDatabaseUrl = env("SHADOW_DB_URL")
 }
 
 model Company {
@@ -17,7 +14,12 @@ model Company {
   address            String?
   logoUrl            String?
   phone              String?
+  status             CompanyStatus       @default(DEMO)
+  maxSeats           Int                 @default(3)
+  subscriptionEnds   DateTime?
+  registeredEmail    String?
   accounts           Account[]
+  agents             Agent[]
   bankAccounts       BankAccount[]
   bankTransactions   BankTransaction[]
   clients            Client[]
@@ -37,10 +39,10 @@ model User {
   passwordHash          String
   role                  Role                 @default(LAWYER)
   createdAt             DateTime             @default(now())
-  positionId            Int?
   address               String?
   phone                 String?
   companyId             Int?
+  positionId            Int?
   ApprovalScope         ApprovalScope[]
   clients               Client[]
   documents             Document[]           @relation("uploadedDocs")
@@ -58,13 +60,12 @@ model User {
   projectAttachments    ProjectAttachment[]
   ReportAccess          ReportAccess[]
   createdDeductions     SalaryDeduction[]    @relation("UserCreatedDeductions")
+  tasksCreated          Task[]               @relation("taskAssigner")
   accountantApprovals   TimeEntry[]          @relation("accountantApproval")
   managerApprovals      TimeEntry[]          @relation("managerApproval")
   timeEntries           TimeEntry[]
   transactionsCreated   Transaction[]        @relation("UserTransactions")
-  tasksAssigned         Task[]               @relation("taskAssignee")
-  tasksCreated          Task[]               @relation("taskAssigner")
-  company               Company?             @relation(fields: [companyId], references: [id])
+  company               Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   position              Position?            @relation(fields: [positionId], references: [id])
   permissions           UserPermission[]
   documentPermissions   DocumentPermission[] @relation("userPermissions")
@@ -97,11 +98,9 @@ model Client {
   ownerId            Int
   name               String
   contactEmail       String?
+  contactPerson      String?
   phone              String?
   address            String?
-  city               String?
-  vatCode            String?
-  country            String?
   notes              String?
   createdAt          DateTime            @default(now())
   /// Default AR account for this client
@@ -109,62 +108,96 @@ model Client {
   /// Unique shorthand code (e.g. C0001)
   code               String?             @unique
   companyId          Int
+  city               String?
+  vatCode            String?
+  country            String?
   approvalScopes     ApprovalScope[]
   account            Account?            @relation("ClientAccount", fields: [accountId], references: [id])
-  company            Company             @relation(fields: [companyId], references: [id])
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   owner              User                @relation(fields: [ownerId], references: [id])
   documents          Document[]
   expenseCashLedgers ExpenseCashLedger[]
   invoices           Invoice[]
   projects           Project[]
   reportAccesses     ReportAccess[]
-  trustAccounts      TrustAccount[]
   tasks              Task[]              @relation("ClientTasks")
+  trustAccounts      TrustAccount[]
+}
+
+model Agent {
+  id            Int      @id @default(autoincrement())
+  name          String
+  code          String?
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+  city          String?
+  vatCode       String?
+  country       String?
+  taxNumber     String?
+  companyId     Int
+  createdAt     DateTime @default(now())
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Task          Task[]
 }
 
 model Project {
-  id                 Int                 @id @default(autoincrement())
-  ownerId            Int
-  clientId           Int
-  name               String
-  description        String?
-  hourlyRate         Decimal?
-  status             ProjectStatus       @default(OPEN)
-  createdAt          DateTime            @default(now())
-  advanceAmount      Decimal?
-  advanceCurrency    CurrencyCode?
+  id                  Int                 @id @default(autoincrement())
+  ownerId             Int
+  clientId            Int
+  name                String
+  description         String?
+  hourlyRate          Decimal?
+  status              ProjectStatus       @default(OPEN)
+  createdAt           DateTime            @default(now())
+  advanceAmount       Decimal?
+  advanceCurrency     CurrencyCode?
   /// Revenue account for this project
-  accountId          Int?
+  accountId           Int?
   /// Unique shorthand code (e.g. P0001-01)
-  code               String?
-  companyId          Int
-  budget             Decimal?
-  startDate          DateTime?
-  endDate            DateTime?
-  billingType        BillingType         @default(HOURS)
-  fixedFee           Decimal?
-  rateSource         RateSource?
-  billingCurrency    CurrencyCode?
-  advancePayments    AdvancePayment[]
-  approvalScopes     ApprovalScope[]
-  documents          Document[]
-  expenses           Expense[]
-  expenseCashLedgers ExpenseCashLedger[]
-  groupMemberships   GroupMembership[]
-  incomeCashLedgers  IncomeCashLedger[]  @relation("ProjectIncomeLedger")
-  invoices           Invoice[]
-  officeExpenses     OfficeExpense[]
-  account            Account?            @relation("ProjectAccount", fields: [accountId], references: [id])
-  client             Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company            Company             @relation(fields: [companyId], references: [id])
-  owner              User                @relation(fields: [ownerId], references: [id])
-  assignments        ProjectAssignment[]
-  attachments        ProjectAttachment[]
-  reportAccesses     ReportAccess[]
-  timeEntries        TimeEntry[]
-  trustAccounts      TrustAccount[]
-  trustTransactions  TrustTransaction[]
-  tasks              Task[]              @relation("ProjectTasks")
+  code                String?
+  companyId           Int
+  billingType         BillingType         @default(HOURS)
+  fixedFee            Decimal?
+  rateSource          RateSource?
+  billingCurrency     CurrencyCode?
+  budget              Decimal?
+  retainerFee         Decimal?
+  retainerHours       Decimal?
+  overtimeRate        Decimal?
+  endDate             DateTime?
+  startDate           DateTime?
+  assigneeType        String?             @default("LAWYER")
+  agentFees           Decimal?
+  agentCurrency       String?
+  agentNotes          String?
+  clientWillPay       Boolean             @default(false)
+  officePercentage    Decimal?
+  agentStatus         String?             @default("OPEN")
+  agentPaid           Decimal?
+  clientInvoiceAmount Decimal?
+  agentId             Int?
+  advancePayments     AdvancePayment[]
+  approvalScopes      ApprovalScope[]
+  documents           Document[]
+  expenses            Expense[]
+  expenseCashLedgers  ExpenseCashLedger[]
+  groupMemberships    GroupMembership[]
+  incomeCashLedgers   IncomeCashLedger[]  @relation("ProjectIncomeLedger")
+  invoices            Invoice[]
+  officeExpenses      OfficeExpense[]
+  account             Account?            @relation("ProjectAccount", fields: [accountId], references: [id])
+  client              Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company             Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  owner               User                @relation(fields: [ownerId], references: [id])
+  assignments         ProjectAssignment[]
+  attachments         ProjectAttachment[]
+  reportAccesses      ReportAccess[]
+  tasks               Task[]              @relation("ProjectTasks")
+  timeEntries         TimeEntry[]
+  trustAccounts       TrustAccount[]
+  trustTransactions   TrustTransaction[]
 
   @@unique([companyId, code])
 }
@@ -232,10 +265,12 @@ model Invoice {
   companyId         Int
   arPosted          Boolean            @default(false)
   bankId            Int?
+  matterId          Int?
   expenses          Expense[]
   bank              BankAccount?       @relation(fields: [bankId], references: [id])
   client            Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  company           Company            @relation(fields: [companyId], references: [id])
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Task              Task?              @relation(fields: [matterId], references: [id])
   project           Project?           @relation(fields: [projectId], references: [id])
   items             InvoiceItem[]
   payments          Payment[]
@@ -335,7 +370,7 @@ model BankAccount {
   currency          CurrencyCode       @default(USD)
   createdAt         DateTime           @default(now())
   advancePayments   AdvancePayment[]
-  company           Company            @relation(fields: [companyId], references: [id])
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   bankTransactions  BankTransaction[]
   incomeCashLedgers IncomeCashLedger[]
   invoices          Invoice[]
@@ -349,6 +384,7 @@ model ProjectAttachment {
   url          String
   uploadedById Int?
   createdAt    DateTime       @default(now())
+  label        String?
   project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   uploadedBy   User?          @relation(fields: [uploadedById], references: [id])
 }
@@ -613,9 +649,10 @@ model Account {
   name      String
   type      AccountType
   companyId Int
-  company   Company           @relation(fields: [companyId], references: [id])
+  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   clients   Client[]          @relation("ClientAccount")
   projects  Project[]         @relation("ProjectAccount")
+  Task      Task[]
   lines     TransactionLine[]
 
   @@unique([companyId, code])
@@ -671,7 +708,7 @@ model PayrollBatch {
   hrApprovedAt  DateTime?
   accApprovedAt DateTime?
   createdById   Int
-  company       Company       @relation(fields: [companyId], references: [id])
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   creator       User          @relation("payrollBatchesCreated", fields: [createdById], references: [id])
   items         PayrollItem[]
 
@@ -690,7 +727,62 @@ model PayrollItem {
   salaryDeductions SalaryDeduction[] @relation("ItemDeductions")
 }
 
+model Task {
+  id                 Int          @id @default(autoincrement())
+  title              String
+  description        String?
+  taskType           String?
+  ipType             String?
+  ipAction           String?
+  actionDetails      Json?
+  isAgent            Boolean      @default(false)
+  agentId            Int?
+  defendantName      String?
+  opponent           String?
+  court              String?
+  clientId           Int?
+  projectId          Int?
+  accountId          Int?
+  assignerId         Int
+  assigneeIds        String       @default("")
+  dueDate            DateTime
+  status             TaskStatus   @default(PENDING)
+  createdAt          DateTime     @default(now())
+  billingType        BillingType  @default(HOURS)
+  billingCurrency    CurrencyCode @default(USD)
+  hourlyRate         Decimal?
+  retainerHours      Decimal?
+  retainerFee        Decimal?
+  overtimeRate       Decimal?
+  litigationCategory String?
+  litigationType     String?
+  caseType           String?
+  parties            Json?
+  courtAuthority     String?
+  caseNumber         String?
+  importantDates     Json?
+  filings            Json?
+  hearingDate        DateTime?
+  hearingRemarks     String?
+  nextHearingDate    DateTime?
+  nextHearingRemarks String?
+  reminderDate       DateTime?
+  reminderSent       Boolean      @default(false)
+  decisions          Json?
+  appeals            Json?
+  enforcement        Json?
+  Invoice            Invoice[]
+  Account            Account?     @relation(fields: [accountId], references: [id])
+  Agent              Agent?       @relation(fields: [agentId], references: [id])
+  assigner           User         @relation("taskAssigner", fields: [assignerId], references: [id])
+  client             Client?      @relation("ClientTasks", fields: [clientId], references: [id])
+  project            Project?     @relation("ProjectTasks", fields: [projectId], references: [id])
+
+  @@index([assigneeIds, dueDate])
+}
+
 enum Role {
+  SUPER_ADMIN
   ADMIN
   ACCOUNTANT_MASTER
   ACCOUNTANT_ASSISTANT
@@ -712,6 +804,8 @@ enum ProjectStatus {
 enum BillingType {
   HOURS
   FIXED
+  CAPPED_RETAINER
+  OPEN_RETAINER
 }
 
 enum RateSource {
@@ -813,22 +907,8 @@ enum TaskStatus {
   REJECTED
 }
 
-model Task {
-  id          Int        @id @default(autoincrement())
-  title       String
-  description String?
-  clientId    Int?
-  projectId   Int?
-  assignerId  Int
-  assigneeId  Int
-  dueDate     DateTime
-  status      TaskStatus @default(PENDING)
-  createdAt   DateTime   @default(now())
-
-  client   Client?  @relation("ClientTasks", fields: [clientId], references: [id])
-  project  Project? @relation("ProjectTasks", fields: [projectId], references: [id])
-  assigner User     @relation("taskAssigner", fields: [assignerId], references: [id])
-  assignee User     @relation("taskAssignee", fields: [assigneeId], references: [id])
-
-  @@index([assigneeId, dueDate])
+enum CompanyStatus {
+  DEMO
+  ACTIVE
+  SUSPENDED
 }

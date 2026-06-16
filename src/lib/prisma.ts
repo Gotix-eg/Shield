@@ -28,6 +28,7 @@ const createPrismaClient = () => {
     "Account",
     "PayrollBatch",
     "BankTransaction",
+    "Agent",
   ];
 
   // Multi-tenant isolation middleware: scope every query by companyId stored in AsyncLocalStorage

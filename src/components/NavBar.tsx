@@ -8,13 +8,13 @@ import { getAuth, clearAuth } from "@/lib/auth";
 type UserRole = string; // roles now dynamic
 interface NavLink { href:string; label:string; key:string }
 const ROLE_PAGES: Record<string,string[]> = {
-  OWNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","accounts","payroll","settings","hr"],
-  MANAGING_PARTNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","accounts","payroll","settings","hr"],
-  ACCOUNTANT_MASTER:["clients","projects","expenses","leaves","invoices","reports","accounts","payroll"],
+  OWNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","accounts","payroll","settings","hr","agents"],
+  MANAGING_PARTNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","accounts","payroll","settings","hr","agents"],
+  ACCOUNTANT_MASTER:["clients","projects","expenses","leaves","invoices","reports","accounts","payroll","agents"],
   ACCOUNTANT_ASSISTANT:["clients","projects","expenses","leaves","invoices","accounts"],
-  ADMIN:["clients","projects","tasks","time","reports","admin_time"],
-  LAWYER_PARTNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports"],
-  LAWYER_MANAGER:["clients","projects","tasks","time","expenses","leaves","reports"],
+  ADMIN:["clients","projects","tasks","time","reports","admin_time","agents"],
+  LAWYER_PARTNER:["clients","projects","tasks","time","expenses","leaves","invoices","reports","agents"],
+  LAWYER_MANAGER:["clients","projects","tasks","time","expenses","leaves","reports","agents"],
   LAWYER:["projects","tasks","time","expenses","leaves"],
   HR_MANAGER:["hr","payroll","leaves","admin_time"],
   HR:["hr","leaves"],
@@ -83,6 +83,7 @@ export default function NavBar() {
     { href: "/clients", label: "Clients", key: "clients", icon: Users },
     { href: "/projects", label: "Projects", key: "projects", icon: FolderKanban },
     { href: "/admin/tasks", label: "Tasks", key: "tasks", icon: CheckSquare },
+    { href: "/agents", label: "Agents", key: "agents", icon: Briefcase },
     { href: "/time", label: "Time", key: "time", icon: Clock },
     { href: "/expenses", label: "Expenses", key: "expenses", icon: CreditCard },
     { href: "/leaves", label: "Leaves", key: "leaves", icon: Calendar },
